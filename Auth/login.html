@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống QL ĐKHP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        .password-toggle { cursor: pointer; position: absolute; right: 15px; top: 38px; color: var(--text-muted); font-size: 20px; }
+        .demo-accounts { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .demo-toggle { font-size: 0.85rem; color: var(--accent); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="text-center mb-5">
+                <div class="mb-3">
+                    <span class="material-symbols-outlined" style="font-size: 64px; color: var(--accent);">school</span>
+                </div>
+                <h2 class="fw-bold text-primary mb-1">Cổng Đăng Ký</h2>
+                <p class="text-muted">Hệ thống Quản lý Đăng ký Học phần</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Tên đăng nhập</label>
+                    <div class="position-relative">
+                        <input type="text" id="tenLogin" class="form-control" placeholder="Mã SV hoặc Mã GV" required>
+                    </div>
+                </div>
+                <div class="mb-4 position-relative">
+                    <label class="form-label fw-bold">Mật khẩu</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    <span class="material-symbols-outlined password-toggle" onclick="togglePassword()" id="pwdIcon">visibility</span>
+                </div>
+
+                <div id="loginError" class="alert alert-danger d-none py-3 small rounded-4"></div>
+
+                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold mb-4">ĐĂNG NHẬP HỆ THỐNG</button>
+            </form>
+
+            <div class="demo-accounts">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="small text-muted fw-500">Tài khoản trải nghiệm</span>
+                    <span class="demo-toggle" onclick="toggleDemo()">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">info</span>
+                        Hiện/Ẩn
+                    </span>
+                </div>
+                <div id="demoTable" class="d-none animate__animated animate__fadeIn">
+                    <div class="table-responsive rounded-3 overflow-hidden">
+                        <table class="table table-sm table-borderless mb-0" style="font-size: 0.8rem; background: #f1f5f9;">
+                            <thead style="background: #e2e8f0;">
+                                <tr><th class="ps-3">Quyền</th><th>User</th><th class="pe-3">Pass</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="ps-3 py-2">Sinh viên</td><td>SV001</td><td class="pe-3">123456</td></tr>
+                                <tr><td class="ps-3 py-2">Giảng viên</td><td>GV003</td><td class="pe-3">123456</td></tr>
+                                <tr><td class="ps-3 py-2">Trưởng khoa</td><td>GV001</td><td class="pe-3">123456</td></tr>
+                                <tr><td class="ps-3 py-2">Giáo vụ</td><td>GVU01</td><td class="pe-3">123456</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        if (Auth.getCurrentUser()) Auth.redirectByRole(Auth.getCurrentUser().Role);
+
+        document.getElementById('loginForm').onsubmit = (e) => {
+            e.preventDefault();
+            const ten = document.getElementById('tenLogin').value;
+            const pass = document.getElementById('password').value;
+            if (Auth.login(ten, pass)) { } else {
+                const err = document.getElementById('loginError');
+                err.innerText = 'Thông tin đăng nhập không chính xác!';
+                err.classList.remove('d-none');
+            }
+        };
+
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('pwdIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.innerText = 'visibility_off';
+            } else {
+                pwd.type = 'password';
+                icon.innerText = 'visibility';
+            }
+        }
+
+        function toggleDemo() {
+            document.getElementById('demoTable').classList.toggle('d-none');
+        }
+    </script>
+</body>
+</html>
