@@ -3,135 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý môn học - Hệ thống QL ĐKHP</title>
+    <title>Quản lý Môn học - Trưởng khoa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../Assets/css/style.css">
+    <!-- <link rel="stylesheet" href="../Assets/css/style.css"> -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <style>
-        .nav-tabs { border: none; gap: 10px; }
-        .nav-link { border: none !important; border-radius: 12px !important; font-weight: 600; color: var(--text-muted); padding: 0.8rem 1.5rem; }
-        .nav-link.active { background: var(--accent) !important; color: #fff !important; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="css/truong-khoa.css">
 </head>
 <body>
+    <div id="main-wrapper">
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-    <div class="container-fluid">
-        <h2 class="section-title">
-            <span class="material-symbols-outlined text-primary" style="font-size: 32px;">menu_book</span>
-            Quản trị môn học & Phân công
-        </h2>
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined me-2 text-muted">search</span>
+                <input type="text" placeholder="Tìm kiếm môn học..." id="searchInput" oninput="renderCourses()">
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3 fw-bold" id="facultyName">Khoa: ...</span>
+                <img id="userAvatar" src="" class="avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+            </div>
+        </header>
 
-        <ul class="nav nav-tabs mb-4" id="deanTabs">
-            <li class="nav-item">
-                <button class="nav-link active d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#coursesTab">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">library_books</span>
-                    Danh mục môn học
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#assignTab">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">assignment_ind</span>
-                    Phân công giảng dạy
-                </button>
-            </li>
-        </ul>
-
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="coursesTab">
-                <div class="card border-0">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="fw-bold m-0">Môn học trong khoa</h5>
-                        <button class="btn btn-primary btn-sm" onclick="openCourseModal()">+ Thêm môn học</button>
+        <main class="main-content" style="padding-top: 100px; padding-left: 300px; padding-right: 2rem; background: #f8fafc; min-height: 100vh;">
+            <div class="animate__animated animate__fadeIn">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1">Quản lý Môn học</h2>
+                        <p class="text-muted mb-0">Thiết lập danh mục môn học và phân công giảng viên.</p>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Mã MH</th>
-                                    <th>Tên môn học</th>
-                                    <th class="text-center">Tín chỉ</th>
-                                    <th class="text-center">GV giảng dạy</th>
-                                    <th class="text-center">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="courseTableBody"></tbody>
-                        </table>
+                    <button class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" onclick="openCourseModal()">
+                        <span class="material-symbols-outlined align-middle me-1">add</span> THÊM MÔN HỌC
+                    </button>
+                </div>
+
+                <ul class="nav nav-tabs mb-4" id="deanTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#coursesTab">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">library_books</span> Danh mục môn
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#assignTab">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">assignment_ind</span> Phân công dạy
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="coursesTab">
+                        <div class="dean-card p-0 overflow-hidden border">
+                            <div class="table-responsive">
+                                <table class="table align-middle table-custom mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="ps-4">Mã MH</th>
+                                            <th>Tên môn học</th>
+                                            <th class="text-center">Số tín chỉ</th>
+                                            <th class="text-center">Giảng viên dạy</th>
+                                            <th class="text-center">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="courseTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="assignTab">
+                        <div class="dean-card mb-4">
+                            <div class="row align-items-end g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Chọn môn học để phân công</label>
+                                    <select id="assignCourseSelect" class="form-select border-0 bg-light rounded-3" onchange="renderAssignments()"></select>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button class="btn btn-success rounded-pill px-4 fw-bold" id="btnAddAssign" onclick="openAssignModal()" disabled>
+                                        <span class="material-symbols-outlined align-middle me-1">person_add</span> PHÂN CÔNG GIẢNG VIÊN
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dean-card p-0 overflow-hidden border">
+                            <div class="table-responsive">
+                                <table class="table align-middle table-custom mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="ps-4">Mã GV</th>
+                                            <th>Họ tên giảng viên</th>
+                                            <th>Bộ môn</th>
+                                            <th class="text-center">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assignTableBody">
+                                        <tr><td colspan="4" class="text-center py-5 text-muted">Vui lòng chọn môn học ở trên</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="tab-pane fade" id="assignTab">
-                <div class="card border-0 mb-4">
-                    <div class="row align-items-end g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Chọn môn học</label>
-                            <select id="assignCourseSelect" class="form-select" onchange="renderAssignments()"></select>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <button class="btn btn-outline-success btn-sm" id="btnAddAssign" onclick="openAssignModal()" disabled>+ Giao việc cho GV</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card border-0">
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Mã GV</th>
-                                    <th>Họ tên giảng viên</th>
-                                    <th>Bộ môn</th>
-                                    <th class="text-center">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="assignTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Modals (Course) -->
+    <!-- Modals -->
     <div class="modal fade" id="courseModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content rounded-4 border-0">
-                <div class="modal-header border-0 pt-4 px-4">
-                    <h5 class="fw-bold" id="courseModalTitle">Cập nhật môn học</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 28px; overflow: hidden;">
+                <div class="modal-header bg-primary text-white p-4 border-0">
+                    <h5 class="fw-bold mb-0" id="courseModalTitle">Cập nhật môn học</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <input type="hidden" id="editMaMH">
-                    <div class="mb-3">
-                        <label class="form-label fw-600">Tên môn học</label>
-                        <input type="text" id="formTenMH" class="form-control" required>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Tên môn học</label>
+                        <input type="text" id="formTenMH" class="form-control border-0 bg-light p-3" placeholder="Ví dụ: Cấu trúc dữ liệu và Giải thuật">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-600">Số tín chỉ</label>
-                        <input type="number" id="formSoTC" class="form-control" min="1" max="10" required>
+                        <label class="form-label fw-bold small text-muted text-uppercase">Số tín chỉ</label>
+                        <input type="number" id="formSoTC" class="form-control border-0 bg-light p-3" min="1" max="10">
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-4">
-                    <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveCourse()">LƯU THÔNG TIN</button>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow" onclick="saveCourse()">LƯU THAY ĐỔI</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="assignModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content rounded-4 border-0">
-                <div class="modal-header border-0 pt-4 px-4">
-                    <h5 class="fw-bold">Phân công giảng viên</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 28px; overflow: hidden;">
+                <div class="modal-header bg-success text-white p-4 border-0">
+                    <h5 class="fw-bold mb-0">Phân công Giảng viên</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
+                    <div class="mb-3 text-center">
+                        <div class="p-4 bg-success bg-opacity-10 rounded-4 mb-3">
+                            <span class="material-symbols-outlined text-success" style="font-size: 48px;">person_add</span>
+                        </div>
+                        <p class="text-muted">Chọn một giảng viên trong khoa để cho phép họ giảng dạy môn học này.</p>
+                    </div>
                     <div class="mb-3">
-                        <label class="form-label fw-600">Chọn giảng viên trong khoa:</label>
-                        <select id="formMaGV" class="form-select"></select>
+                        <label class="form-label fw-bold small text-muted text-uppercase">Chọn giảng viên</label>
+                        <select id="formMaGV" class="form-select border-0 bg-light p-3"></select>
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-4">
-                    <button class="btn btn-success w-100 py-2 fw-bold" onclick="saveAssignment()">XÁC NHẬN PHÂN CÔNG</button>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button class="btn btn-success w-100 py-3 rounded-pill fw-bold shadow" onclick="saveAssignment()">XÁC NHẬN PHÂN CÔNG</button>
                 </div>
             </div>
         </div>
@@ -140,65 +162,193 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
-    <script src="../Assets/js/layout.js"></script>
     <script>
         Auth.checkAuth(['TruongKhoa']);
         const user = Auth.getCurrentUser();
-        let cM, aM, myKhoa = '';
+        let cM, aM, myKhoaId = '';
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const path = window.location.pathname;
+            const isPage = (p) => path.includes(p);
+
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start px-4 py-4">
+                    <div style="color: #818cf8; font-size: 1.5rem; font-weight: 800;">EduManage</div>
+                    <div style="font-size: 0.8rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Quản trị Cấp Khoa</div>
+                </div>
+                <ul class="nav-menu list-unstyled px-2">
+                    <li class="${isPage('dashboard.html') ? 'active' : ''}"><a href="dashboard.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">dashboard</span>Tổng quan</a></li>
+                    <li class="${isPage('quan-ly-mon-hoc.html') ? 'active' : ''}"><a href="quan-ly-mon-hoc.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">menu_book</span>Quản lý Môn học</a></li>
+                    <hr class="border-secondary opacity-25">
+                    <li class="${isPage('lich-day.html') ? 'active' : ''}"><a href="lich-day.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    <li class="${isPage('nhap-diem.html') ? 'active' : ''}"><a href="nhap-diem.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">edit_square</span>Quản lý Điểm</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <ul class="list-unstyled px-2">
+                        <li class="${isPage('ho-so.html') ? 'active' : ''}"><a href="ho-so.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li><a href="#" onclick="Auth.logout()" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-danger rounded-3"><span class="material-symbols-outlined">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        let currentPage = 1;
+        const rowsPerPage = 7;
 
         function init() {
+            renderSidebar();
             cM = new bootstrap.Modal(document.getElementById('courseModal'));
             aM = new bootstrap.Modal(document.getElementById('assignModal'));
-            const me = JSON.parse(localStorage.getItem('GiaoVien') || '[]').find(g => g.MaGV === user.MaNguoiDung);
-            myKhoa = me ? me.MaKhoa : '';
+            
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
+            myKhoaId = me ? me.MaKhoa : '';
+            
+            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
+            const myKhoa = khoaD.find(k => k.MaKhoa === myKhoaId);
+            if (myKhoa) document.getElementById('facultyName').innerText = `Khoa: ${myKhoa.TenKhoa}`;
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
+
             renderCourses();
             initAssignTab();
         }
 
         function renderCourses() {
-            const mh = JSON.parse(localStorage.getItem('MonHoc') || '[]').filter(m => m.MaKhoa === myKhoa);
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const allMh = JSON.parse(localStorage.getItem('MonHoc') || '[]').filter(m => m.MaKhoa === myKhoaId && (m.TenMH.toLowerCase().includes(search) || m.MaMH.toLowerCase().includes(search)));
             const gvdm = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]');
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
             const lhp = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            document.getElementById('courseTableBody').innerHTML = mh.map(m => `
-                <tr>
-                    <td><span class="fw-600">${m.MaMH}</span></td>
-                    <td>${m.TenMH}</td>
-                    <td class="text-center">${m.SoTinChi}</td>
-                    <td class="text-center"><span class="badge bg-info-subtle text-info">${gvdm.filter(g => g.MaMH === m.MaMH).length} GV</span></td>
+
+            // Pagination Logic
+            const totalRows = allMh.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const paginatedData = allMh.slice(startIdx, startIdx + rowsPerPage);
+            
+            document.getElementById('courseTableBody').innerHTML = paginatedData.map(m => `
+                <tr class="animate__animated animate__fadeIn">
+                    <td class="ps-4"><span class="fw-bold text-primary">${m.MaMH}</span></td>
+                    <td class="fw-bold">${m.TenMH}</td>
+                    <td class="text-center"><span class="badge bg-light text-dark border px-3">${m.SoTinChi} TC</span></td>
                     <td class="text-center">
-                        <button class="btn btn-link btn-sm p-1" onclick="editCourse('${m.MaMH}')"><span class="material-symbols-outlined text-accent">edit</span></button>
-                        <button class="btn btn-link btn-sm p-1" onclick="deleteCourse('${m.MaMH}', ${lhp.some(l => l.MaMH === m.MaMH)})"><span class="material-symbols-outlined text-danger">delete</span></button>
+                        ${(() => {
+                            const assign = gvdm.find(g => g.MaMH === m.MaMH);
+                            if (assign) {
+                                const gv = gvD.find(x => x.MaGV === assign.MaGV) || {};
+                                return `<span class="badge bg-info-subtle text-info rounded-pill px-3">
+                                            <span class="material-symbols-outlined align-middle fs-6 me-1">person</span>
+                                            ${gv.HoTen || assign.MaGV}
+                                        </span>`;
+                            }
+                            return `<span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">Chưa phân công</span>`;
+                        })()}
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-sm btn-outline-primary rounded-circle" style="width: 32px; height: 32px; padding: 0;" onclick="editCourse('${m.MaMH}')">
+                                <span class="material-symbols-outlined fs-6">edit</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0;" onclick="deleteCourse('${m.MaMH}', ${lhp.some(l => l.MaMH === m.MaMH)})">
+                                <span class="material-symbols-outlined fs-6">delete</span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
-            `).join('');
-            document.getElementById('assignCourseSelect').innerHTML = '<option value="">-- Chọn môn học --</option>' + mh.map(m => `<option value="${m.MaMH}">${m.TenMH}</option>`).join('');
+            `).join('') || '<tr><td colspan="5" class="text-center py-5">Không tìm thấy môn học nào</td></tr>';
+            
+            renderPagination(totalRows, totalPages);
+            document.getElementById('assignCourseSelect').innerHTML = '<option value="">-- Chọn môn học --</option>' + allMh.map(m => `<option value="${m.MaMH}">${m.TenMH}</option>`).join('');
+        }
+
+        function renderPagination(totalRows, totalPages) {
+            let container = document.getElementById('paginationContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'paginationContainer';
+                container.className = 'pagination-container';
+                document.getElementById('coursesTab').querySelector('.dean-card').appendChild(container);
+            }
+
+            if (totalRows === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = Math.min(currentPage * rowsPerPage, totalRows);
+
+            container.innerHTML = `
+                <div class="pagination-info">
+                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> môn học
+                </div>
+                <div class="pagination-nav">
+                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
+                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                    `).join('')}
+                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderCourses();
         }
 
         window.openCourseModal = () => { document.getElementById('courseModalTitle').innerText = 'Thêm môn học mới'; document.getElementById('editMaMH').value = ''; document.getElementById('formTenMH').value = ''; document.getElementById('formSoTC').value = 3; cM.show(); };
         window.editCourse = (id) => { const m = JSON.parse(localStorage.getItem('MonHoc') || '[]').find(x => x.MaMH === id); document.getElementById('courseModalTitle').innerText = 'Sửa môn học: ' + id; document.getElementById('editMaMH').value = id; document.getElementById('formTenMH').value = m.TenMH; document.getElementById('formSoTC').value = m.SoTinChi; cM.show(); };
         window.saveCourse = () => {
             const id = document.getElementById('editMaMH').value, d = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const obj = { MaMH: id || 'MH' + Date.now(), TenMH: document.getElementById('formTenMH').value, SoTinChi: parseInt(document.getElementById('formSoTC').value), MaKhoa: myKhoa };
+            const ten = document.getElementById('formTenMH').value;
+            const tc = parseInt(document.getElementById('formSoTC').value);
+            if(!ten || !tc) return alert('Vui lòng nhập đầy đủ thông tin!');
+            
+            const obj = { MaMH: id || 'MH' + Date.now(), TenMH: ten, SoTinChi: tc, MaKhoa: myKhoaId };
             if (id) { const i = d.findIndex(x => x.MaMH === id); d[i] = obj; } else { d.push(obj); }
             localStorage.setItem('MonHoc', JSON.stringify(d)); cM.hide(); renderCourses();
         };
-        window.deleteCourse = (id, has) => { if (has) return alert('Không thể xóa môn đã có lớp!'); if (confirm('Xóa môn học này?')) { const d = JSON.parse(localStorage.getItem('MonHoc') || '[]').filter(x => x.MaMH !== id); localStorage.setItem('MonHoc', JSON.stringify(d)); renderCourses(); } };
+        window.deleteCourse = (id, has) => { if (has) return alert('Không thể xóa môn đã có lớp học phần!'); if (confirm('Bạn có chắc chắn muốn xóa môn học này không?')) { const d = JSON.parse(localStorage.getItem('MonHoc') || '[]').filter(x => x.MaMH !== id); localStorage.setItem('MonHoc', JSON.stringify(d)); renderCourses(); } };
 
-        function initAssignTab() { const gv = JSON.parse(localStorage.getItem('GiaoVien') || '[]').filter(g => g.MaKhoa === myKhoa); document.getElementById('formMaGV').innerHTML = gv.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join(''); }
+        function initAssignTab() { 
+            const gv = JSON.parse(localStorage.getItem('GiaoVien') || '[]').filter(g => g.MaKhoa === myKhoaId); 
+            document.getElementById('formMaGV').innerHTML = gv.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join(''); 
+        }
         window.renderAssignments = () => {
             const id = document.getElementById('assignCourseSelect').value, btn = document.getElementById('btnAddAssign');
-            if (!id) { btn.disabled = true; document.getElementById('assignTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4">Vui lòng chọn môn học</td></tr>'; return; }
+            if (!id) { btn.disabled = true; document.getElementById('assignTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Vui lòng chọn môn học ở trên</td></tr>'; return; }
             btn.disabled = false;
             const gvdm = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]').filter(x => x.MaMH === id), gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]'), bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            document.getElementById('assignTableBody').innerHTML = gvdm.map(a => { const gv = gvD.find(g => g.MaGV === a.MaGV) || {}, bm = bmD.find(b => b.MaBoMon === gv.MaBoMon) || {}; return `<tr><td><strong>${a.MaGV}</strong></td><td>${gv.HoTen}</td><td>${bm.TenBoMon}</td><td class="text-center"><button class="btn btn-link btn-sm p-1" onclick="deleteAssignment('${a.MaGV}', '${id}')"><span class="material-symbols-outlined text-danger">person_remove</span></button></td></tr>`; }).join('') || '<tr><td colspan="4" class="text-center py-4">Chưa có GV nào được phân công</td></tr>';
+            document.getElementById('assignTableBody').innerHTML = gvdm.map(a => { const gv = gvD.find(g => g.MaGV === a.MaGV) || {}, bm = bmD.find(b => b.MaBoMon === gv.MaBoMon) || {}; return `<tr><td class="ps-4"><strong>${a.MaGV}</strong></td><td>${gv.HoTen}</td><td>${bm.TenBoMon}</td><td class="text-center"><button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="deleteAssignment('${a.MaGV}', '${id}')"><span class="material-symbols-outlined align-middle fs-6 me-1">person_remove</span> Gỡ bỏ</button></td></tr>`; }).join('') || '<tr><td colspan="4" class="text-center py-5 text-muted">Chưa có Giảng viên nào được phân công giảng dạy môn này.</td></tr>';
         };
         window.openAssignModal = () => aM.show();
         window.saveAssignment = () => {
-            const m = document.getElementById('assignCourseSelect').value, g = document.getElementById('formMaGV').value, d = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]');
-            if (d.some(x => x.MaMH === m && x.MaGV === g)) return alert('Đã phân công rồi!');
-            d.push({ MaGV: g, MaMH: m }); localStorage.setItem('GiaoVienDayMon', JSON.stringify(d)); aM.hide(); renderAssignments(); renderCourses();
+            const m = document.getElementById('assignCourseSelect').value, g = document.getElementById('formMaGV').value;
+            let d = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]');
+            
+            // Tìm xem môn này đã có ai dạy chưa
+            const existingIdx = d.findIndex(x => x.MaMH === m);
+            if (existingIdx !== -1) {
+                if(d[existingIdx].MaGV === g) return alert('Giảng viên này đang phụ trách môn này rồi!');
+                if(!confirm('Môn này đã có giảng viên khác phụ trách. Bạn có muốn thay đổi không?')) return;
+                d[existingIdx].MaGV = g;
+            } else {
+                d.push({ MaGV: g, MaMH: m });
+            }
+            
+            localStorage.setItem('GiaoVienDayMon', JSON.stringify(d)); 
+            aM.hide(); 
+            renderAssignments(); 
+            renderCourses();
         };
-        window.deleteAssignment = (g, m) => { if (confirm('Xóa phân công?')) { const d = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]').filter(x => !(x.MaGV === g && x.MaMH === m)); localStorage.setItem('GiaoVienDayMon', JSON.stringify(d)); renderAssignments(); renderCourses(); } };
+        window.deleteAssignment = (g, m) => { if (confirm('Xác nhận gỡ phân công giảng dạy?')) { const d = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]').filter(x => !(x.MaGV === g && x.MaMH === m)); localStorage.setItem('GiaoVienDayMon', JSON.stringify(d)); renderAssignments(); renderCourses(); } };
+        
         init();
     </script>
 </body>

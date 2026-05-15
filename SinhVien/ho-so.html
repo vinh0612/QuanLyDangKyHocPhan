@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân - Sinh viên</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="../GiaoVu/css/dashboard.css">
+    <link rel="stylesheet" href="css/sinh-vien.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</head>
+<body>
+
+    <div id="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-brand text-start">
+                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                <li><a href="dang-ky-mon.html"><span class="material-symbols-outlined menu-icon">app_registration</span>Đăng ký học phần</a></li>
+                <li><a href="ket-qua-dang-ky.html"><span class="material-symbols-outlined menu-icon">fact_check</span>Kết quả Đăng ký</a></li>
+                <li><a href="ket-qua-hoc-tap.html"><span class="material-symbols-outlined menu-icon">grade</span>Kết quả học tập</a></li>
+            </ul>
+            <div style="padding: 1rem; margin-top: auto;">
+                <ul class="nav-menu" style="padding: 0;">
+                    <li class="active">
+                        <a href="ho-so.html">
+                            <span class="material-symbols-outlined menu-icon">account_circle</span>
+                            Hồ sơ Cá nhân
+                        </a>
+                    </li>
+                    <li style="margin-top: 0.5rem;">
+                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
+                            <span class="material-symbols-outlined menu-icon">logout</span>
+                            Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" placeholder="Tìm kiếm...">
+            </div>
+            <div class="nav-user">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=SV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="profile-header animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #0d6efd, #0dcaf0); height: 200px; border-radius: 24px; position: relative; margin-bottom: 80px;">
+                <div style="position: absolute; bottom: -60px; left: 40px; display: flex; align-items: flex-end; gap: 20px;">
+                    <img id="profileAvatar" src="" alt="Avatar" style="width: 120px; height: 120px; border-radius: 30px; border: 5px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); background: #fff;">
+                    <div class="mb-3">
+                        <h2 class="fw-bold mb-0" id="profileName" style="color: #334155;">Tên Sinh viên</h2>
+                        <span class="badge bg-primary rounded-pill px-3" id="profileID">MSSV: SV000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 animate__animated animate__fadeInUp">
+                <div class="col-lg-8">
+                    <div class="card border-0 p-4 shadow-sm" style="border-radius: 20px;">
+                        <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">person</span>
+                            Thông tin chi tiết
+                        </h5>
+                        <form id="profileForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">HỌ VÀ TÊN</label>
+                                    <input type="text" class="form-control" id="formHoTen" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">MÃ SINH VIÊN</label>
+                                    <input type="text" class="form-control" id="formMaSV" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">NGÀY SINH</label>
+                                    <input type="date" class="form-control" id="formNgaySinh">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">GIỚI TÍNH</label>
+                                    <select class="form-select" id="formGioiTinh">
+                                        <option value="Nam">Nam</option>
+                                        <option value="Nữ">Nữ</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">SỐ ĐIỆN THOẠI</label>
+                                    <input type="text" class="form-control" id="formSDT">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">EMAIL</label>
+                                    <input type="email" class="form-control" id="formEmail">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label text-muted small fw-bold">ĐỊA CHỈ</label>
+                                    <textarea class="form-control" id="formDiaChi" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="mt-4 text-end">
+                                <button type="button" class="btn btn-primary px-5 rounded-pill" onclick="saveProfile()">LƯU THAY ĐỔI</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 p-4 shadow-sm mb-4" style="border-radius: 20px;">
+                        <h5 class="fw-bold mb-4">Thông tin Đào tạo</h5>
+                        <div class="mb-3">
+                            <div class="text-muted small fw-bold">KHOA</div>
+                            <div id="infoKhoa">Khoa Công nghệ thông tin</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small fw-bold">LỚP SINH HOẠT</div>
+                            <div>D21-TH01</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small fw-bold">NIÊN KHÓA</div>
+                            <div>2021 - 2025</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['SinhVien']);
+        const user = Auth.getCurrentUser();
+
+        function init() {
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
+            document.getElementById('userAvatar').src = avatarUrl;
+            document.getElementById('profileAvatar').src = avatarUrl;
+            
+            document.getElementById('profileName').innerText = user.HoTen;
+            document.getElementById('profileID').innerText = `MSSV: ${user.MaNguoiDung}`;
+            
+            document.getElementById('formHoTen').value = user.HoTen;
+            document.getElementById('formMaSV').value = user.MaNguoiDung;
+            document.getElementById('formNgaySinh').value = user.NgaySinh || '';
+            document.getElementById('formGioiTinh').value = user.GioiTinh || 'Nam';
+            document.getElementById('formSDT').value = user.SoDT || '';
+            document.getElementById('formEmail').value = user.Email || '';
+            document.getElementById('formDiaChi').value = user.DiaChi || '';
+
+            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
+            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
+            const currentSV = svD.find(s => s.MaSV === user.MaNguoiDung);
+            if (currentSV) {
+                const khoa = khoaD.find(k => k.MaKhoa === currentSV.MaKhoa);
+                if (khoa) document.getElementById('infoKhoa').innerText = khoa.TenKhoa;
+            }
+        }
+
+        window.saveProfile = () => {
+            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
+            const idx = svD.findIndex(s => s.MaSV === user.MaNguoiDung);
+            
+            if (idx !== -1) {
+                svD[idx].NgaySinh = document.getElementById('formNgaySinh').value;
+                svD[idx].GioiTinh = document.getElementById('formGioiTinh').value;
+                svD[idx].SoDT = document.getElementById('formSDT').value;
+                svD[idx].Email = document.getElementById('formEmail').value;
+                svD[idx].DiaChi = document.getElementById('formDiaChi').value;
+                
+                localStorage.setItem('SinhVien', JSON.stringify(svD));
+                
+                // Update session
+                const updatedUser = { ...user, ...svD[idx] };
+                sessionStorage.setItem('user', JSON.stringify(updatedUser));
+                
+                alert('Cập nhật thông tin cá nhân thành công!');
+                location.reload();
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>

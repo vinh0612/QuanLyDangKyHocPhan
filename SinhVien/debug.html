@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 2rem; font-family: monospace; background: #0f172a; color: #e2e8f0; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+        .label { color: #60a5fa; font-weight: bold; font-size: 0.85rem; }
+        .value { color: #a3e635; }
+        .error { color: #f87171; }
+        .ok { color: #4ade80; }
+        pre { background: #0f172a; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.75rem; max-height: 300px; }
+        h3 { color: #f8fafc; }
+        .badge-ok { background: #166534; color: #4ade80; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+        .badge-err { background: #7f1d1d; color: #f87171; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+
+<h3>🔍 Debug: localStorage Inspector</h3>
+<p style="color:#94a3b8">Mở file này trong cùng browser (cùng origin) với hệ thống để xem data.</p>
+
+<div id="output"></div>
+
+<script>
+function check(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return { exists: false, data: null, count: 0 };
+        const data = JSON.parse(raw);
+        return { exists: true, data, count: Array.isArray(data) ? data.length : 1 };
+    } catch(e) {
+        return { exists: false, data: null, count: 0, error: e.message };
+    }
+}
+
+function render() {
+    const out = document.getElementById('output');
+    let html = '';
+
+    // 1. Current User
+    const userRaw = localStorage.getItem('currentUser');
+    html += `<div class="card">`;
+    html += `<div class="label">👤 currentUser</div>`;
+    if (userRaw) {
+        const u = JSON.parse(userRaw);
+        html += `<div class="ok">✓ Đã đăng nhập: <b>${u.HoTen}</b> (${u.MaNguoiDung}) — Role: ${u.Role}</div>`;
+        html += `<pre>${JSON.stringify(u, null, 2)}</pre>`;
+    } else {
+        html += `<div class="error">✗ Chưa đăng nhập (không có currentUser trong localStorage)</div>`;
+    }
+    html += `</div>`;
+
+    // 2. DangKyHoc
+    const dk = check('DangKyHoc');
+    html += `<div class="card">`;
+    html += `<div class="label">📋 DangKyHoc <span class="${dk.count > 0 ? 'badge-ok' : 'badge-err'}">${dk.count} records</span></div>`;
+    if (dk.exists && dk.count > 0) {
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        const mine = user ? dk.data.filter(d => d.MaSV === user.MaNguoiDung) : [];
+        const active = mine.filter(d => d.TrangThai !== 'DaHuy');
+        html += `<div>Của tôi (${user?.MaNguoiDung}): <span class="${mine.length > 0 ? 'ok' : 'error'}">${mine.length} đăng ký</span> — Active: <span class="${active.length > 0 ? 'ok' : 'error'}">${active.length}</span></div>`;
+        html += `<pre>${JSON.stringify(mine, null, 2)}</pre>`;
+    } else {
+        html += `<div class="error">✗ Không có data</div>`;
+    }
+    html += `</div>`;
+
+    // 3. LopHocPhan
+    const lhp = check('LopHocPhan');
+    html += `<div class="card">`;
+    html += `<div class="label">🏫 LopHocPhan <span class="${lhp.count > 0 ? 'badge-ok' : 'badge-err'}">${lhp.count} records</span></div>`;
+    if (lhp.exists && lhp.count > 0) {
+        html += `<pre>${JSON.stringify(lhp.data, null, 2)}</pre>`;
+    } else {
+        html += `<div class="error">✗ Không có data</div>`;
+    }
+    html += `</div>`;
+
+    // 4. HocKy
+    const hk = check('HocKy');
+    html += `<div class="card">`;
+    html += `<div class="label">📅 HocKy <span class="${hk.count > 0 ? 'badge-ok' : 'badge-err'}">${hk.count} records</span></div>`;
+    if (hk.exists) {
+        html += `<pre>${JSON.stringify(hk.data, null, 2)}</pre>`;
+    } else {
+        html += `<div class="error">✗ Không có data</div>`;
+    }
+    html += `</div>`;
+
+    // 5. Cross-check: DangKyHoc vs LopHocPhan
+    html += `<div class="card">`;
+    html += `<div class="label">🔗 Cross-check: Đăng ký → LopHocPhan → HocKy</div>`;
+    const user = userRaw ? JSON.parse(userRaw) : null;
+    if (user && dk.exists && lhp.exists) {
+        const mine = dk.data.filter(d => d.MaSV === user.MaNguoiDung && d.TrangThai !== 'DaHuy');
+        mine.forEach(d => {
+            const l = lhp.data.find(x => x.MaLHP === d.MaLHP);
+            const h = hk.exists ? hk.data.find(x => x.MaHK === l?.MaHK) : null;
+            const lhpOk = l ? '✓' : '✗ MISSING';
+            const hkOk = h ? '✓' : '✗ MISSING';
+            html += `<div style="margin-bottom:8px; padding:8px; background:#0f172a; border-radius:6px;">`;
+            html += `<b style="color:#f8fafc">${d.MaDK}</b> → MaLHP: <span class="${l ? 'ok' : 'error'}">${d.MaLHP} ${lhpOk}</span>`;
+            if (l) html += ` → MaHK: <span class="${h ? 'ok' : 'error'}">${l.MaHK} ${hkOk}</span>`;
+            html += `<br><span style="color:#94a3b8;font-size:0.75rem">TrangThai: ${d.TrangThai} | NgayDangKy: ${d.NgayDangKy || d.NgayDK || 'undefined'}</span>`;
+            html += `</div>`;
+        });
+        if (mine.length === 0) html += `<div class="error">✗ Không tìm thấy đăng ký nào của user này!</div>`;
+    } else {
+        html += `<div class="error">✗ Thiếu data để cross-check</div>`;
+    }
+    html += `</div>`;
+
+    // 6. Render simulation - giả lập logic ket-qua-dang-ky.html
+    html += `<div class="card">`;
+    html += `<div class="label">🧪 Simulate renderResults() của ket-qua-dang-ky.html</div>`;
+    if (user && dk.exists && lhp.exists && hk.exists) {
+        const openHK = hk.data.find(h => h.DangMo);
+        html += `<div>HK đang mở (DangMo=true): <b class="${openHK ? 'ok' : 'error'}">${openHK ? openHK.MaHK + ' — ' + openHK.TenHK : 'KHÔNG CÓ!'}</b></div>`;
+        html += `<div style="margin-top:8px">Filter với hkId = "${openHK?.MaHK || ''}":</div>`;
+        
+        const myRegs = dk.data.filter(d => {
+            const l = lhp.data.find(x => x.MaLHP === d.MaLHP);
+            const isMine = d.MaSV === user.MaNguoiDung;
+            const notCancelled = d.TrangThai !== 'DaHuy';
+            const matchHK = !openHK?.MaHK || (l && l.MaHK === openHK?.MaHK);
+            return isMine && notCancelled && matchHK;
+        });
+        html += `<div class="${myRegs.length > 0 ? 'ok' : 'error'}">Kết quả sau filter: ${myRegs.length} record(s)</div>`;
+        if (myRegs.length > 0) {
+            html += `<pre>${JSON.stringify(myRegs, null, 2)}</pre>`;
+        } else {
+            // Diagnose why
+            const allMine = dk.data.filter(d => d.MaSV === user.MaNguoiDung);
+            html += `<div class="error" style="margin-top:8px">📌 Diagnosis:</div>`;
+            allMine.forEach(d => {
+                const l = lhp.data.find(x => x.MaLHP === d.MaLHP);
+                html += `<div style="padding:4px 0; color:#fbbf24">`;
+                html += `• ${d.MaDK}: isMine=✓, notCancelled=${d.TrangThai !== 'DaHuy'}, `;
+                html += `lhp found=${!!l}, `;
+                html += l ? `lhp.MaHK=${l.MaHK} vs filter=${openHK?.MaHK} → match=${l.MaHK === openHK?.MaHK}` : `<span class="error">LHP KHÔNG TÌM ĐƯỢC!</span>`;
+                html += `</div>`;
+            });
+        }
+    }
+    html += `</div>`;
+
+    // 7. isInitialized
+    html += `<div class="card">`;
+    html += `<div class="label">⚙️ isInitialized</div>`;
+    const init = localStorage.getItem('isInitialized');
+    html += `<div class="${init ? 'ok' : 'error'}">${init ? '✓ Database đã khởi tạo' : '✗ Chưa khởi tạo'}</div>`;
+    html += `</div>`;
+
+    out.innerHTML = html;
+}
+
+render();
+
+// Auto refresh mỗi 2 giây
+setInterval(render, 2000);
+</script>
+
+</body>
+</html>

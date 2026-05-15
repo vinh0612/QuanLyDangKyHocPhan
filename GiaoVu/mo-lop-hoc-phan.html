@@ -7,48 +7,140 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../Assets/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
 
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="section-title m-0">
-                <span class="material-symbols-outlined text-primary" style="font-size: 32px;">add_home</span>
-                Mở lớp học phần
-            </h2>
-            <button class="btn btn-primary d-flex align-items-center gap-2" onclick="openModal()">
-                <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
-                Thêm lớp học phần
-            </button>
-        </div>
+    <div id="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-brand text-start">
+                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
+                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal; -webkit-text-fill-color: var(--text-muted);">Hệ thống Đăng ký</div>
+            </div>
+            <ul class="nav-menu">
+                <li>
+                    <a href="dashboard.html">
+                        <span class="material-symbols-outlined menu-icon">dashboard</span>
+                        Tổng quan
+                    </a>
+                </li>
+                <li>
+                    <a href="mon-hoc.html">
+                        <span class="material-symbols-outlined menu-icon">book</span>
+                        Môn học
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="mo-lop-hoc-phan.html">
+                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
+                        Học kỳ & Mở lớp
+                    </a>
+                </li>
+                <li>
+                    <a href="xem-danh-sach-dk.html">
+                        <span class="material-symbols-outlined menu-icon">how_to_reg</span>
+                        Danh sách đăng ký học phần
+                    </a>
+                </li>
+                <li>
+                    <a href="giang-day-diem.html">
+                        <span class="material-symbols-outlined menu-icon">menu_book</span>
+                        Giảng dạy & Điểm
+                    </a>
+                </li>
+            </ul>
+            <div style="padding: 1rem;">
+                <ul class="nav-menu" style="padding: 0;">
+                    <li>
+                        <a href="ho-so.html">
+                            <span class="material-symbols-outlined menu-icon">account_circle</span>
+                            Hồ sơ Cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <span class="material-symbols-outlined menu-icon">settings</span>
+                            Cài đặt
+                        </a>
+                    </li>
+                    <li style="margin-top: 1rem;">
+                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
+                            <span class="material-symbols-outlined menu-icon">logout</span>
+                            Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
 
-        <div class="card border-0 mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Lọc theo Học kỳ</label>
-                    <select id="hkSelect" class="form-select" onchange="renderLHP()"></select>
+        <!-- Navbar -->
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" placeholder="Tra cứu sinh viên, lớp học...">
+            </div>
+            
+            <div class="nav-user">
+                <div class="top-links d-none d-md-flex">
+                    <a href="dashboard.html">Trang chủ</a>
+                    <a href="#">Thông báo</a>
+                    <a href="#">Hướng dẫn</a>
+                </div>
+                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">notifications</span></button>
+                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">help_outline</span></button>
+                <img src="https://ui-avatars.com/api/?name=Giao+Vu&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title m-0">
+                    <span class="material-symbols-outlined text-primary" style="font-size: 32px;">add_home</span>
+                    Mở lớp học phần
+                </h2>
+                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="openModal()">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+                    Thêm lớp học phần
+                </button>
+            </div>
+
+            <div class="card border-0 mb-4 p-3" style="border-radius: 16px;">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Lọc theo Học kỳ</label>
+                        <select id="hkSelect" class="form-select" onchange="renderLHP()"></select>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card border-0">
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Mã LHP</th>
-                            <th>Môn học</th>
-                            <th>Giáo viên</th>
-                            <th>Lịch học</th>
-                            <th>Phòng</th>
-                            <th class="text-center">Sĩ số</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lhpTableBody"></tbody>
-                </table>
+            <div class="card border-0 p-3" style="border-radius: 16px;">
+                <div class="table-responsive">
+                    <table class="table align-middle table-custom">
+                        <thead>
+                            <tr>
+                                <th>Mã LHP</th>
+                                <th>Tên môn học</th>
+                                <th>Giảng viên</th>
+                                <th>Lịch học</th>
+                                <th>Phòng</th>
+                                <th class="text-center">Sĩ số</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lhpTableBody"></tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info" id="paginationInfo"></div>
+                    <nav>
+                        <ul class="pagination" id="paginationList"></ul>
+                    </nav>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <!-- Modal Form -->
@@ -101,10 +193,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
-    <script src="../Assets/js/layout.js"></script>
     <script>
         Auth.checkAuth(['GiaoVu']);
         let lhpM;
+        let currentPage = 1;
+        const rowsPerPage = 5;
+
         function init() {
             lhpM = new bootstrap.Modal(document.getElementById('lhpModal'));
             const hk = JSON.parse(localStorage.getItem('HocKy') || '[]'), mh = JSON.parse(localStorage.getItem('MonHoc') || '[]'), gv = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
@@ -114,9 +208,22 @@
             document.getElementById('formMaGV').innerHTML = gv.map(g => `<option value="${g.MaGV}">${g.HoTen}</option>`).join('');
             renderLHP();
         }
-        function renderLHP() {
-            const hkid = document.getElementById('hkSelect').value, lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]'), mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]'), gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            document.getElementById('lhpTableBody').innerHTML = lhpD.filter(l => l.MaHK === hkid).map(l => `
+
+        function renderLHP(page = 1) {
+            currentPage = page;
+            const hkid = document.getElementById('hkSelect').value, 
+                  lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]'), 
+                  mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]'), 
+                  gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            
+            const filtered = lhpD.filter(l => l.MaHK === hkid);
+            const totalRows = filtered.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedItems = filtered.slice(start, end);
+
+            document.getElementById('lhpTableBody').innerHTML = paginatedItems.map(l => `
                 <tr>
                     <td><span class="fw-600">${l.MaLHP}</span></td>
                     <td>${(mhD.find(m => m.MaMH === l.MaMH) || {}).TenMH}</td>
@@ -129,8 +236,45 @@
                         <button class="btn btn-link btn-sm p-1" onclick="deleteLHP('${l.MaLHP}', ${l.SiSoHienTai})"><span class="material-symbols-outlined text-danger">delete</span></button>
                     </td>
                 </tr>
-            `).join('');
+            `).join('') || '<tr><td colspan="7" class="text-center py-4 text-muted">Không có lớp học nào</td></tr>';
+
+            renderPagination(totalRows, totalPages);
         }
+
+        function renderPagination(totalRows, totalPages) {
+            const paginationList = document.getElementById('paginationList');
+            const paginationInfo = document.getElementById('paginationInfo');
+            
+            if (totalRows === 0) {
+                paginationList.innerHTML = '';
+                paginationInfo.innerText = '';
+                return;
+            }
+
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = Math.min(currentPage * rowsPerPage, totalRows);
+            paginationInfo.innerText = `Hiển thị ${start}-${end} trong tổng số ${totalRows} lớp học`;
+
+            let html = '';
+            // Prev
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="renderLHP(${currentPage - 1})"><span class="material-symbols-outlined">chevron_left</span></a>
+            </li>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="renderLHP(${i})">${i}</a>
+                </li>`;
+            }
+
+            // Next
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="renderLHP(${currentPage + 1})"><span class="material-symbols-outlined">chevron_right</span></a>
+            </li>`;
+
+            paginationList.innerHTML = html;
+        }
+
         window.openModal = () => { document.getElementById('modalTitle').innerText = 'Mở lớp học mới'; document.getElementById('lhpForm').reset(); document.getElementById('editMaLHP').value = ''; lhpM.show(); };
         window.editLHP = (id) => {
             const l = JSON.parse(localStorage.getItem('LopHocPhan') || '[]').find(x => x.MaLHP === id);

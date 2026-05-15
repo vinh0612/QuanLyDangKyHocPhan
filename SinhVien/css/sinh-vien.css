@@ -1,0 +1,58 @@
+/* Specific styles for Student module */
+
+.reg-status-card {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.reg-status-card::after {
+    content: 'school';
+    font-family: 'Material Symbols Outlined';
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    font-size: 120px;
+    opacity: 0.1;
+}
+
+.course-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    background: #fff;
+    transition: all 0.2s;
+    height: 100%;
+}
+
+.course-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+}
+
+.grade-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.grade-a { background: #dcfce7; color: #15803d; }
+.grade-b { background: #e0f2fe; color: #0369a1; }
+.grade-c { background: #fef3c7; color: #b45309; }
+.grade-f { background: #fee2e2; color: #b91c1c; }
+
+.schedule-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}

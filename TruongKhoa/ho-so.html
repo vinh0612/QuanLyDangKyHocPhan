@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ Cá nhân - Trưởng khoa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="css/truong-khoa.css">
+</head>
+<body>
+    <div id="main-wrapper">
+        <aside class="sidebar" id="dynamicSidebar"></aside>
+
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined me-2 text-muted">search</span>
+                <input type="text" placeholder="Tìm kiếm hệ thống...">
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3 fw-bold" id="facultyName">Khoa: ...</span>
+                <img id="userAvatar" src="" class="avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+            </div>
+        </header>
+
+        <main class="main-content" style="padding-top: 100px; padding-left: 300px; padding-right: 2rem; background: #f8fafc; min-height: 100vh;">
+            <div class="profile-header animate__animated animate__fadeIn">
+                <div class="profile-avatar-lg" id="avatarLarge">TK</div>
+                <div>
+                    <h1 id="headerName" class="fw-bold mb-1">Họ và Tên</h1>
+                    <div class="d-flex gap-3">
+                        <span class="badge bg-white text-primary rounded-pill px-3 py-2" id="displayRole">Trưởng Khoa</span>
+                        <span class="badge bg-white text-primary rounded-pill px-3 py-2" id="headerID">GV000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 p-4 animate__animated animate__fadeInUp" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">edit_note</span>
+                    Thông tin cá nhân & Chức vụ
+                </h5>
+                
+                <form id="profileForm" class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Họ và tên</label>
+                        <input type="text" id="hoTen" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Mã số GV</label>
+                        <input type="text" id="maGV" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Đơn vị công tác</label>
+                        <input type="text" id="donVi" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Email công vụ</label>
+                        <input type="email" id="email" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Số điện thoại</label>
+                        <input type="text" id="sdt" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Môn học phụ trách chuyên môn</label>
+                        <textarea id="monDay" class="form-control" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="col-12 text-end mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow">
+                            <span class="material-symbols-outlined align-middle me-2">save</span> LƯU THAY ĐỔI
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['TruongKhoa']);
+        const user = Auth.getCurrentUser();
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const path = window.location.pathname;
+            const isPage = (p) => path.includes(p);
+
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start px-4 py-4">
+                    <div style="color: #818cf8; font-size: 1.5rem; font-weight: 800;">EduManage</div>
+                    <div style="font-size: 0.8rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Quản trị Cấp Khoa</div>
+                </div>
+                <ul class="nav-menu list-unstyled px-2">
+                    <li class="${isPage('dashboard.html') ? 'active' : ''}"><a href="dashboard.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">dashboard</span>Tổng quan</a></li>
+                    <li class="${isPage('quan-ly-mon-hoc.html') ? 'active' : ''}"><a href="quan-ly-mon-hoc.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">menu_book</span>Quản lý Môn học</a></li>
+                    <hr class="border-secondary opacity-25">
+                    <li class="${isPage('lich-day.html') ? 'active' : ''}"><a href="lich-day.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    <li class="${isPage('nhap-diem.html') ? 'active' : ''}"><a href="nhap-diem.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">edit_square</span>Quản lý Điểm</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <ul class="list-unstyled px-2">
+                        <li class="${isPage('ho-so.html') ? 'active' : ''}"><a href="ho-so.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li><a href="#" onclick="Auth.logout()" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-danger rounded-3"><span class="material-symbols-outlined">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function loadProfile() {
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const data = gvD.find(g => g.MaGV === user.MaNguoiDung);
+            
+            if (data) {
+                document.getElementById('hoTen').value = data.HoTen;
+                document.getElementById('maGV').value = data.MaGV;
+                document.getElementById('email').value = data.Email || '';
+                document.getElementById('sdt').value = data.SDT || '';
+                document.getElementById('monDay').value = data.MonDay || '';
+                
+                const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
+                const k = khoaD.find(k => k.MaKhoa === data.MaKhoa);
+                document.getElementById('donVi').value = k ? k.TenKhoa : '---';
+                document.getElementById('facultyName').innerText = k ? `Khoa: ${k.TenKhoa}` : 'Khoa: ...';
+
+                document.getElementById('headerName').innerText = data.HoTen;
+                document.getElementById('headerID').innerText = data.MaGV;
+                document.getElementById('avatarLarge').innerText = "TK";
+                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
+            }
+        }
+
+        document.getElementById('profileForm').onsubmit = (e) => {
+            e.preventDefault();
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const idx = gvD.findIndex(g => g.MaGV === user.MaNguoiDung);
+            if (idx !== -1) {
+                gvD[idx].Email = document.getElementById('email').value;
+                gvD[idx].SDT = document.getElementById('sdt').value;
+                gvD[idx].MonDay = document.getElementById('monDay').value;
+                localStorage.setItem('GiaoVien', JSON.stringify(gvD));
+                alert('Đã cập nhật hồ sơ thành công!');
+            }
+        };
+
+        renderSidebar();
+        loadProfile();
+    </script>
+</body>
+</html>

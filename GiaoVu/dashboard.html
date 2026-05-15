@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Giáo vụ - EduManage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+    <div id="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-brand text-start">
+                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
+                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal; -webkit-text-fill-color: var(--text-muted);">Hệ thống Đăng ký</div>
+            </div>
+            <ul class="nav-menu">
+                <li class="active">
+                    <a href="dashboard.html">
+                        <span class="material-symbols-outlined menu-icon">dashboard</span>
+                        Tổng quan
+                    </a>
+                </li>
+                <li>
+                    <a href="mon-hoc.html">
+                        <span class="material-symbols-outlined menu-icon">book</span>
+                        Môn học
+                    </a>
+                </li>
+                <li>
+                    <a href="mo-lop-hoc-phan.html">
+                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
+                        Học kỳ & Mở lớp
+                    </a>
+                </li>
+                <li>
+                    <a href="xem-danh-sach-dk.html">
+                        <span class="material-symbols-outlined menu-icon">how_to_reg</span>
+                        Danh sách đăng ký học phần
+                    </a>
+                </li>
+                <li>
+                    <a href="giang-day-diem.html">
+                        <span class="material-symbols-outlined menu-icon">menu_book</span>
+                        Giảng dạy & Điểm
+                    </a>
+                </li>
+            </ul>
+            <div style="padding: 1rem;">
+                <ul class="nav-menu" style="padding: 0;">
+                    <li>
+                        <a href="ho-so.html">
+                            <span class="material-symbols-outlined menu-icon">account_circle</span>
+                            Hồ sơ Cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <span class="material-symbols-outlined menu-icon">settings</span>
+                            Cài đặt
+                        </a>
+                    </li>
+                    <li style="margin-top: 1rem;">
+                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
+                            <span class="material-symbols-outlined menu-icon">logout</span>
+                            Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Navbar -->
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" placeholder="Tra cứu sinh viên, lớp học...">
+            </div>
+            
+            <div class="nav-user">
+                <div class="top-links d-none d-md-flex">
+                    <a href="#" class="active">Trang chủ</a>
+                    <a href="#">Thông báo</a>
+                    <a href="#">Hướng dẫn</a>
+                </div>
+                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">notifications</span></button>
+                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">help_outline</span></button>
+                <img src="https://ui-avatars.com/api/?name=Giao+Vu&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="fw-bold mb-1" style="font-size: 2rem;">Chào buổi sáng, Giáo vụ</h1>
+                    <p class="text-muted mb-0">Hôm nay có 4 nhiệm vụ cần xử lý gấp cho Học kỳ 1 - 2024.</p>
+                </div>
+                <a href="mo-lop-hoc-phan.html" class="btn btn-primary d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">add</span> Mở lớp học kỳ mới
+                </a>
+            </div>
+
+            <div class="row mb-4 g-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="title">MÔN HỌC ĐÃ NHẬP</div>
+                        <div class="value">124/150</div>
+                        <div class="stat-icon blue">
+                            <span class="material-symbols-outlined">devices</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="title">ĐĂNG KÝ MỚI</div>
+                        <div class="value text-success-custom">1,248</div>
+                        <div class="stat-icon green">
+                            <span class="material-symbols-outlined">person_add</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="title">TỈ LỆ LỚP ĐỦ</div>
+                        <div class="value">85%</div>
+                        <div class="stat-icon gray">
+                            <span class="material-symbols-outlined">group</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card p-0" style="border-radius: 16px; overflow: hidden;">
+                        <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0">Tiến độ Mở lớp Học kỳ 1</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" style="border-radius: 8px; width: 140px; background-color: #f8fafc; border: none; font-weight: 500;">
+                                    <option>Khoa CNTT</option>
+                                    <option>Khoa Kinh tế</option>
+                                </select>
+                                <button class="btn btn-light btn-sm" style="background: #f8fafc; border: none; border-radius: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">filter_list</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Mã môn</th>
+                                        <th>Tên môn học</th>
+                                        <th>Số lớp</th>
+                                        <th>Đăng ký</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-medium">COMP101</td>
+                                        <td><div class="fw-medium">Cấu trúc dữ liệu & Giải thuật</div></td>
+                                        <td>08/10</td>
+                                        <td>380/400</td>
+                                        <td><span class="badge-status badge-success">Đã mở đủ</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-medium">MATH202</td>
+                                        <td><div class="fw-medium">Xác suất thống kê</div></td>
+                                        <td>05/08</td>
+                                        <td>210/320</td>
+                                        <td><span class="badge-status badge-warning">Đang mở</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-medium">ENG110</td>
+                                        <td><div class="fw-medium">Tiếng Anh chuyên ngành 1</div></td>
+                                        <td>02/12</td>
+                                        <td>45/480</td>
+                                        <td><span class="badge-status badge-info">Mới khởi tạo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-medium">SOFT305</td>
+                                        <td><div class="fw-medium">Phát triển phần mềm linh hoạt</div></td>
+                                        <td>00/04</td>
+                                        <td>0/160</td>
+                                        <td><span class="badge-status badge-secondary">Chưa mở</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card mb-4" style="border-radius: 16px;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0">Việc cần làm</h5>
+                            <span class="badge bg-danger rounded-pill px-3" style="background-color: #fee2e2 !important; color: #ef4444 !important;">4 Gấp</span>
+                        </div>
+                        
+                        <ul class="task-list">
+                            <li class="task-item red">
+                                <div class="task-title">Phê duyệt danh sách thi</div>
+                                <p class="task-desc">Hết hạn: Hôm nay, 17:00</p>
+                            </li>
+                            <li class="task-item blue">
+                                <div class="task-title">Nhập liệu mã môn học mới</div>
+                                <p class="task-desc">Khoa Công nghệ Thông tin</p>
+                            </li>
+                            <li class="task-item teal">
+                                <div class="task-title">Mở lớp bổ sung: Giải tích 1</div>
+                                <p class="task-desc">Nhu cầu sinh viên: 45 em</p>
+                            </li>
+                        </ul>
+                        
+                        <div class="text-center mt-3">
+                            <a href="#" class="text-decoration-none fw-600" style="color: var(--accent); font-size: 0.9rem;">Xem tất cả tác vụ</a>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-radius: 16px;">
+                        <h5 class="fw-bold mb-4">Thống kê đào tạo</h5>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-medium" style="font-size: 0.9rem;">Phòng học đang sử dụng</span>
+                                <span class="fw-bold" style="color: var(--accent);">82%</span>
+                            </div>
+                            <div class="progress-bar-custom">
+                                <div class="progress-bar-fill progress-blue" style="width: 82%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-medium" style="font-size: 0.9rem;">Giảng viên đã phân lịch</span>
+                                <span class="fw-bold" style="color: #10b981;">95%</span>
+                            </div>
+                            <div class="progress-bar-custom">
+                                <div class="progress-bar-fill progress-green" style="width: 95%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <div class="fab">
+            <span class="material-symbols-outlined">bolt</span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        // Check role
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!Auth.isAuthenticated() || Auth.getCurrentUser().Role !== 'GiaoVu') {
+                alert('Bạn không có quyền truy cập trang này!');
+                window.location.href = '../Auth/login.html';
+            }
+        });
+    </script>
+</body>
+</html>

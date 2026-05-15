@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch dạy cá nhân - Trưởng khoa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="css/truong-khoa.css">
+</head>
+<body>
+    <div id="main-wrapper">
+        <aside class="sidebar" id="dynamicSidebar"></aside>
+
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined me-2 text-muted">search</span>
+                <input type="text" placeholder="Tìm lớp học..." id="searchInput" oninput="renderSchedule()">
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3 fw-bold" id="facultyName">Khoa: ...</span>
+                <img id="userAvatar" src="" class="avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+            </div>
+        </header>
+
+        <main class="main-content" style="padding-top: 100px; padding-left: 300px; padding-right: 2rem; background: #f8fafc; min-height: 100vh;">
+            <div class="animate__animated animate__fadeIn">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1">Lịch dạy cá nhân</h2>
+                        <p class="text-muted mb-0">Thời khóa biểu giảng dạy của riêng Trưởng khoa.</p>
+                    </div>
+                    <select class="form-select border-0 bg-white shadow-sm rounded-pill px-4" id="hkSelect" style="width: 250px;" onchange="renderSchedule()"></select>
+                </div>
+
+                <div class="row g-4" id="scheduleContainer">
+                    <!-- Dynamic cards -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['TruongKhoa']);
+        const user = Auth.getCurrentUser();
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const path = window.location.pathname;
+            const isPage = (p) => path.includes(p);
+
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start px-4 py-4">
+                    <div style="color: #818cf8; font-size: 1.5rem; font-weight: 800;">EduManage</div>
+                    <div style="font-size: 0.8rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Quản trị Cấp Khoa</div>
+                </div>
+                <ul class="nav-menu list-unstyled px-2">
+                    <li class="${isPage('dashboard.html') ? 'active' : ''}"><a href="dashboard.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">dashboard</span>Tổng quan</a></li>
+                    <li class="${isPage('quan-ly-mon-hoc.html') ? 'active' : ''}"><a href="quan-ly-mon-hoc.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">menu_book</span>Quản lý Môn học</a></li>
+                    <hr class="border-secondary opacity-25">
+                    <li class="${isPage('lich-day.html') ? 'active' : ''}"><a href="lich-day.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    <li class="${isPage('nhap-diem.html') ? 'active' : ''}"><a href="nhap-diem.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">edit_square</span>Quản lý Điểm</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <ul class="list-unstyled px-2">
+                        <li class="${isPage('ho-so.html') ? 'active' : ''}"><a href="ho-so.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li><a href="#" onclick="Auth.logout()" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-danger rounded-3"><span class="material-symbols-outlined">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        let currentPage = 1;
+        const rowsPerPage = 4;
+        let allFilteredSchedules = [];
+
+        function init() {
+            renderSidebar();
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
+            
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
+            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
+            const k = khoaD.find(k => k.MaKhoa === me.MaKhoa);
+            document.getElementById('facultyName').innerText = k ? `Khoa: ${k.TenKhoa}` : 'Khoa: ...';
+
+            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
+            document.getElementById('hkSelect').innerHTML = hkD.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const hkId = document.getElementById('hkSelect').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            
+            allFilteredSchedules = lhpD.filter(l => {
+                const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
+                const matchesSearch = mh.TenMH.toLowerCase().includes(search) || l.MaLHP.toLowerCase().includes(search);
+                return l.MaGV === user.MaNguoiDung && l.MaHK === hkId && matchesSearch;
+            });
+
+            currentPage = 1;
+            renderScheduleCards();
+        }
+
+        function renderScheduleCards() {
+            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            const totalRows = allFilteredSchedules.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const paginatedData = allFilteredSchedules.slice(startIdx, startIdx + rowsPerPage);
+
+            const container = document.getElementById('scheduleContainer');
+            
+            if (totalRows === 0) {
+                container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Không có lịch dạy trong học kỳ này.</div>';
+                renderPagination(0, 0);
+                return;
+            }
+
+            container.innerHTML = paginatedData.map(l => {
+                const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
+                return `
+                    <div class="col-md-6 animate__animated animate__fadeIn">
+                        <div class="schedule-card h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <div class="badge bg-primary bg-opacity-10 text-primary mb-2">${l.MaLHP}</div>
+                                    <h5 class="fw-bold mb-1">${mh.TenMH}</h5>
+                                    <div class="text-muted small">Thời gian: ${l.LichHoc || 'Chưa cập nhật'}</div>
+                                </div>
+                                <span class="material-symbols-outlined text-muted">more_vert</span>
+                            </div>
+                            <div class="d-flex gap-4 border-top pt-3 mt-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="material-symbols-outlined text-muted" style="font-size: 18px;">meeting_room</span>
+                                    <span class="small fw-600">${l.PhongHoc || '---'}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="material-symbols-outlined text-muted" style="font-size: 18px;">groups</span>
+                                    <span class="small fw-600">${l.SiSoToiDa} SV</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderPagination(totalRows, totalPages);
+        }
+
+        function renderPagination(totalRows, totalPages) {
+            let container = document.getElementById('paginationContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'paginationContainer';
+                container.className = 'col-12 mt-4';
+                document.getElementById('scheduleContainer').after(container);
+            }
+
+            if (totalRows === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = Math.min(currentPage * rowsPerPage, totalRows);
+
+            container.innerHTML = `
+                <div class="dean-card d-flex justify-content-between align-items-center py-3 px-4">
+                    <div class="pagination-info">
+                        Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> lớp học
+                    </div>
+                    <div class="pagination-nav">
+                        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
+                            <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                        `).join('')}
+                        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderScheduleCards();
+        }
+
+        init();
+    </script>
+</body>
+</html>

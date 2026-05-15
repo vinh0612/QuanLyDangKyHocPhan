@@ -1,0 +1,354 @@
+/* TruongBoMon/css/truong-bo-mon.css */
+
+.sidebar {
+    background: #1e293b !important;
+    color: white !important;
+    width: 280px;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-menu {
+    flex-grow: 1;
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+    padding-top: 100px !important;
+}
+
+.nav-menu li a {
+    color: rgba(255, 255, 255, 0.7) !important;
+    border-radius: 12px;
+    margin: 4px 15px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.nav-menu li.active a {
+    background: #3b82f6 !important; /* Xanh sáng giống GiangVien */
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.nav-menu li a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+
+/* Beautiful Form Inputs */
+.form-select, .form-control {
+    border: none !important;
+    background-color: #f1f5f9 !important;
+    border-radius: 15px !important;
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+}
+
+.form-select:focus, .form-control:focus {
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+    color: #1e293b !important;
+}
+
+/* Custom Card Header Inputs */
+.section-header select {
+    width: 250px;
+    cursor: pointer;
+}
+
+/* Grade Input specific styling */
+.grade-input {
+    width: 70px;
+    text-align: center;
+    border: 1px solid #e2e8f0 !important;
+    background-color: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 8px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    transition: all 0.2s;
+}
+
+.grade-input:focus {
+    border-color: #0D8ABC !important;
+    box-shadow: 0 0 0 3px rgba(13, 138, 188, 0.1) !important;
+    transform: scale(1.05);
+}
+
+.grade-input.tk-readonly {
+    background-color: #f1f5f9 !important;
+    border: none !important;
+    color: #0D8ABC !important;
+    width: 80px;
+}
+
+/* Unified Premium Styles for TruongBoMon */
+:root {
+    --tbm-primary: #0D8ABC;
+    --tbm-bg: #f8fafc;
+    --tbm-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.main-content {
+    background-color: var(--tbm-bg);
+    min-height: 100vh;
+    padding: 2rem;
+    flex: 1;
+}
+
+/* Standard Card */
+.tbm-card {
+    background: #ffffff;
+    border-radius: 24px;
+    border: none;
+    padding: 1.5rem;
+    box-shadow: var(--tbm-card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tbm-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Premium Buttons */
+.btn-tbm {
+    background-color: var(--tbm-primary);
+    color: white;
+    border-radius: 50px;
+    padding: 8px 24px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-tbm:hover {
+    background-color: #0a6f99;
+    color: white;
+    transform: scale(1.02);
+}
+
+.btn-tbm-outline {
+    border: 2px solid var(--tbm-primary);
+    color: var(--tbm-primary);
+    border-radius: 50px;
+    padding: 6px 20px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+/* Circle Avatars */
+.tbm-avatar-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Section Header Styles */
+.section-header h2 {
+    color: #1e293b;
+    font-size: 1.75rem;
+    letter-spacing: -0.02em;
+}
+
+/* Status Badges */
+.tbm-badge {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.tbm-badge-light {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* Table Style */
+.tbm-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+    border: none;
+}
+
+.tbm-table tbody td {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Top Navbar & Search Styles */
+.navbar {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: 280px !important; /* Sidebar width */
+    height: 70px !important;
+    background: #ffffff !important;
+    padding: 0 40px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    z-index: 1000 !important;
+}
+
+.search-container {
+    background: #f1f5f9;
+    border-radius: 50px;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    width: 450px;
+    transition: all 0.3s;
+}
+
+.search-container:focus-within {
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(13, 138, 188, 0.2);
+}
+
+.search-icon {
+    color: #94a3b8;
+    margin-right: 12px;
+}
+
+.search-bar {
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.9rem;
+    color: #1e293b;
+}
+
+.search-bar::placeholder {
+    color: #94a3b8;
+}
+
+.nav-user {
+    display: flex;
+    align-items: center;
+}
+
+.nav-user .avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Profile Page Specific Styles */
+.profile-header {
+    background: linear-gradient(135deg, #0D8ABC 0%, #1e40af 100%);
+    padding: 3rem 2rem;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.profile-avatar-lg {
+    width: 120px;
+    height: 120px;
+    background: white;
+    color: #0D8ABC;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 800;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 5px solid rgba(255,255,255,0.3);
+}
+
+#deptName {
+    color: #1e293b;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Pagination Styles */
+.pagination-container {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pagination-info {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.pagination-nav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.page-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.page-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

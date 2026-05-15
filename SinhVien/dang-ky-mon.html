@@ -3,166 +3,499 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký học phần - Hệ thống QL ĐKHP</title>
+    <title>Đăng ký Học phần - EduManage</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../Assets/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="../GiaoVu/css/dashboard.css">
+    <link rel="stylesheet" href="css/sinh-vien.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        .lhp-row { transition: background 0.2s; }
+        .lhp-row:hover { background: #f8fafc; }
+        .section-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .siso-full { color: #ef4444; font-weight: 700; }
+        .siso-ok   { color: #10b981; font-weight: 600; }
+    </style>
 </head>
 <body>
 
-    <div class="container-fluid">
-        <h2 class="section-title">
-            <span class="material-symbols-outlined text-primary" style="font-size: 32px;">edit_calendar</span>
-            Đăng ký học phần
-        </h2>
-        
-        <div class="card border-0 mb-5">
-            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined text-accent">campaign</span>
-                Lớp học phần đang mở
-            </h5>
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Mã LHP</th>
-                            <th>Môn học</th>
-                            <th>Giảng viên</th>
-                            <th>Lịch học</th>
-                            <th class="text-center">Sĩ số</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="availableCourses"></tbody>
-                </table>
+    <div id="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-brand text-start">
+                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
+                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Hệ thống Đăng ký</div>
             </div>
-        </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                <li class="active"><a href="dang-ky-mon.html"><span class="material-symbols-outlined menu-icon">app_registration</span>Đăng ký học phần</a></li>
+                <li><a href="ket-qua-dang-ky.html"><span class="material-symbols-outlined menu-icon">fact_check</span>Kết quả Đăng ký</a></li>
+                <li><a href="ket-qua-hoc-tap.html"><span class="material-symbols-outlined menu-icon">grade</span>Kết quả học tập</a></li>
+            </ul>
+            <div style="padding: 1rem; margin-top: auto;">
+                <ul class="nav-menu" style="padding: 0;">
+                    <li>
+                        <a href="ho-so.html">
+                            <span class="material-symbols-outlined menu-icon">account_circle</span>
+                            Hồ sơ Cá nhân
+                        </a>
+                    </li>
+                    <li style="margin-top: 0.5rem;">
+                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
+                            <span class="material-symbols-outlined menu-icon">logout</span>
+                            Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
 
-        <div class="card border-0">
-            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined text-success">task_alt</span>
-                Danh sách đã chọn
-            </h5>
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Tên môn học</th>
-                            <th>Giảng viên</th>
-                            <th>Lịch học</th>
-                            <th class="text-center">Trạng thái</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="registeredCourses"></tbody>
-                </table>
+        <!-- Navbar -->
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" id="searchInput" placeholder="Tìm tên môn, mã môn, giảng viên..." oninput="renderAvailable()">
             </div>
-        </div>
+            <div class="nav-user">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=SV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">
+                    <span class="material-symbols-outlined text-primary" style="font-size: 32px;">edit_calendar</span>
+                    Đăng ký Học phần
+                </h2>
+                <div class="d-flex gap-2">
+                    <select id="khoaFilter" class="form-select form-select-sm rounded-pill px-3" style="width: auto;" onchange="renderAvailable()">
+                        <option value="">Tất cả khoa</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
+                        onclick="window.location.href='ket-qua-dang-ky.html'">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">fact_check</span>
+                        Xem kết quả ĐK
+                    </button>
+                </div>
+            </div>
+
+            <!-- Available Courses -->
+            <div class="section-header animate__animated animate__fadeIn">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">campaign</span>
+                    <span class="fw-bold">Lớp học phần đang mở đăng ký</span>
+                    <span id="openCount" class="badge bg-white text-primary ms-auto">0 lớp</span>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm mb-4 animate__animated animate__fadeInUp" style="border-radius: 16px;">
+                <div class="table-responsive">
+                    <table class="table align-middle m-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Môn học</th>
+                                <th>Mã LHP</th>
+                                <th>Giảng viên</th>
+                                <th>Lịch học & Thời gian</th>
+                                <th>Phòng</th>
+                                <th class="text-center">Sĩ số</th>
+                                <th class="text-center pe-4">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="availableCourses"></tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="card-footer bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="small text-muted" id="paginationInfo">Hiển thị 0/0 môn học</div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0 shadow-sm rounded-pill" id="paginationList">
+                                <!-- Dynamic pagination -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registered Courses -->
+            <div class="section-header animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">task_alt</span>
+                    <span class="fw-bold">Học phần đã đăng ký</span>
+                    <span id="regCount" class="badge bg-white text-success ms-auto">0 môn</span>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm animate__animated animate__fadeInUp" style="border-radius: 16px;">
+                <div class="table-responsive">
+                    <table class="table align-middle m-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Môn học</th>
+                                <th>Mã LHP</th>
+                                <th>Giảng viên</th>
+                                <th>Lịch học</th>
+                                <th>Ngày ĐK</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-center pe-4">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registeredCourses"></tbody>
+                    </table>
+                </div>
+                <div id="emptyReg" class="text-center py-4 text-muted d-none">
+                    <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.3;">inbox</span>
+                    <p class="mt-2 mb-0">Chưa có môn học nào được đăng ký.</p>
+                </div>
+            </div>
+        </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
-    <script src="../Assets/js/layout.js"></script>
-    
     <script>
-        Auth.checkAuth(['SinhVien']);
-        const user = Auth.getCurrentUser();
+        // Robust user detection
+        const user = (() => {
+            const s = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+            if (s) {
+                const u = JSON.parse(s);
+                localStorage.setItem('currentUser', JSON.stringify(u));
+                return u;
+            }
+            return null;
+        })();
+        if (!user) window.location.href = '../Auth/login.html';
 
-        function renderData() {
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const gvData = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const hkData = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
-
-            const openSemesters = hkData.filter(hk => hk.DangMo === true).map(hk => hk.MaHK);
-            const myDKs = dkData.filter(dk => dk.MaSV === user.MaNguoiDung && dk.TrangThai !== 'DaHuy');
-            const myLHPIds = myDKs.map(dk => dk.MaLHP);
-
-            // Available
-            document.getElementById('availableCourses').innerHTML = lhpData
-                .filter(lhp => openSemesters.includes(lhp.MaHK))
-                .map(lhp => {
-                    const mon = mhData.find(m => m.MaMH === lhp.MaMH) || {};
-                    const gv = gvData.find(g => g.MaGV === lhp.MaGV) || {};
-                    const isRegistered = myLHPIds.includes(lhp.MaLHP);
-                    const alreadyHasThisCourse = myDKs.some(dk => {
-                        const existingLHP = lhpData.find(l => l.MaLHP === dk.MaLHP);
-                        return existingLHP && existingLHP.MaMH === lhp.MaMH;
-                    });
-                    const canReg = lhp.SiSoHienTai < lhp.SiSoToiDa && !alreadyHasThisCourse;
-                    
-                    return `
-                        <tr>
-                            <td><span class="fw-600">${lhp.MaLHP}</span></td>
-                            <td>${mon.TenMH}</td>
-                            <td>${gv.HoTen}</td>
-                            <td>${lhp.LichHoc}</td>
-                            <td class="text-center">
-                                <span class="badge ${lhp.SiSoHienTai >= lhp.SiSoToiDa ? 'bg-danger-subtle text-danger' : 'bg-info-subtle text-info'}">
-                                    ${lhp.SiSoHienTai}/${lhp.SiSoToiDa}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-sm ${isRegistered ? 'btn-success' : (canReg ? 'btn-primary' : 'btn-secondary')}" 
-                                    onclick="registerCourse('${lhp.MaLHP}')" ${!canReg || isRegistered ? 'disabled' : ''}>
-                                    ${isRegistered ? 'Đã đăng ký' : 'Đăng ký'}
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-            // Registered
-            document.getElementById('registeredCourses').innerHTML = dkData
-                .filter(dk => dk.MaSV === user.MaNguoiDung)
-                .map(dk => {
-                    const lhp = lhpData.find(l => l.MaLHP === dk.MaLHP) || {};
-                    const mon = mhData.find(m => m.MaMH === lhp.MaMH) || {};
-                    const gv = gvData.find(g => g.MaGV === lhp.MaGV) || {};
-                    const statusClass = dk.TrangThai === 'DaDangKy' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger';
-
-                    return `
-                        <tr>
-                            <td>${mon.TenMH}</td>
-                            <td>${gv.HoTen}</td>
-                            <td>${lhp.LichHoc}</td>
-                            <td class="text-center"><span class="badge ${statusClass}">${dk.TrangThai}</span></td>
-                            <td class="text-center">
-                                ${dk.TrangThai === 'DaDangKy' ? `<button class="btn btn-outline-danger btn-sm" onclick="cancelRegistration('${dk.MaDK}')">Hủy</button>` : '-'}
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+        function resetData() {
+            if (!confirm('Xóa dữ liệu học vụ và khởi động lại?')) return;
+            const cu = localStorage.getItem('currentUser');
+            ['DangKyHoc','LopHocPhan','MonHoc','HocKy','SinhVien','GiaoVien','GiaoVu','BoMon','Khoa','BangDiem','GiaoVienDayMon','Users','isInitialized']
+                .forEach(k => localStorage.removeItem(k));
+            if (cu) localStorage.setItem('currentUser', cu);
+            location.reload();
         }
 
-        window.registerCourse = (maLHP) => {
-            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            dkData.push({ MaDK: 'DK' + Date.now(), MaSV: user.MaNguoiDung, MaLHP: maLHP, NgayDK: new Date().toISOString().split('T')[0], TrangThai: 'DaDangKy' });
-            const lhpIdx = lhpData.findIndex(l => l.MaLHP === maLHP);
-            if (lhpIdx !== -1) lhpData[lhpIdx].SiSoHienTai++;
-            localStorage.setItem('DangKyHoc', JSON.stringify(dkData));
-            localStorage.setItem('LopHocPhan', JSON.stringify(lhpData));
-            renderData();
-        };
+        let currentPage = 1;
+        const pageSize = 5; // So mon hoc moi trang
 
-        window.cancelRegistration = (maDK) => {
-            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const dkIdx = dkData.findIndex(d => d.MaDK === maDK);
-            if (dkIdx !== -1) {
-                const maLHP = dkData[dkIdx].MaLHP;
-                dkData[dkIdx].TrangThai = 'DaHuy';
-                const lhpIdx = lhpData.findIndex(l => l.MaLHP === maLHP);
-                if (lhpIdx !== -1) lhpData[lhpIdx].SiSoHienTai--;
+        function init() {
+            // Kiểm tra xem dữ liệu đã có thông tin ngày tháng chưa, nếu chưa thì ép nạp lại
+            const checkLHPs = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const needUpdate = checkLHPs.length > 0 && !checkLHPs[0].NgayBatDau;
+            
+            if (!localStorage.getItem('isInitialized') || needUpdate) {
+                localStorage.removeItem('isInitialized');
+                MockDB.init();
             }
-            localStorage.setItem('DangKyHoc', JSON.stringify(dkData));
-            localStorage.setItem('LopHocPhan', JSON.stringify(lhpData));
-            renderData();
+
+            document.getElementById('userAvatar').src =
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
+
+            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
+            document.getElementById('khoaFilter').innerHTML +=
+                khoaD.map(k => `<option value="${k.MaKhoa}">${k.TenKhoa}</option>`).join('');
+
+            renderAvailable();
+            renderRegistered();
+        }
+
+        function renderAvailable() {
+            const search = (document.getElementById('searchInput').value || '').toLowerCase();
+            const khoaId = document.getElementById('khoaFilter').value;
+
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhD  = JSON.parse(localStorage.getItem('MonHoc')     || '[]');
+            const gvD  = JSON.parse(localStorage.getItem('GiaoVien')   || '[]');
+            const hkD  = JSON.parse(localStorage.getItem('HocKy')      || '[]');
+            const dkD  = JSON.parse(localStorage.getItem('DangKyHoc')  || '[]');
+
+            const openHKs = hkD.filter(h => h.DangMo).map(h => h.MaHK);
+            const myActiveDK = dkD.filter(dk => dk.MaSV === user.MaNguoiDung && dk.TrangThai !== 'DaHuy');
+
+            // Fallback: Nếu không có học kỳ nào đang mở, hiện tất cả lớp học để tránh lỗi không thấy dữ liệu
+            const availableLHPs = lhpD.filter(lhp => openHKs.length === 0 || openHKs.includes(lhp.MaHK));
+            const allSubjects = [];
+            
+            mhD.forEach(mh => {
+                if (khoaId && mh.MaKhoa !== khoaId) return;
+                const classes = availableLHPs.filter(l => l.MaMH === mh.MaMH);
+                if (classes.length === 0) return;
+                
+                if (search) {
+                    const matchesSearch = `${mh.TenMH} ${mh.MaMH}`.toLowerCase().includes(search) || 
+                                         classes.some(l => {
+                                             const gv = gvD.find(g => g.MaGV === l.MaGV) || {};
+                                             return `${l.MaLHP} ${gv.HoTen}`.toLowerCase().includes(search);
+                                         });
+                    if (!matchesSearch) return;
+                }
+                allSubjects.push({ ...mh, classes });
+            });
+
+            document.getElementById('openCount').innerText = `${availableLHPs.length} lớp`;
+
+            // Pagination Logic
+            const totalSubjects = allSubjects.length;
+            const totalPages = Math.ceil(totalSubjects / pageSize);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+
+            const startIdx = (currentPage - 1) * pageSize;
+            const paginatedSubjects = allSubjects.slice(startIdx, startIdx + pageSize);
+
+            renderPagination(totalPages, totalSubjects, startIdx);
+
+            if (paginatedSubjects.length === 0) {
+                document.getElementById('availableCourses').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Không có lớp học phần nào phù hợp.</td></tr>';
+                return;
+            }
+
+            document.getElementById('availableCourses').innerHTML = paginatedSubjects.map(sb => {
+                return sb.classes.map((lhp, index) => {
+                    const gv = gvD.find(g => g.MaGV === lhp.MaGV) || { HoTen: '---' };
+                    const isRegistered = myActiveDK.some(dk => dk.MaLHP === lhp.MaLHP);
+                    const hasCourse = myActiveDK.some(dk => {
+                        const l = lhpD.find(x => x.MaLHP === dk.MaLHP);
+                        return l && l.MaMH === sb.MaMH;
+                    });
+                    const isFull = lhp.SiSoHienTai >= lhp.SiSoToiDa;
+
+                    return `
+                    <tr class="lhp-row" style="${index === 0 ? 'border-top: 3px solid #f1f5f9; background-color: #f8fafc;' : ''}">
+                        <td class="ps-4">
+                            ${index === 0 ? `
+                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">${sb.TenMH}</div>
+                                <div class="small text-muted">${sb.MaMH} • ${sb.SoTinChi} TC</div>
+                            ` : ''}
+                        </td>
+                        <td><span class="fw-bold text-primary">${lhp.MaLHP}</span> ${isRegistered ? '<span class="material-symbols-outlined text-success" style="font-size: 16px; vertical-align: middle;">check_circle</span>' : ''}</td>
+                        <td class="small">${gv.HoTen}</td>
+                        <td class="small" style="font-size: 0.8rem;">
+                            <div class="fw-bold text-dark">${lhp.LichHoc}</div>
+                            <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                                <span class="material-symbols-outlined" style="font-size: 12px; vertical-align: middle;">calendar_month</span>
+                                ${lhp.NgayBatDau ? new Date(lhp.NgayBatDau).toLocaleDateString('vi-VN') : '---'} - ${lhp.NgayKetThuc ? new Date(lhp.NgayKetThuc).toLocaleDateString('vi-VN') : '---'}
+                            </div>
+                        </td>
+                        <td class="small">${lhp.PhongHoc}</td>
+                        <td class="text-center">
+                            <span class="${isFull ? 'siso-full' : 'siso-ok'}">${lhp.SiSoHienTai}/${lhp.SiSoToiDa}</span>
+                        </td>
+                        <td class="text-center pe-4">
+                            ${isRegistered
+                                ? '<span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm">Đã đăng ký</span>'
+                                : hasCourse
+                                    ? `<button class="btn btn-outline-warning btn-sm rounded-pill px-3 shadow-sm" onclick="switchCourse('${lhp.MaLHP}')">Chuyển ca</button>`
+                                    : isFull
+                                        ? '<span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill">Lớp đầy</span>'
+                                        : `<button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" onclick="registerCourse('${lhp.MaLHP}')">Chọn lớp</button>`
+                            }
+                        </td>
+                    </tr>`;
+                }).join('');
+            }).join('');
+        }
+
+        function renderPagination(totalPages, totalSubjects, startIdx) {
+            const info = document.getElementById('paginationInfo');
+            const list = document.getElementById('paginationList');
+            
+            const endIdx = Math.min(startIdx + pageSize, totalSubjects);
+            info.innerText = `Hiển thị ${totalSubjects > 0 ? startIdx + 1 : 0} - ${endIdx} / ${totalSubjects} môn học`;
+
+            let html = `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Trước</a>
+                </li>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `
+                    <li class="page-item ${currentPage === i ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+
+            html += `
+                <li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Sau</a>
+                </li>
+            `;
+
+            list.innerHTML = html;
+        }
+
+        window.changePage = (p) => {
+            currentPage = p;
+            renderAvailable();
         };
 
-        renderData();
+
+        function renderRegistered() {
+            const dkD  = JSON.parse(localStorage.getItem('DangKyHoc')  || '[]');
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhD  = JSON.parse(localStorage.getItem('MonHoc')     || '[]');
+            const gvD  = JSON.parse(localStorage.getItem('GiaoVien')   || '[]');
+
+            const myDK = dkD.filter(dk => dk.MaSV === user.MaNguoiDung && dk.TrangThai !== 'DaHuy');
+
+            document.getElementById('regCount').innerText = `${myDK.length} môn`;
+            document.getElementById('emptyReg').classList.toggle('d-none', myDK.length > 0);
+
+            document.getElementById('registeredCourses').innerHTML = myDK.map(dk => {
+                const lhp = lhpD.find(l => l.MaLHP === dk.MaLHP) || {};
+                const mh  = mhD.find(m => m.MaMH === lhp.MaMH)   || { TenMH: '---', SoTinChi: 0 };
+                const gv  = gvD.find(g => g.MaGV === lhp.MaGV)   || { HoTen: '---' };
+                const date = dk.NgayDangKy || dk.NgayDK || '';
+                const dateStr = date ? new Date(date).toLocaleDateString('vi-VN') : '---';
+
+                return `
+                <tr class="lhp-row">
+                    <td class="ps-4">
+                        <div class="fw-bold">${mh.TenMH}</div>
+                        <div class="small text-muted">${mh.SoTinChi} tín chỉ</div>
+                    </td>
+                    <td><span class="fw-bold text-primary">${dk.MaLHP}</span></td>
+                    <td class="small">${gv.HoTen}</td>
+                    <td class="small">
+                        <div class="fw-bold text-dark">${lhp.LichHoc || '---'}</div>
+                        <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                            ${lhp.NgayBatDau ? new Date(lhp.NgayBatDau).toLocaleDateString('vi-VN') : '---'} - ${lhp.NgayKetThuc ? new Date(lhp.NgayKetThuc).toLocaleDateString('vi-VN') : '---'}
+                        </div>
+                    </td>
+                    <td class="small">${dateStr}</td>
+                    <td class="text-center">
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Thành công</span>
+                    </td>
+                    <td class="text-center pe-4">
+                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="cancelCourse('${dk.MaDK}')">Hủy</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        window.switchCourse = (newMaLHP) => {
+            if (!confirm('Bạn có chắc chắn muốn chuyển sang ca học này không? (Ca cũ sẽ bị hủy tự động)')) return;
+
+            const dkD  = JSON.parse(localStorage.getItem('DangKyHoc')  || '[]');
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+
+            // 1. Tìm thông tin lớp mới
+            const newLHP = lhpD.find(l => l.MaLHP === newMaLHP);
+            if (!newLHP || newLHP.SiSoHienTai >= newLHP.SiSoToiDa) {
+                alert('Lớp mới đã đầy hoặc không tồn tại!');
+                return;
+            }
+
+            // 2. Tìm và hủy ca cũ của cùng môn
+            let foundOld = false;
+            dkD.forEach(dk => {
+                if (dk.MaSV === user.MaNguoiDung && dk.TrangThai !== 'DaHuy') {
+                    const l = lhpD.find(x => x.MaLHP === dk.MaLHP);
+                    if (l && l.MaMH === newLHP.MaMH) {
+                        // Hủy ca cũ
+                        dk.TrangThai = 'DaHuy';
+                        const oldLhpIdx = lhpD.findIndex(x => x.MaLHP === l.MaLHP);
+                        if (oldLhpIdx !== -1) lhpD[oldLhpIdx].SiSoHienTai = Math.max(0, lhpD[oldLhpIdx].SiSoHienTai - 1);
+                        foundOld = true;
+                    }
+                }
+            });
+
+            // 3. Đăng ký ca mới
+            dkD.push({
+                MaDK: 'DK' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                MaSV: user.MaNguoiDung,
+                MaLHP: newMaLHP,
+                NgayDangKy: new Date().toISOString(),
+                TrangThai: 'DaDangKy'
+            });
+            
+            const newLhpIdx = lhpD.findIndex(l => l.MaLHP === newMaLHP);
+            if (newLhpIdx !== -1) lhpD[newLhpIdx].SiSoHienTai++;
+
+            localStorage.setItem('DangKyHoc',  JSON.stringify(dkD));
+            localStorage.setItem('LopHocPhan', JSON.stringify(lhpD));
+
+            renderAvailable();
+            renderRegistered();
+            alert('Chuyển ca thành công!');
+        };
+
+        window.registerCourse = (maLHP) => {
+            if (!confirm('Xác nhận đăng ký lớp học phần này?')) return;
+
+            const dkD  = JSON.parse(localStorage.getItem('DangKyHoc')  || '[]');
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+
+            // 1. Kiểm tra trùng mã lớp
+            if (dkD.some(dk => dk.MaSV === user.MaNguoiDung && dk.MaLHP === maLHP && dk.TrangThai !== 'DaHuy')) {
+                alert('Bạn đã đăng ký lớp học phần này rồi!');
+                return;
+            }
+
+            // 2. Kiểm tra xem đã đăng ký ca khác của CÙNG MÔN chưa
+            const thisLHP = lhpD.find(l => l.MaLHP === maLHP);
+            const hasSameSubject = dkD.some(dk => {
+                if (dk.MaSV !== user.MaNguoiDung || dk.TrangThai === 'DaHuy') return false;
+                const l = lhpD.find(x => x.MaLHP === dk.MaLHP);
+                return l && l.MaMH === thisLHP.MaMH;
+            });
+
+            if (hasSameSubject) {
+                alert('Bạn đã đăng ký một ca học khác cho môn học này rồi. Mỗi môn chỉ được đăng ký 1 ca!');
+                return;
+            }
+
+            dkD.push({
+                MaDK: 'DK' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                MaSV: user.MaNguoiDung,
+                MaLHP: maLHP,
+                NgayDangKy: new Date().toISOString(),
+                TrangThai: 'DaDangKy'
+            });
+
+            const lhpIdx = lhpD.findIndex(l => l.MaLHP === maLHP);
+            if (lhpIdx !== -1) lhpD[lhpIdx].SiSoHienTai++;
+
+            localStorage.setItem('DangKyHoc',  JSON.stringify(dkD));
+            localStorage.setItem('LopHocPhan', JSON.stringify(lhpD));
+
+            renderAvailable();
+            renderRegistered();
+
+            if (confirm('Đăng ký thành công! Bạn có muốn xem Kết quả đăng ký ngay không?')) {
+                window.location.href = 'ket-qua-dang-ky.html';
+            }
+        };
+
+        window.cancelCourse = (maDK) => {
+            if (!confirm('Bạn có chắc chắn muốn hủy đăng ký học phần này?')) return;
+
+            const dkD  = JSON.parse(localStorage.getItem('DangKyHoc')  || '[]');
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+
+            const idx = dkD.findIndex(d => d.MaDK === maDK);
+            if (idx !== -1) {
+                const maLHP = dkD[idx].MaLHP;
+                dkD[idx].TrangThai = 'DaHuy';
+                const lhpIdx = lhpD.findIndex(l => l.MaLHP === maLHP);
+                if (lhpIdx !== -1) lhpD[lhpIdx].SiSoHienTai = Math.max(0, lhpD[lhpIdx].SiSoHienTai - 1);
+                localStorage.setItem('DangKyHoc',  JSON.stringify(dkD));
+                localStorage.setItem('LopHocPhan', JSON.stringify(lhpD));
+                renderAvailable();
+                renderRegistered();
+            }
+        };
+
+        init();
     </script>
 </body>
 </html>

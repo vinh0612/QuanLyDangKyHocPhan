@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Giảng viên - EduManage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="../GiaoVu/css/dashboard.css">
+    <link rel="stylesheet" href="css/giang-vien.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</head>
+<body>
+
+    <div id="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-brand text-start">
+                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
+                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Hệ thống Đăng ký</div>
+            </div>
+            <ul class="nav-menu">
+                <li class="active">
+                    <a href="dashboard.html">
+                        <span class="material-symbols-outlined menu-icon">dashboard</span>
+                        Tổng quan
+                    </a>
+                </li>
+                <li>
+                    <a href="lich-day.html">
+                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
+                        Lịch dạy
+                    </a>
+                </li>
+                <li>
+                    <a href="nhap-diem.html">
+                        <span class="material-symbols-outlined menu-icon">edit_square</span>
+                        Quản lý Điểm
+                    </a>
+                </li>
+                <li>
+                    <a href="mon-hoc.html">
+                        <span class="material-symbols-outlined menu-icon">book</span>
+                        Danh mục Môn
+                    </a>
+                </li>
+            </ul>
+            <div style="padding: 1rem;">
+                <ul class="nav-menu" style="padding: 0;">
+                    <li>
+                        <a href="ho-so.html">
+                            <span class="material-symbols-outlined menu-icon">account_circle</span>
+                            Hồ sơ Cá nhân
+                        </a>
+                    </li>
+                    <li style="margin-top: 1rem;">
+                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
+                            <span class="material-symbols-outlined menu-icon">logout</span>
+                            Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" placeholder="Tìm tài liệu, sinh viên...">
+            </div>
+            
+            <div class="nav-user">
+                <div class="top-links d-none d-md-flex me-3">
+                    <a href="dashboard.html" class="text-decoration-none text-main me-3">Trang chủ</a>
+                    <a href="#" onclick="alert('Thông báo đang được cập nhật...')" class="text-decoration-none text-main">Thông báo</a>
+                </div>
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="fw-bold mb-1" style="font-size: 2rem;" id="welcomeText">Chào buổi sáng, GV!</h1>
+                    <p class="text-muted mb-0" id="todayTaskDesc">Hôm nay bạn có 2 tiết giảng dạy và 1 cuộc họp bộ môn.</p>
+                </div>
+                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="addNote()">
+                    <span class="material-symbols-outlined">add_task</span> Ghi chú giảng dạy
+                </button>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column -->
+                <div class="col-lg-8">
+                    <!-- Today's Schedule -->
+                    <div class="today-card animate__animated animate__fadeIn">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-accent">schedule</span>
+                                Lịch dạy hôm nay
+                            </h5>
+                            <span class="text-muted" id="currentDate">Thứ Ba, 24 Tháng 10</span>
+                        </div>
+                        <div id="todayScheduleList">
+                            <!-- Dynamic Content -->
+                        </div>
+                    </div>
+
+                    <!-- Assigned Classes -->
+                    <div class="card border-0 p-4 animate__animated animate__fadeInUp" style="border-radius: 20px;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0">Lớp học phụ trách</h5>
+                            <select class="form-select form-select-sm w-auto border-0 bg-light fw-600" style="border-radius: 8px;" id="hkFilter">
+                                <!-- Dynamic Content -->
+                            </select>
+                        </div>
+                        <div id="myClassesList">
+                            <!-- Dynamic Content -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-4">
+                    <!-- Quick Actions -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <a href="nhap-diem.html" class="card h-100 border-0 text-center p-3 text-decoration-none animate__animated animate__zoomIn" style="background: #0d6efd; color: #fff; border-radius: 20px;">
+                                <span class="material-symbols-outlined mb-2" style="font-size: 32px;">edit_note</span>
+                                <div class="fw-bold">Quản lý Điểm</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="mon-hoc.html" class="card h-100 border-0 text-center p-3 text-decoration-none animate__animated animate__zoomIn animate__delay-1s" style="background: #198754; color: #fff; border-radius: 20px;">
+                                <span class="material-symbols-outlined mb-2" style="font-size: 32px;">list_alt</span>
+                                <div class="fw-bold">Danh mục Môn</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="card border-0 p-4 mb-4 animate__animated animate__fadeInRight" style="border-radius: 20px;">
+                        <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-warning">campaign</span>
+                            Thông báo Khoa
+                        </h5>
+                        <div class="task-list">
+                            <div class="task-item red">
+                                <div class="task-title">Họp Hội đồng khoa xét duyệt...</div>
+                                <p class="task-desc">Hôm nay - 08:45</p>
+                            </div>
+                            <div class="task-item blue">
+                                <div class="task-title">Thông báo nộp bảng điểm HK1</div>
+                                <p class="task-desc">Hôm qua - 14:20</p>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="#" class="text-accent fw-600 text-decoration-none">Xem tất cả thông báo</a>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="card border-0 p-4 animate__animated animate__fadeInRight animate__delay-1s" style="border-radius: 20px;">
+                        <h5 class="fw-bold mb-4">Chỉ số giảng dạy</h5>
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="text-center">
+                                <div class="text-muted small mb-1">TỶ LỆ CHUYÊN CẦN</div>
+                                <div class="h4 fw-bold text-primary">92%</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-muted small mb-1">ĐIỂM ĐÃ CHẤM</div>
+                                <div class="h4 fw-bold text-success">128/145</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div class="text-center">
+                                <div class="text-muted small mb-1">ĐÁNH GIÁ GV</div>
+                                <div class="h4 fw-bold text-warning">4.8/5</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-muted small mb-1">GIỜ DẠY CÒN LẠI</div>
+                                <div class="h4 fw-bold text-info">42h</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teaching Notes History -->
+                    <div class="card border-0 p-4 mt-4 animate__animated animate__fadeInRight animate__delay-2s" style="border-radius: 20px;">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-info">sticky_note_2</span>
+                            Ghi chú gần đây
+                        </h5>
+                        <div id="noteHistory">
+                            <!-- Dynamic Content -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['GiangVien']);
+        const user = Auth.getCurrentUser();
+
+        function init() {
+            document.getElementById('welcomeText').innerText = `Chào buổi sáng, ${user.HoTen}!`;
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
+            
+            // Set date
+            const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+            const now = new Date();
+            document.getElementById('currentDate').innerText = `${days[now.getDay()]}, ${now.getDate()} Tháng ${now.getMonth() + 1}`;
+
+            // Load HKs
+            const hks = JSON.parse(localStorage.getItem('HocKy') || '[]');
+            document.getElementById('hkFilter').innerHTML = hks.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
+            
+            document.getElementById('hkFilter').onchange = renderMyClasses;
+            
+            renderTodaySchedule();
+            renderMyClasses();
+        }
+
+        function renderTodaySchedule() {
+            const hks = JSON.parse(localStorage.getItem('HocKy') || '[]');
+            const currentHK = hks.find(h => h.DangMo);
+            if (!currentHK) return;
+
+            const lhps = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhs = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            
+            // For demo, we just pick some classes that the teacher teaches in current HK
+            const mySchedule = lhps.filter(l => l.MaGV === user.MaNguoiDung && l.MaHK === currentHK.MaHK);
+            
+            if (mySchedule.length === 0) {
+                document.getElementById('todayScheduleList').innerHTML = '<p class="text-muted italic">Không có tiết dạy trong hôm nay.</p>';
+                return;
+            }
+
+            document.getElementById('todayScheduleList').innerHTML = mySchedule.map(s => {
+                const mon = mhs.find(m => m.MaMH === s.MaMH) || {};
+                return `
+                    <div class="schedule-item animate__animated animate__fadeInLeft">
+                        <div>
+                            <div class="small fw-600 text-muted mb-1">${s.LichHoc}</div>
+                            <div class="fw-bold h5 mb-1">${mon.TenMH} (${s.MaLHP})</div>
+                            <div class="small text-muted d-flex align-items-center gap-3">
+                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px">location_on</span> ${s.PhongHoc}</span>
+                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px">groups</span> ${s.SiSoHienTai} sinh viên</span>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="window.location.href='diem-danh.html?malhp=${s.MaLHP}'">Điểm danh</button>
+                            <button class="btn btn-light btn-sm rounded-pill px-3" onclick="window.location.href='tai-lieu.html?mamh=${s.MaMH}'">Tài liệu</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMyClasses() {
+            const hkId = document.getElementById('hkFilter').value;
+            const lhps = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhs = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            
+            const myClasses = lhps.filter(l => l.MaGV === user.MaNguoiDung && l.MaHK === hkId);
+            
+            if (myClasses.length === 0) {
+                document.getElementById('myClassesList').innerHTML = '<div class="text-center py-5"><p class="text-muted">Không có lớp học nào trong học kỳ này.</p></div>';
+                return;
+            }
+
+            const colors = ['#e0f2fe', '#dcfce7', '#fef3c7', '#f3e8ff', '#fee2e2'];
+            const textColors = ['#0369a1', '#15803d', '#b45309', '#7e22ce', '#b91c1c'];
+
+            document.getElementById('myClassesList').innerHTML = myClasses.map((l, i) => {
+                const mon = mhs.find(m => m.MaMH === l.MaMH) || {};
+                const colorIdx = i % colors.length;
+                return `
+                    <div class="class-item" onclick="window.location.href='nhap-diem.html?malhp=${l.MaLHP}'" style="cursor: pointer;">
+                        <div class="class-icon" style="background: ${colors[colorIdx]}; color: ${textColors[colorIdx]};">
+                            ${mon.TenMH.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-main">${mon.TenMH}</div>
+                            <div class="small text-muted">${l.MaLHP} • ${l.SiSoHienTai} SV</div>
+                        </div>
+                        <span class="material-symbols-outlined text-muted">chevron_right</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.addNote = () => {
+            const note = prompt('Nhập ghi chú giảng dạy cho hôm nay:');
+            if (note) {
+                const notes = JSON.parse(localStorage.getItem('GhiChuGiangVien') || '[]');
+                notes.unshift({
+                    id: Date.now(),
+                    maGV: user.MaNguoiDung,
+                    content: note,
+                    date: new Date().toLocaleString('vi-VN')
+                });
+                localStorage.setItem('GhiChuGiangVien', JSON.stringify(notes.slice(0, 5))); // Keep last 5
+                renderNotes();
+                alert('Hệ thống đã ghi nhận ghi chú!');
+            }
+        };
+
+        function renderNotes() {
+            const notes = JSON.parse(localStorage.getItem('GhiChuGiangVien') || '[]');
+            const myNotes = notes.filter(n => n.maGV === user.MaNguoiDung);
+            const container = document.getElementById('noteHistory');
+            
+            if (myNotes.length === 0) {
+                container.innerHTML = '<p class="text-muted small italic">Chưa có ghi chú nào.</p>';
+                return;
+            }
+
+            container.innerHTML = myNotes.map(n => `
+                <div class="mb-3 p-2 bg-light rounded shadow-sm border-start border-primary border-4 animate__animated animate__fadeIn">
+                    <div class="fw-bold small">${n.content}</div>
+                    <div class="text-muted" style="font-size: 10px;">${n.date}</div>
+                </div>
+            `).join('');
+        }
+
+        init();
+        renderNotes();
+    </script>
+</body>
+</html>

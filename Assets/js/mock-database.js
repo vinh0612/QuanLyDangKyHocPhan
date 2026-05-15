@@ -78,24 +78,31 @@ const MockDB = {
 
         // 8. Lop Hoc Phan (6 lop trong HK dang mo HK232)
         const lopHocPhan = [
-            { MaLHP: 'LHP01', MaMH: 'CS101', MaGV: 'GV001', MaHK: 'HK232', SiSoToiDa: 50, SiSoHienTai: 10, LichHoc: 'Thứ 2 (7-11)', PhongHoc: 'A.101' },
-            { MaLHP: 'LHP02', MaMH: 'CS102', MaGV: 'GV002', MaHK: 'HK232', SiSoToiDa: 40, SiSoHienTai: 5, LichHoc: 'Thứ 4 (7-11)', PhongHoc: 'B.202' },
-            { MaLHP: 'LHP03', MaMH: 'EC101', MaGV: 'GV004', MaHK: 'HK232', SiSoToiDa: 60, SiSoHienTai: 12, LichHoc: 'Thứ 3 (13-17)', PhongHoc: 'C.303' },
-            { MaLHP: 'LHP04', MaMH: 'CS101', MaGV: 'GV003', MaHK: 'HK232', SiSoToiDa: 50, SiSoHienTai: 8, LichHoc: 'Thứ 6 (7-11)', PhongHoc: 'A.102' },
-            { MaLHP: 'LHP05', MaMH: 'EC102', MaGV: 'GV006', MaHK: 'HK232', SiSoToiDa: 45, SiSoHienTai: 7, LichHoc: 'Thứ 5 (13-17)', PhongHoc: 'D.404' },
-            { MaLHP: 'LHP06', MaMH: 'CS102', MaGV: 'GV007', MaHK: 'HK232', SiSoToiDa: 40, SiSoHienTai: 0, LichHoc: 'Thứ 7 (7-11)', PhongHoc: 'Lab.01' }
+            { MaLHP: 'LHP01', MaMH: 'CS101', MaGV: 'GV001', MaHK: 'HK232', SiSoToiDa: 50, SiSoHienTai: 10, LichHoc: 'Thứ 2 (7-11)', PhongHoc: 'A.101', NgayBatDau: '2024-02-19', NgayKetThuc: '2024-06-15' },
+            { MaLHP: 'LHP02', MaMH: 'CS102', MaGV: 'GV002', MaHK: 'HK232', SiSoToiDa: 40, SiSoHienTai: 5, LichHoc: 'Thứ 4 (7-11)', PhongHoc: 'B.202', NgayBatDau: '2024-02-21', NgayKetThuc: '2024-06-15' },
+            { MaLHP: 'LHP03', MaMH: 'EC101', MaGV: 'GV004', MaHK: 'HK232', SiSoToiDa: 60, SiSoHienTai: 12, LichHoc: 'Thứ 3 (13-17)', PhongHoc: 'C.303', NgayBatDau: '2024-02-20', NgayKetThuc: '2024-06-15' },
+            { MaLHP: 'LHP04', MaMH: 'CS101', MaGV: 'GV003', MaHK: 'HK232', SiSoToiDa: 50, SiSoHienTai: 8, LichHoc: 'Thứ 6 (7-11)', PhongHoc: 'A.102', NgayBatDau: '2024-02-23', NgayKetThuc: '2024-06-15' },
+            { MaLHP: 'LHP05', MaMH: 'EC102', MaGV: 'GV006', MaHK: 'HK232', SiSoToiDa: 45, SiSoHienTai: 7, LichHoc: 'Thứ 5 (13-17)', PhongHoc: 'D.404', NgayBatDau: '2024-02-22', NgayKetThuc: '2024-06-15' },
+            { MaLHP: 'LHP06', MaMH: 'CS102', MaGV: 'GV007', MaHK: 'HK232', SiSoToiDa: 40, SiSoHienTai: 0, LichHoc: 'Thứ 7 (7-11)', PhongHoc: 'Lab.01', NgayBatDau: '2024-02-24', NgayKetThuc: '2024-06-15' }
         ];
 
         // 9. Dang Ky Hoc + Bang Diem
         const dangKyHoc = [];
         const bangDiem = [];
         sinhVien.forEach((sv, index) => {
-            // Moi sinh vien dang ky 2 lop
-            const lhpIndex1 = (index % 3); 
-            const lhpIndex2 = (index % 3) + 3;
+            // Đảm bảo đăng ký 2 môn KHÁC NHAU (Tránh index 0 và 3, 1 và 5 là cùng môn)
+            const lhpIndex1 = (index % 3);          // Lấy các lớp: 0, 1, 2
+            const lhpIndex2 = (index % 3) + 4;      // Lấy các lớp: 4, 5, 0 (sau mod)
+            const realLhpIndex2 = lhpIndex2 % 6;
             
-            const dk1 = { MaDK: `DK${index*2+1}`, MaSV: sv.MaSV, MaLHP: lopHocPhan[lhpIndex1].MaLHP, NgayDK: '2024-02-20', TrangThai: 'Thành công' };
-            const dk2 = { MaDK: `DK${index*2+2}`, MaSV: sv.MaSV, MaLHP: lopHocPhan[lhpIndex2].MaLHP, NgayDK: '2024-02-21', TrangThai: 'Thành công' };
+            // Nếu vô tình trùng môn thì lùi lại 1 đơn vị
+            let finalIdx2 = realLhpIndex2;
+            if (lopHocPhan[lhpIndex1].MaMH === lopHocPhan[finalIdx2].MaMH) {
+                finalIdx2 = (finalIdx2 + 1) % 6;
+            }
+
+            const dk1 = { MaDK: `DK${index*2+1}`, MaSV: sv.MaSV, MaLHP: lopHocPhan[lhpIndex1].MaLHP, NgayDangKy: '2024-02-20T08:00:00Z', TrangThai: 'DaDangKy' };
+            const dk2 = { MaDK: `DK${index*2+2}`, MaSV: sv.MaSV, MaLHP: lopHocPhan[finalIdx2].MaLHP, NgayDangKy: '2024-02-21T09:00:00Z', TrangThai: 'DaDangKy' };
             
             dangKyHoc.push(dk1, dk2);
             

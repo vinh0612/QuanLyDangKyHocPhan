@@ -30,7 +30,8 @@ const Auth = {
                 HoTen: hoTen
             };
 
-            sessionStorage.setItem('currentUser', JSON.stringify(sessionData));
+            // Dung localStorage thay vi sessionStorage de thong tin khong bi mat khi reload
+            localStorage.setItem('currentUser', JSON.stringify(sessionData));
 
             // Redirect theo Role
             this.redirectByRole(user.Role);
@@ -42,15 +43,19 @@ const Auth = {
     redirectByRole(role) {
         switch (role) {
             case 'SinhVien':
-                window.location.href = '/SinhVien/dang-ky-mon.html';
+                window.location.href = '../SinhVien/dashboard.html';
                 break;
             case 'GiangVien':
+                window.location.href = '../GiangVien/dashboard.html';
+                break;
             case 'TruongBoMon':
+                window.location.href = '../TruongBoMon/dashboard.html';
+                break;
             case 'TruongKhoa':
-                window.location.href = '/GiangVien/lich-day.html';
+                window.location.href = '../TruongKhoa/dashboard.html';
                 break;
             case 'GiaoVu':
-                window.location.href = '/GiaoVu/mo-lop-hoc-phan.html';
+                window.location.href = '../GiaoVu/dashboard.html';
                 break;
             default:
                 window.location.href = '/Shared/profile.html';
@@ -58,19 +63,29 @@ const Auth = {
     },
 
     logout() {
-        sessionStorage.removeItem('currentUser');
-        window.location.href = '/Auth/login.html';
+        localStorage.removeItem('currentUser');
+        window.location.href = '../Auth/login.html';
     },
 
     getCurrentUser() {
-        const userStr = sessionStorage.getItem('currentUser');
+        // Uu tien localStorage (moi), fallback sessionStorage (cu) va tu dong migrate
+        let userStr = localStorage.getItem('currentUser');
+        if (!userStr) {
+            // Kiem tra sessionStorage (du lieu cu truoc khi doi sang localStorage)
+            userStr = sessionStorage.getItem('currentUser');
+            if (userStr) {
+                // Tu dong migrate sang localStorage
+                localStorage.setItem('currentUser', userStr);
+                sessionStorage.removeItem('currentUser');
+            }
+        }
         return userStr ? JSON.parse(userStr) : null;
     },
 
     checkAuth(allowedRoles) {
         const user = this.getCurrentUser();
         if (!user) {
-            window.location.href = '/Auth/login.html';
+            window.location.href = '../Auth/login.html';
             return;
         }
 
@@ -90,3 +105,4 @@ const Auth = {
         }
     }
 };
+

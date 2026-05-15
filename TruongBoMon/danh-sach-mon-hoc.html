@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục Môn học - Trưởng bộ môn</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="css/truong-bo-mon.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</head>
+<body>
+    <div id="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="dynamicSidebar">
+            <!-- Sidebar content will be rendered by JavaScript -->
+        </aside>
+
+        <!-- Main Content -->
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" placeholder="Tìm kiếm môn học..." id="searchInput">
+            </div>
+            <div class="nav-user">
+                <span class="me-3 fw-bold" id="deptName">Bộ môn: ...</span>
+                <img id="userAvatar" src="" alt="Avatar" class="avatar">
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="section-header d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Danh mục Môn học</h2>
+                    <p class="text-muted">Xem danh sách môn học chung và các lớp học phần đang mở.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <select class="form-select" id="hkFilter" style="width: 250px;"></select>
+                    <select class="form-select" id="typeFilter">
+                        <option value="all">Tất cả môn học</option>
+                        <option value="open">Đang mở đăng ký</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="tbm-card p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table tbm-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">MÃ MÔN</th>
+                                <th>TÊN MÔN HỌC</th>
+                                <th>SỐ TÍN CHỈ</th>
+                                <th>KHOA QUẢN LÝ</th>
+                                <th>TRẠNG THÁI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['TruongBoMon']);
+        const user = Auth.getCurrentUser();
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const path = window.location.pathname;
+            const isPage = (p) => path.includes(p);
+
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start px-4 py-4">
+                    <div style="color: #3b82f6; font-size: 1.5rem; font-weight: 800;">EduManage</div>
+                    <div style="font-size: 0.8rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Trưởng Bộ Môn</div>
+                </div>
+                <ul class="nav-menu list-unstyled px-2">
+                    <li class="${isPage('dashboard.html') ? 'active' : ''}"><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                    <li class="${isPage('quan-ly-siso.html') ? 'active' : ''}"><a href="quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
+                    <li class="${isPage('lich-day-bo-mon.html') ? 'active' : ''}"><a href="lich-day-bo-mon.html"><span class="material-symbols-outlined menu-icon">groups</span>Lịch dạy Bộ môn</a></li>
+                    <li class="${isPage('nhap-diem.html') ? 'active' : ''}"><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                    <hr class="border-secondary opacity-25">
+                    <li class="${isPage('lich-day.html') ? 'active' : ''}"><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    <li class="${isPage('danh-sach-mon-hoc.html') ? 'active' : ''}"><a href="danh-sach-mon-hoc.html"><span class="material-symbols-outlined menu-icon">list_alt</span>Danh mục Môn học</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <ul class="nav-menu list-unstyled px-2">
+                        <li class="${isPage('ho-so.html') ? 'active' : ''}"><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        let currentPage = 1;
+        const rowsPerPage = 7;
+
+        function init() {
+            renderSidebar();
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TB&background=0D8ABC&color=fff`;
+            
+            // Set Department Name
+            const boMonData = JSON.parse(localStorage.getItem('BoMon') || '[]');
+            const gvData = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const myGV = gvData.find(g => g.MaGV === user.MaNguoiDung);
+            if (myGV) {
+                const myBM = boMonData.find(b => b.MaBoMon === myGV.MaBoMon);
+                if (myBM) document.getElementById('deptName').innerText = `Bộ môn: ${myBM.TenBoMon}`;
+            }
+
+            // Set HKs
+            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
+            document.getElementById('hkFilter').innerHTML = hkD.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
+
+            renderSubjects();
+            document.getElementById('searchInput').oninput = () => { currentPage = 1; renderSubjects(); };
+            document.getElementById('typeFilter').onchange = () => { currentPage = 1; renderSubjects(); };
+            document.getElementById('hkFilter').onchange = () => { currentPage = 1; renderSubjects(); };
+        }
+
+        function renderSubjects() {
+            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const khoaData = JSON.parse(localStorage.getItem('Khoa') || '[]');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const type = document.getElementById('typeFilter').value;
+            const hkId = document.getElementById('hkFilter').value;
+
+            let filtered = mhData.filter(m => m.TenMH.toLowerCase().includes(search) || m.MaMH.toLowerCase().includes(search));
+
+            if (type === 'open') {
+                const openMHIds = [...new Set(lhpData.filter(l => l.MaHK === hkId).map(l => l.MaMH))];
+                filtered = filtered.filter(m => openMHIds.includes(m.MaMH));
+            }
+
+            // Pagination Logic
+            const totalRows = filtered.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const start = (currentPage - 1) * rowsPerPage;
+            const paginatedData = filtered.slice(start, start + rowsPerPage);
+
+            const tbody = document.getElementById('subjectBody');
+            tbody.innerHTML = paginatedData.map(m => {
+                const lhpOfThisMh = lhpData.filter(l => l.MaMH === m.MaMH && l.MaHK === hkId);
+                const isOpen = lhpOfThisMh.length > 0;
+                const khoa = khoaData.find(k => k.MaKhoa === m.MaKhoa) || {};
+                return `
+                    <tr class="animate__animated animate__fadeIn">
+                        <td class="ps-4 fw-bold text-primary">${m.MaMH}</td>
+                        <td class="fw-bold">${m.TenMH}</td>
+                        <td>${m.SoTinChi}</td>
+                        <td>${khoa.TenKhoa || '---'}</td>
+                        <td>
+                            <span class="badge ${isOpen ? 'bg-success-subtle text-success' : 'bg-light text-muted'} rounded-pill px-3">
+                                ${isOpen ? 'Đang mở lớp (' + lhpOfThisMh.length + ')' : 'Chưa mở lớp'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('') || '<tr><td colspan="5" class="text-center py-5">Không tìm thấy môn học nào</td></tr>';
+
+            renderPagination(totalRows, totalPages);
+        }
+
+        function renderPagination(totalRows, totalPages) {
+            let container = document.getElementById('paginationContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'paginationContainer';
+                container.className = 'pagination-container';
+                document.querySelector('.tbm-card').appendChild(container);
+            }
+
+            if (totalRows === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = Math.min(currentPage * rowsPerPage, totalRows);
+
+            container.innerHTML = `
+                <div class="pagination-info">
+                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> môn học
+                </div>
+                <div class="pagination-nav">
+                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
+                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                    `).join('')}
+                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderSubjects();
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Trưởng Khoa - EduManage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="css/truong-khoa.css">
+</head>
+<body>
+    <div id="main-wrapper">
+        <aside class="sidebar" id="dynamicSidebar"></aside>
+
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined me-2 text-muted">search</span>
+                <input type="text" placeholder="Tìm kiếm hệ thống...">
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3 fw-bold" id="facultyName">Khoa: ...</span>
+                <img id="userAvatar" src="" class="avatar" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+        </header>
+
+        <main class="main-content" style="padding-top: 100px; padding-left: 300px; padding-right: 2rem; background: #f8fafc; min-height: 100vh;">
+            <div class="animate__animated animate__fadeIn">
+                <h1 class="fw-bold mb-1" id="welcomeText">Chào Trưởng khoa, ...!</h1>
+                <p class="text-muted mb-4">Chào mừng đến với trung tâm quản trị đào tạo cấp Khoa.</p>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-3">
+                        <div class="dean-card h-100">
+                            <div class="stats-icon bg-primary bg-opacity-10 text-primary">
+                                <span class="material-symbols-outlined">library_books</span>
+                            </div>
+                            <div class="text-muted small fw-bold">TỔNG SỐ MÔN HỌC</div>
+                            <h2 class="fw-bold mt-1 mb-0" id="statMH">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dean-card h-100">
+                            <div class="stats-icon bg-success bg-opacity-10 text-success">
+                                <span class="material-symbols-outlined">groups</span>
+                            </div>
+                            <div class="text-muted small fw-bold">GIẢNG VIÊN TRONG KHOA</div>
+                            <h2 class="fw-bold mt-1 mb-0" id="statGV">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dean-card h-100">
+                            <div class="stats-icon bg-warning bg-opacity-10 text-warning">
+                                <span class="material-symbols-outlined">event_available</span>
+                            </div>
+                            <div class="text-muted small fw-bold">LỚP HỌC ĐANG MỞ</div>
+                            <h2 class="fw-bold mt-1 mb-0" id="statLHP">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dean-card h-100">
+                            <div class="stats-icon bg-info bg-opacity-10 text-info">
+                                <span class="material-symbols-outlined">hub</span>
+                            </div>
+                            <div class="text-muted small fw-bold">BỘ MÔN TRỰC THUỘC</div>
+                            <h2 class="fw-bold mt-1 mb-0" id="statBM">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="dean-card h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="fw-bold mb-0">Môn học mới cập nhật</h5>
+                                <a href="quan-ly-mon-hoc.html" class="btn btn-sm btn-light rounded-pill px-3">Xem tất cả</a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr class="text-muted small">
+                                            <th>MÃ MÔN</th>
+                                            <th>TÊN MÔN HỌC</th>
+                                            <th class="text-center">SỐ TÍN CHỈ</th>
+                                            <th class="text-center">GIẢNG VIÊN DẠY</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentCourses"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="dean-card bg-primary text-white" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+                            <h5 class="fw-bold mb-3">Tác vụ Quản trị</h5>
+                            <p class="small opacity-75 mb-4">Quản lý chương trình đào tạo và phân công giảng dạy cho giảng viên trong khoa.</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-white text-primary fw-bold" onclick="location.href='quan-ly-mon-hoc.html'">
+                                    <span class="material-symbols-outlined align-middle me-1">add_box</span> Thêm môn học mới
+                                </button>
+                                <button class="btn btn-outline-light" onclick="location.href='quan-ly-mon-hoc.html#assign'">
+                                    <span class="material-symbols-outlined align-middle me-1">assignment_ind</span> Phân công dạy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['TruongKhoa']);
+        const user = Auth.getCurrentUser();
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const path = window.location.pathname;
+            const isPage = (p) => path.includes(p);
+
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start px-4 py-4">
+                    <div style="color: #818cf8; font-size: 1.5rem; font-weight: 800;">EduManage</div>
+                    <div style="font-size: 0.8rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Quản trị Cấp Khoa</div>
+                </div>
+                <ul class="nav-menu list-unstyled px-2">
+                    <li class="${isPage('dashboard.html') ? 'active' : ''}"><a href="dashboard.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">dashboard</span>Tổng quan</a></li>
+                    <li class="${isPage('quan-ly-mon-hoc.html') ? 'active' : ''}"><a href="quan-ly-mon-hoc.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">menu_book</span>Quản lý Môn học</a></li>
+                    <hr class="border-secondary opacity-25">
+                    <li class="${isPage('lich-day.html') ? 'active' : ''}"><a href="lich-day.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    <li class="${isPage('nhap-diem.html') ? 'active' : ''}"><a href="nhap-diem.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">edit_square</span>Quản lý Điểm</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <ul class="list-unstyled px-2">
+                        <li class="${isPage('ho-so.html') ? 'active' : ''}"><a href="ho-so.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li><a href="#" onclick="Auth.logout()" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-danger rounded-3"><span class="material-symbols-outlined">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function init() {
+            renderSidebar();
+            document.getElementById('welcomeText').innerText = `Chào Trưởng khoa, ${user.HoTen}!`;
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
+            
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
+            const myKhoaId = me ? me.MaKhoa : '';
+            
+            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
+            const myKhoa = khoaD.find(k => k.MaKhoa === myKhoaId);
+            if (myKhoa) document.getElementById('facultyName').innerText = `Khoa: ${myKhoa.TenKhoa}`;
+
+            // Load Stats
+            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
+            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
+            const currentHK = hkD.find(h => h.DangMo) || {};
+
+            const myMH = mhD.filter(m => m.MaKhoa === myKhoaId);
+            const myGV = gvD.filter(g => g.MaKhoa === myKhoaId);
+            const myBM = bmD.filter(b => b.MaKhoa === myKhoaId);
+            const myLHP = lhpD.filter(l => myMH.some(m => m.MaMH === l.MaMH) && l.MaHK === currentHK.MaHK);
+
+            document.getElementById('statMH').innerText = myMH.length;
+            document.getElementById('statGV').innerText = myGV.length;
+            document.getElementById('statBM').innerText = myBM.length;
+            document.getElementById('statLHP').innerText = myLHP.length;
+
+            // Render recent courses
+            const recent = myMH.slice(-5).reverse();
+            const gvdmD = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]');
+            
+            document.getElementById('recentCourses').innerHTML = recent.map(m => {
+                const assign = gvdmD.find(x => x.MaMH === m.MaMH);
+                const gv = assign ? gvD.find(g => g.MaGV === assign.MaGV) : null;
+                return `
+                    <tr>
+                        <td><span class="fw-bold text-primary">${m.MaMH}</span></td>
+                        <td class="fw-bold">${m.TenMH}</td>
+                        <td class="text-center">${m.SoTinChi}</td>
+                        <td class="text-center">
+                            <span class="badge ${gv ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary'} rounded-pill px-3">
+                                ${gv ? gv.HoTen : 'Chưa phân công'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('') || '<tr><td colspan="4" class="text-center py-4">Chưa có môn học nào</td></tr>';
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm danh Sinh viên - Giảng viên</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="../GiaoVu/css/dashboard.css">
+    <link rel="stylesheet" href="css/giang-vien.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        .attendance-card {
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .status-check {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        .present-row { border-left: 4px solid var(--success); }
+        .absent-row { border-left: 4px solid var(--danger); }
+    </style>
+</head>
+<body>
+    <div id="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-brand text-start">
+                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
+                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Hệ thống Đăng ký</div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
+                <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
+            </ul>
+            <div style="padding: 1rem;">
+                <ul class="nav-menu" style="padding: 0;">
+                    <li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
+                    <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" placeholder="Tìm sinh viên trong lớp...">
+            </div>
+            <div class="nav-user">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">
+                    <span class="material-symbols-outlined text-primary" style="font-size: 32px;">how_to_reg</span>
+                    Điểm danh Lớp học
+                </h2>
+                <div id="attendanceStats" class="badge bg-primary-subtle text-primary p-2 px-3 rounded-pill">
+                    Đã điểm danh: 0/0
+                </div>
+            </div>
+
+            <div class="card border-0 mb-4 p-3 shadow-sm" style="border-radius: 16px;">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Chọn Lớp học phần</label>
+                        <select id="lhpSelect" class="form-select" onchange="loadStudentList()"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Ngày điểm danh</label>
+                        <input type="date" id="attDate" class="form-control" onchange="loadStudentList()">
+                    </div>
+                </div>
+            </div>
+
+            <div id="attendancePanel" class="card border-0 shadow-sm d-none animate__animated animate__fadeIn" style="border-radius: 20px;">
+                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold m-0" id="lhpName">Tên lớp</h5>
+                        <p class="text-muted mb-0 small" id="lhpTime">Thứ 2 (7-11) • Phòng A.102</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-success btn-sm" onclick="markAll(true)">Có mặt tất cả</button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="markAll(false)">Vắng tất cả</button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle text-center table-hover m-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start ps-4">Sinh viên</th>
+                                <th>Trạng thái</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentListBody"></tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 text-end">
+                    <button class="btn btn-primary px-5 py-2 rounded-pill" onclick="saveAttendance()">LƯU KẾT QUẢ ĐIỂM DANH</button>
+                </div>
+            </div>
+
+            <div id="emptyState" class="text-center py-5">
+                <span class="material-symbols-outlined text-muted" style="font-size: 64px;">person_search</span>
+                <p class="text-muted mt-2">Vui lòng chọn lớp và ngày để điểm danh.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['GiangVien']);
+        const user = Auth.getCurrentUser();
+        
+        // Mock Attendance Data
+        let attendanceDB = JSON.parse(localStorage.getItem('DiemDanh') || '[]');
+
+        function init() {
+            document.getElementById('attDate').valueAsDate = new Date();
+            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            const myClasses = lhpData.filter(l => l.MaGV === user.MaNguoiDung);
+
+            document.getElementById('lhpSelect').innerHTML = '<option value="">-- Chọn lớp --</option>' + 
+                myClasses.map(l => {
+                    const mh = mhData.find(m => m.MaMH === l.MaMH) || {};
+                    return `<option value="${l.MaLHP}">${l.MaLHP} - ${mh.TenMH}</option>`;
+                }).join('');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const malhp = urlParams.get('malhp');
+            if (malhp) {
+                document.getElementById('lhpSelect').value = malhp;
+                loadStudentList();
+            }
+        }
+
+        function loadStudentList() {
+            const maLHP = document.getElementById('lhpSelect').value;
+            const date = document.getElementById('attDate').value;
+            if (!maLHP || !date) {
+                document.getElementById('attendancePanel').classList.add('d-none');
+                document.getElementById('emptyState').classList.remove('d-none');
+                return;
+            }
+
+            document.getElementById('attendancePanel').classList.remove('d-none');
+            document.getElementById('emptyState').classList.add('d-none');
+
+            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
+            const svData = JSON.parse(localStorage.getItem('SinhVien') || '[]');
+            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+
+            const currentLHP = lhpData.find(l => l.MaLHP === maLHP);
+            const mh = mhData.find(m => m.MaMH === currentLHP.MaMH) || {};
+            document.getElementById('lhpName').innerText = mh.TenMH;
+            document.getElementById('lhpTime').innerText = `${currentLHP.LichHoc} • Phòng ${currentLHP.PhongHoc}`;
+
+            const regs = dkData.filter(dk => dk.MaLHP === maLHP && dk.TrangThai !== 'DaHuy');
+            const currentAtt = attendanceDB.filter(a => a.MaLHP === maLHP && a.Ngay === date);
+
+            document.getElementById('studentListBody').innerHTML = regs.map(dk => {
+                const sv = svData.find(s => s.MaSV === dk.MaSV) || {};
+                const att = currentAtt.find(a => a.MaSV === dk.MaSV) || { CoMat: true, GhiChu: '' };
+                
+                return `
+                    <tr class="${att.CoMat ? 'present-row' : 'absent-row'}" data-ma-sv="${sv.MaSV}">
+                        <td class="text-start ps-4">
+                            <div class="fw-bold">${sv.HoTen}</div>
+                            <div class="small text-muted">${sv.MaSV}</div>
+                        </td>
+                        <td>
+                            <div class="form-check form-switch d-inline-block">
+                                <input class="form-check-input status-check" type="checkbox" ${att.CoMat ? 'checked' : ''} onchange="updateRowStyle(this)">
+                                <label class="form-check-label ms-2">${att.CoMat ? 'Có mặt' : 'Vắng'}</label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm mx-auto w-75 note-input" value="${att.GhiChu}" placeholder="...">
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            updateStats();
+        }
+
+        window.updateRowStyle = (cb) => {
+            const tr = cb.closest('tr');
+            const label = cb.nextElementSibling;
+            if (cb.checked) {
+                tr.className = 'present-row';
+                label.innerText = 'Có mặt';
+            } else {
+                tr.className = 'absent-row';
+                label.innerText = 'Vắng';
+            }
+            updateStats();
+        };
+
+        window.markAll = (status) => {
+            document.querySelectorAll('.status-check').forEach(cb => {
+                cb.checked = status;
+                updateRowStyle(cb);
+            });
+        };
+
+        function updateStats() {
+            const total = document.querySelectorAll('.status-check').length;
+            const present = document.querySelectorAll('.status-check:checked').length;
+            document.getElementById('attendanceStats').innerText = `Đã điểm danh: ${present}/${total} hiện diện`;
+        }
+
+        window.saveAttendance = () => {
+            const maLHP = document.getElementById('lhpSelect').value;
+            const date = document.getElementById('attDate').value;
+            
+            // Remove existing for this day to overwrite
+            attendanceDB = attendanceDB.filter(a => !(a.MaLHP === maLHP && a.Ngay === date));
+
+            document.querySelectorAll('#studentListBody tr').forEach(tr => {
+                const maSV = tr.dataset.maSv;
+                const coMat = tr.querySelector('.status-check').checked;
+                const ghiChu = tr.querySelector('.note-input').value;
+                attendanceDB.push({ MaLHP: maLHP, Ngay: date, MaSV: maSV, CoMat: coMat, GhiChu: ghiChu });
+            });
+
+            localStorage.setItem('DiemDanh', JSON.stringify(attendanceDB));
+            alert('Lưu kết quả điểm danh thành công!');
+        };
+
+        init();
+    </script>
+</body>
+</html>

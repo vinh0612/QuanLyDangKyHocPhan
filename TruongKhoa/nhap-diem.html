@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Điểm - Trưởng khoa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="css/truong-khoa.css">
+</head>
+<body>
+    <div id="main-wrapper">
+        <aside class="sidebar" id="dynamicSidebar"></aside>
+
+        <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined me-2 text-muted">search</span>
+                <input type="text" placeholder="Tìm sinh viên..." id="searchInput" oninput="renderGrades()">
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3 fw-bold" id="facultyName">Khoa: ...</span>
+                <img id="userAvatar" src="" class="avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+            </div>
+        </header>
+
+        <main class="main-content" style="padding-top: 100px; padding-left: 300px; padding-right: 2rem; background: #f8fafc; min-height: 100vh;">
+            <div class="animate__animated animate__fadeIn">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1">Quản lý Điểm</h2>
+                        <p class="text-muted mb-0">Nhập và chỉnh sửa điểm cho các lớp Trưởng khoa phụ trách.</p>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <select class="form-select border-0 bg-white shadow-sm rounded-pill px-4" id="lhpSelect" style="width: 300px;" onchange="renderGrades()">
+                            <option value="">-- Chọn lớp học phần --</option>
+                        </select>
+                        <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="saveAllGrades()">
+                            <span class="material-symbols-outlined align-middle me-1">save</span> LƯU TẤT CẢ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dean-card p-0 overflow-hidden border">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr class="text-muted small">
+                                    <th class="ps-4">MSSV</th>
+                                    <th>HỌ VÀ TÊN</th>
+                                    <th class="text-center">ĐIỂM QUÁ TRÌNH (40%)</th>
+                                    <th class="text-center">ĐIỂM CUỐI KỲ (60%)</th>
+                                    <th class="text-center">TỔNG KẾT</th>
+                                    <th class="text-center">KẾT QUẢ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradeTableBody">
+                                <tr><td colspan="6" class="text-center py-5 text-muted">Vui lòng chọn lớp học phần để nhập điểm</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Assets/js/mock-database.js"></script>
+    <script src="../Assets/js/auth.js"></script>
+    <script>
+        Auth.checkAuth(['TruongKhoa']);
+        const user = Auth.getCurrentUser();
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const path = window.location.pathname;
+            const isPage = (p) => path.includes(p);
+
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start px-4 py-4">
+                    <div style="color: #818cf8; font-size: 1.5rem; font-weight: 800;">EduManage</div>
+                    <div style="font-size: 0.8rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Quản trị Cấp Khoa</div>
+                </div>
+                <ul class="nav-menu list-unstyled px-2">
+                    <li class="${isPage('dashboard.html') ? 'active' : ''}"><a href="dashboard.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">dashboard</span>Tổng quan</a></li>
+                    <li class="${isPage('quan-ly-mon-hoc.html') ? 'active' : ''}"><a href="quan-ly-mon-hoc.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">menu_book</span>Quản lý Môn học</a></li>
+                    <hr class="border-secondary opacity-25">
+                    <li class="${isPage('lich-day.html') ? 'active' : ''}"><a href="lich-day.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    <li class="${isPage('nhap-diem.html') ? 'active' : ''}"><a href="nhap-diem.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">edit_square</span>Quản lý Điểm</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <ul class="list-unstyled px-2">
+                        <li class="${isPage('ho-so.html') ? 'active' : ''}"><a href="ho-so.html" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-white rounded-3"><span class="material-symbols-outlined">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li><a href="#" onclick="Auth.logout()" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-danger rounded-3"><span class="material-symbols-outlined">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let allFilteredRegs = [];
+
+        function init() {
+            renderSidebar();
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
+            
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
+            const k = JSON.parse(localStorage.getItem('Khoa') || '[]').find(k => k.MaKhoa === me.MaKhoa);
+            document.getElementById('facultyName').innerText = k ? `Khoa: ${k.TenKhoa}` : 'Khoa: ...';
+
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            const myClasses = lhpD.filter(l => l.MaGV === user.MaNguoiDung);
+            
+            document.getElementById('lhpSelect').innerHTML = '<option value="">-- Chọn lớp học phần --</option>' + 
+                myClasses.map(l => {
+                    const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
+                    return `<option value="${l.MaLHP}">${l.MaLHP} - ${mh.TenMH}</option>`;
+                }).join('');
+        }
+
+        function renderGrades() {
+            const malhp = document.getElementById('lhpSelect').value;
+            if (!malhp) { 
+                document.getElementById('gradeTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Vui lòng chọn lớp học phần để nhập điểm</td></tr>'; 
+                renderPagination(0, 0);
+                return; 
+            }
+            
+            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]').filter(d => d.MaLHP === malhp && d.TrangThai !== 'DaHuy');
+            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            allFilteredRegs = dkData.filter(d => {
+                const sv = svD.find(s => s.MaSV === d.MaSV) || {};
+                return sv.HoTen.toLowerCase().includes(search) || sv.MaSV.toLowerCase().includes(search);
+            });
+
+            currentPage = 1;
+            renderGradeTable();
+        }
+
+        function renderGradeTable() {
+            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
+            const bdD = JSON.parse(localStorage.getItem('BangDiem') || '[]');
+
+            // Pagination Logic
+            const totalRows = allFilteredRegs.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const paginatedData = allFilteredRegs.slice(startIdx, startIdx + rowsPerPage);
+
+            document.getElementById('gradeTableBody').innerHTML = paginatedData.map(d => {
+                const sv = svD.find(s => s.MaSV === d.MaSV) || {};
+                const grade = bdD.find(b => b.MaDK === d.MaDK) || { DiemGiuaKy: 0, DiemCuoiKy: 0, DiemTongKet: 0 };
+                
+                const qt = grade.DiemGiuaKy || 0;
+                const ck = grade.DiemCuoiKy || 0;
+                const tk = (qt * 0.4 + ck * 0.6).toFixed(1);
+                const pass = tk >= 4.0;
+
+                return `
+                    <tr class="animate__animated animate__fadeIn" data-ma-dk="${d.MaDK}">
+                        <td class="ps-4 fw-bold">${d.MaSV}</td>
+                        <td class="fw-bold">${sv.HoTen}</td>
+                        <td class="text-center"><input type="number" class="grade-input qt" value="${qt}" min="0" max="10" step="0.1" oninput="updateRow(this)"></td>
+                        <td class="text-center"><input type="number" class="grade-input ck" value="${ck}" min="0" max="10" step="0.1" oninput="updateRow(this)"></td>
+                        <td class="text-center"><span class="fw-bold tk ${pass ? 'text-success' : 'text-danger'}">${tk}</span></td>
+                        <td class="text-center"><span class="badge ${pass ? 'bg-success' : 'bg-danger'} rounded-pill px-3">${pass ? 'Đạt' : 'Nợ môn'}</span></td>
+                    </tr>
+                `;
+            }).join('') || '<tr><td colspan="6" class="text-center py-5">Không tìm thấy sinh viên nào</td></tr>';
+
+            renderPagination(totalRows, totalPages);
+        }
+
+        function renderPagination(totalRows, totalPages) {
+            let container = document.getElementById('paginationContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'paginationContainer';
+                container.className = 'pagination-container';
+                document.querySelector('.dean-card').appendChild(container);
+            }
+
+            if (totalRows === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = Math.min(currentPage * rowsPerPage, totalRows);
+
+            container.innerHTML = `
+                <div class="pagination-info">
+                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> sinh viên
+                </div>
+                <div class="pagination-nav">
+                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
+                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                    `).join('')}
+                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderGradeTable();
+        }
+
+        window.updateRow = (input) => {
+            const tr = input.closest('tr');
+            const qt = parseFloat(tr.querySelector('.qt').value) || 0;
+            const ck = parseFloat(tr.querySelector('.ck').value) || 0;
+            const tk = (qt * 0.4 + ck * 0.6).toFixed(1);
+            const tkEl = tr.querySelector('.tk');
+            tkEl.innerText = tk;
+            tkEl.className = `fw-bold tk ${tk >= 4.0 ? 'text-success' : 'text-danger'}`;
+            tr.querySelector('.badge').className = `badge ${tk >= 4.0 ? 'bg-success' : 'bg-danger'} rounded-pill px-3`;
+            tr.querySelector('.badge').innerText = tk >= 4.0 ? 'Đạt' : 'Nợ môn';
+        };
+
+        window.saveAllGrades = () => {
+            const malhp = document.getElementById('lhpSelect').value;
+            if (!malhp) return;
+            const bdData = JSON.parse(localStorage.getItem('BangDiem') || '[]');
+            const rows = document.querySelectorAll('#gradeTableBody tr[data-ma-dk]');
+            
+            rows.forEach(tr => {
+                const maDK = tr.dataset.maDk;
+                const qt = parseFloat(tr.querySelector('.qt').value) || 0;
+                const ck = parseFloat(tr.querySelector('.ck').value) || 0;
+                const tk = parseFloat(tr.querySelector('.tk').innerText) || 0;
+                
+                const idx = bdData.findIndex(b => b.MaDK === maDK);
+                if (idx !== -1) {
+                    bdData[idx].DiemGiuaKy = qt;
+                    bdData[idx].DiemCuoiKy = ck;
+                    bdData[idx].DiemTongKet = tk;
+                } else {
+                    bdData.push({
+                        MaBD: 'BD' + Date.now() + Math.random().toString(36).substr(2, 5),
+                        MaDK: maDK,
+                        DiemGiuaKy: qt,
+                        DiemCuoiKy: ck,
+                        DiemTongKet: tk
+                    });
+                }
+            });
+            
+            localStorage.setItem('BangDiem', JSON.stringify(bdData));
+            alert('Đã lưu tất cả điểm thành công!');
+            renderGrades();
+        };
+
+        init();
+    </script>
+</body>
+</html>

@@ -3,75 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch dạy bộ môn - Hệ thống QL ĐKHP</title>
+    <title>Lịch dạy Bộ môn - EduManage</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../Assets/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <style>
-        .gv-card { border-radius: 24px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 2rem; }
-        .gv-card-header { background: #f8fafc; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-    </style>
+    <link rel="stylesheet" href="css/truong-bo-mon.css">
 </head>
 <body>
 
-    <div class="container-fluid">
-        <h2 class="section-title">
-            <span class="material-symbols-outlined text-primary" style="font-size: 32px;">view_agenda</span>
-            Báo cáo lịch giảng dạy bộ môn
-        </h2>
+    <div id="main-wrapper">
+        <aside class="sidebar" id="dynamicSidebar">
+            <!-- Dynamic Sidebar -->
+        </aside>
 
-        <div class="card border-0 mb-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Chọn học kỳ</label>
-                    <select id="hkSelect" class="form-select" onchange="renderS()"></select>
+        <!-- Main Content -->
+
+            <header class="navbar">
+            <div class="search-container">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" class="search-bar" placeholder="Tìm theo giảng viên, môn học..." id="searchInput">
+            </div>
+            <div class="nav-user">
+                <span class="me-3 fw-bold" id="deptName">Bộ môn: ...</span>
+                <img id="userAvatar" src="" alt="Avatar" class="avatar">
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="section-header d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Lịch dạy toàn Bộ môn</h2>
+                    <p class="text-muted">Xem lịch công tác giảng dạy của tất cả giảng viên trong đơn vị.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <select class="form-select rounded-pill border-0 shadow-sm" id="hkFilter" style="width: 200px;">
+                        <!-- Dynamic -->
+                    </select>
                 </div>
             </div>
-        </div>
 
-        <div id="container"></div>
+            <div class="row g-4" id="scheduleContainer">
+                <!-- Dynamic Cards -->
+            </div>
+        </main>
+
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
-    <script src="../Assets/js/layout.js"></script>
     <script>
         Auth.checkAuth(['TruongBoMon']);
         const user = Auth.getCurrentUser();
-        function init() {
-            const h = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            document.getElementById('hkSelect').innerHTML = h.map(x => `<option value="${x.MaHK}" ${x.DangMo ? 'selected' : ''}>${x.TenHK}</option>`).join('');
-            renderS();
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const path = window.location.pathname;
+            const isPage = (p) => path.includes(p);
+
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start px-4 py-4">
+                    <div style="color: #3b82f6; font-size: 1.5rem; font-weight: 800;">EduManage</div>
+                    <div style="font-size: 0.8rem; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Trưởng Bộ Môn</div>
+                </div>
+                <ul class="nav-menu list-unstyled px-2">
+                    <li class="${isPage('dashboard.html') ? 'active' : ''}"><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                    <li class="${isPage('quan-ly-siso.html') ? 'active' : ''}"><a href="quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
+                    <li class="${isPage('lich-day-bo-mon.html') ? 'active' : ''}"><a href="lich-day-bo-mon.html"><span class="material-symbols-outlined menu-icon">groups</span>Lịch dạy Bộ môn</a></li>
+                    <li class="${isPage('nhap-diem.html') ? 'active' : ''}"><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                    <hr class="border-secondary opacity-25">
+                    <li class="${isPage('lich-day.html') ? 'active' : ''}"><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    <li class="${isPage('danh-sach-mon-hoc.html') ? 'active' : ''}"><a href="danh-sach-mon-hoc.html"><span class="material-symbols-outlined menu-icon">list_alt</span>Danh mục Môn học</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <ul class="nav-menu list-unstyled px-2">
+                        <li class="${isPage('ho-so.html') ? 'active' : ''}"><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            `;
         }
-        function renderS() {
-            const hkId = document.getElementById('hkSelect').value, lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]'), mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]'), gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const me = gvD.find(g => g.MaGV === user.MaNguoiDung); if (!me) return;
-            const teachers = gvD.filter(g => g.MaBoMon === me.MaBoMon);
-            let html = '';
-            teachers.forEach(g => {
-                const classes = lhpD.filter(l => l.MaGV === g.MaGV && l.MaHK === hkId);
-                html += `
-                    <div class="gv-card bg-white animate__animated animate__fadeIn">
-                        <div class="gv-card-header">
-                            <span class="material-symbols-outlined text-accent">account_circle</span>
-                            <h5 class="fw-bold mb-0">${g.HoTen} <small class="text-muted fw-normal ms-2">(${g.MaGV})</small></h5>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr><th class="ps-4">Tên môn học</th><th>Lịch học</th><th>Phòng</th><th class="text-center">Sĩ số</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${classes.length > 0 ? classes.map(l => `<tr><td class="ps-4 fw-600">${(mhD.find(m => m.MaMH === l.MaMH) || {}).TenMH}</td><td>${l.LichHoc}</td><td><span class="badge bg-light text-dark border">${l.PhongHoc}</span></td><td class="text-center">${l.SiSoHienTai}/${l.SiSoToiDa}</td></tr>`).join('') : '<tr><td colspan="4" class="text-center py-4 text-muted italic">Không có lịch dạy</td></tr>'}
-                                </tbody>
-                            </table>
+
+        let currentPage = 1;
+        const rowsPerPage = 6;
+
+        function init() {
+            renderSidebar();
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TB&background=0D8ABC&color=fff`;
+            
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
+            const bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
+            const myBM = bmD.find(b => b.MaBoMon === me.MaBoMon);
+            if (myBM) document.getElementById('deptName').innerText = `Bộ môn: ${myBM.TenBoMon}`;
+
+            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
+            document.getElementById('hkFilter').innerHTML = hkD.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
+
+            document.getElementById('hkFilter').onchange = () => { currentPage = 1; renderSchedule(); };
+            document.getElementById('searchInput').oninput = () => { currentPage = 1; renderSchedule(); };
+
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const hkId = document.getElementById('hkFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            
+            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
+            const myGVIds = gvD.filter(g => g.MaBoMon === me.MaBoMon).map(g => g.MaGV);
+
+            const filtered = lhpD.filter(l => {
+                const isMyBM = myGVIds.includes(l.MaGV);
+                const isCurrentHK = l.MaHK === hkId;
+                const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
+                const gv = gvD.find(g => g.MaGV === l.MaGV) || {};
+                const matchesSearch = gv.HoTen.toLowerCase().includes(search) || mh.TenMH.toLowerCase().includes(search) || l.MaLHP.toLowerCase().includes(search);
+                return isMyBM && isCurrentHK && matchesSearch;
+            });
+
+            // Pagination Logic
+            const totalRows = filtered.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const paginatedData = filtered.slice(startIdx, startIdx + rowsPerPage);
+
+            const container = document.getElementById('scheduleContainer');
+            if (totalRows === 0) {
+                container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Không tìm thấy lịch dạy phù hợp</div>';
+                renderPagination(0, 0);
+                return;
+            }
+
+            container.innerHTML = paginatedData.map(l => {
+                const mh = mhD.find(m => m.MaMH === l.MaMH) || { TenMH: '---' };
+                const gv = gvD.find(g => g.MaGV === l.MaGV) || { HoTen: '---' };
+                const initials = gv.HoTen.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                
+                return `
+                    <div class="col-md-6 col-xl-4 animate__animated animate__fadeInUp">
+                        <div class="tbm-card h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="tbm-avatar-circle bg-primary text-white">
+                                        ${initials}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">${gv.HoTen}</div>
+                                        <div class="small text-muted">Giảng viên</div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-light text-muted border-0 rounded-pill px-3 py-2" style="font-size: 0.7rem;">${l.MaLHP}</span>
+                            </div>
+                            
+                            <h5 class="fw-bold mb-3 text-dark">${mh.TenMH}</h5>
+                            <p class="text-muted small mb-4">${mh.MaMH || '---'} • ${mh.SoTinChi || 3} Tín chỉ</p>
+                            
+                            <div class="bg-light rounded-4 p-3 mb-4">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <span class="material-symbols-outlined text-primary" style="font-size: 18px;">calendar_today</span>
+                                    <span class="small fw-500">${l.LichHoc}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <span class="material-symbols-outlined text-primary" style="font-size: 18px;">location_on</span>
+                                    <span class="small fw-500">Phòng ${l.PhongHoc}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="material-symbols-outlined text-primary" style="font-size: 18px;">history</span>
+                                    <span class="small fw-500">${l.NgayBatDau} → ${l.NgayKetThuc}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <div class="small text-muted">
+                                    Sĩ số: <span class="text-dark fw-bold">${l.SiSoHienTai}/${l.SiSoToiDa}</span>
+                                </div>
+                                <button class="btn btn-tbm px-4" onclick="showDetails('${l.MaLHP}')">
+                                    Xem chi tiết
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
-            });
-            document.getElementById('container').innerHTML = html;
+            }).join('');
+
+            renderPagination(totalRows, totalPages);
         }
+
+        function renderPagination(totalRows, totalPages) {
+            let container = document.getElementById('paginationContainerBottom');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'paginationContainerBottom';
+                container.className = 'col-12 mt-4';
+                document.getElementById('scheduleContainer').after(container);
+            }
+
+            if (totalRows === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const start = (currentPage - 1) * rowsPerPage + 1;
+            const end = Math.min(currentPage * rowsPerPage, totalRows);
+
+            container.innerHTML = `
+                <div class="tbm-card d-flex justify-content-between align-items-center py-3 px-4">
+                    <div class="pagination-info">
+                        Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> lớp học phần
+                    </div>
+                    <div class="pagination-nav">
+                        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
+                            <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                        `).join('')}
+                        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderSchedule();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showDetails(maLHP) {
+            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
+            const dkD = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
+            const bdD = JSON.parse(localStorage.getItem('BangDiem') || '[]');
+
+            const lhp = lhpD.find(l => l.MaLHP === maLHP);
+            const mh = mhD.find(m => m.MaMH === lhp.MaMH) || {};
+            const gv = gvD.find(g => g.MaGV === lhp.MaGV) || {};
+
+            document.getElementById('modalTitle').innerText = mh.TenMH;
+            document.getElementById('modalSub').innerText = `Mã lớp: ${lhp.MaLHP} • Giảng viên: ${gv.HoTen}`;
+            document.getElementById('modalLich').innerText = lhp.LichHoc;
+            document.getElementById('modalPhong').innerText = lhp.PhongHoc;
+            document.getElementById('modalSiSo').innerText = `${lhp.SiSoHienTai} / ${lhp.SiSoToiDa}`;
+            document.getElementById('modalStart').innerText = lhp.NgayBatDau || '---';
+            document.getElementById('modalEnd').innerText = lhp.NgayKetThuc || '---';
+
+            const regs = dkD.filter(dk => dk.MaLHP === maLHP && dk.TrangThai !== 'DaHuy');
+            const tbody = document.getElementById('modalStudentBody');
+            const studentSection = document.getElementById('studentSection');
+            const btnGrading = document.getElementById('btnGrading');
+
+            // Policy Check: TBM can only see students/grades of THEIR OWN classes
+            if (lhp.MaGV !== user.MaNguoiDung) {
+                studentSection.classList.add('d-none');
+                btnGrading.classList.add('d-none');
+                document.getElementById('modalPolicyMsg').classList.remove('d-none');
+            } else {
+                studentSection.classList.remove('d-none');
+                btnGrading.classList.remove('d-none');
+                document.getElementById('modalPolicyMsg').classList.add('d-none');
+                
+                if (regs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">Chưa có sinh viên đăng ký</td></tr>';
+                } else {
+                    tbody.innerHTML = regs.map(dk => {
+                        const sv = svD.find(s => s.MaSV === dk.MaSV) || {};
+                        const grade = bdD.find(b => b.MaDK === dk.MaDK) || {};
+                        const tk = grade.DiemTongKet !== undefined ? grade.DiemTongKet : '---';
+                        const badgeClass = tk >= 5 ? 'bg-success-subtle text-success' : (tk !== '---' ? 'bg-danger-subtle text-danger' : 'bg-light text-muted');
+                        
+                        return `
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">${sv.HoTen}</div>
+                                    <div class="small text-muted">${sv.MaSV}</div>
+                                </td>
+                                <td class="text-center">${grade.DiemGiuaKy ?? '---'}</td>
+                                <td class="text-center">${grade.DiemCuoiKy ?? '---'}</td>
+                                <td class="text-center">
+                                    <span class="badge ${badgeClass} rounded-pill px-3">${tk}</span>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            modal.show();
+        }
+
         init();
     </script>
+
+    <!-- Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 28px; overflow: hidden;">
+                <!-- Header with Gradient -->
+                <div class="modal-header border-0 p-4 text-white" style="background: linear-gradient(135deg, #0D8ABC 0%, #1e40af 100%);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 p-3 rounded-4">
+                            <span class="material-symbols-outlined fs-1">menu_book</span>
+                        </div>
+                        <div>
+                            <h3 class="modal-title fw-bold mb-0" id="modalTitle">Tên môn học</h3>
+                            <p class="mb-0 opacity-75 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+                                <span id="modalSub">Mã lớp: ...</span>
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4 bg-light bg-opacity-50">
+                    <!-- Info Grid -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="p-3 bg-white border border-white-50 shadow-sm rounded-4 h-100 transition-hover">
+                                <div class="d-flex align-items-center gap-2 text-muted small mb-2">
+                                    <span class="material-symbols-outlined text-primary fs-5">event</span>
+                                    <span>Lịch học</span>
+                                </div>
+                                <div class="fw-bold text-dark" id="modalLich">---</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-white border border-white-50 shadow-sm rounded-4 h-100">
+                                <div class="d-flex align-items-center gap-2 text-muted small mb-2">
+                                    <span class="material-symbols-outlined text-primary fs-5">location_on</span>
+                                    <span>Phòng học</span>
+                                </div>
+                                <div class="fw-bold text-dark" id="modalPhong">---</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-white border border-white-50 shadow-sm rounded-4 h-100">
+                                <div class="d-flex align-items-center gap-2 text-muted small mb-2">
+                                    <span class="material-symbols-outlined text-primary fs-5">history</span>
+                                    <span>Thời gian</span>
+                                </div>
+                                <div class="small fw-bold text-primary mb-1" id="modalStart">---</div>
+                                <div class="small fw-bold text-danger" id="modalEnd">---</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-white border border-white-50 shadow-sm rounded-4 h-100">
+                                <div class="d-flex align-items-center gap-2 text-muted small mb-2">
+                                    <span class="material-symbols-outlined text-primary fs-5">groups</span>
+                                    <span>Sĩ số</span>
+                                </div>
+                                <div class="fw-bold text-dark" id="modalSiSo">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Policy Restricted View -->
+                    <div id="modalPolicyMsg" class="d-none animate__animated animate__fadeIn">
+                        <div class="text-center py-5 px-4 bg-white rounded-4 shadow-sm border border-info border-opacity-25">
+                            <div class="mb-4">
+                                <div class="d-inline-flex p-4 rounded-circle bg-info bg-opacity-10 text-info">
+                                    <span class="material-symbols-outlined fs-1" style="font-variation-settings: 'FILL' 1;">shield_lock</span>
+                                </div>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-3">Quyền truy cập hạn chế</h5>
+                            <p class="text-muted mx-auto mb-0" style="max-width: 400px;">
+                                Theo chính sách quyền đóng, bạn chỉ có thể xem danh sách sinh viên và điểm số của các lớp do chính mình trực tiếp phụ trách giảng dạy.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Student List View -->
+                    <div id="studentSection" class="animate__animated animate__fadeIn">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">person_search</span>
+                                Danh sách sinh viên & Điểm số
+                            </h6>
+                            <span class="badge bg-white text-dark border shadow-sm rounded-pill px-3 py-2 fw-500">
+                                HK Hiện tại
+                            </span>
+                        </div>
+                        <div class="bg-white rounded-4 shadow-sm overflow-hidden border">
+                            <div class="table-responsive" style="max-height: 350px;">
+                                <table class="table tbm-table align-middle mb-0">
+                                    <thead class="sticky-top bg-white" style="z-index: 10;">
+                                        <tr>
+                                            <th class="ps-4">SINH VIÊN</th>
+                                            <th class="text-center">GK</th>
+                                            <th class="text-center">CK</th>
+                                            <th class="text-center">TỔNG KẾT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modalStudentBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 bg-light bg-opacity-75">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-600" data-bs-dismiss="modal">ĐÓNG</button>
+                    <button type="button" id="btnGrading" class="btn btn-primary rounded-pill px-4 shadow-sm fw-600" onclick="location.href='nhap-diem.html'">
+                        <span class="material-symbols-outlined align-middle me-1">edit_square</span> QUẢN LÝ ĐIỂM
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
