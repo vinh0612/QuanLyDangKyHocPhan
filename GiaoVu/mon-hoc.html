@@ -8,132 +8,64 @@
     <link rel="stylesheet" href="../Assets/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="nav-brand text-start">
-                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal; -webkit-text-fill-color: var(--text-muted);">Hệ thống Đăng ký</div>
-            </div>
-            <ul class="nav-menu">
-                <li>
-                    <a href="dashboard.html">
-                        <span class="material-symbols-outlined menu-icon">dashboard</span>
-                        Tổng quan
-                    </a>
-                </li>
-                <li class="active">
-                    <a href="mon-hoc.html">
-                        <span class="material-symbols-outlined menu-icon">book</span>
-                        Môn học
-                    </a>
-                </li>
-                <li>
-                    <a href="mo-lop-hoc-phan.html">
-                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
-                        Học kỳ & Mở lớp
-                    </a>
-                </li>
-                <li>
-                    <a href="xem-danh-sach-dk.html">
-                        <span class="material-symbols-outlined menu-icon">how_to_reg</span>
-                        Danh sách đăng ký học phần
-                    </a>
-                </li>
-                <li>
-                    <a href="giang-day-diem.html">
-                        <span class="material-symbols-outlined menu-icon">menu_book</span>
-                        Giảng dạy & Điểm
-                    </a>
-                </li>
-            </ul>
-            <div style="padding: 1rem;">
-                <ul class="nav-menu" style="padding: 0;">
-                    <li>
-                        <a href="ho-so.html">
-                            <span class="material-symbols-outlined menu-icon">account_circle</span>
-                            Hồ sơ Cá nhân
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <span class="material-symbols-outlined menu-icon">settings</span>
-                            Cài đặt
-                        </a>
-                    </li>
-                    <li style="margin-top: 1rem;">
-                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
-                            <span class="material-symbols-outlined menu-icon">logout</span>
-                            Đăng xuất
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-        <!-- Navbar -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" class="search-bar" placeholder="Tra cứu sinh viên, lớp học...">
+                <input type="text" class="search-bar" id="searchMH" placeholder="Tìm tên môn hoặc mã môn..." oninput="renderMH(1)">
             </div>
             
             <div class="nav-user">
-                <div class="top-links d-none d-md-flex">
-                    <a href="dashboard.html">Trang chủ</a>
-                    <a href="#">Thông báo</a>
-                    <a href="#">Hướng dẫn</a>
+                <div class="top-links d-none d-md-flex me-3">
+                    <a href="dashboard.html" class="text-decoration-none text-main me-3">Trang chủ</a>
+                    <a href="#" onclick="alert('Thông báo đang được cập nhật...')" class="text-decoration-none text-main">Thông báo</a>
                 </div>
-                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">notifications</span></button>
-                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">help_outline</span></button>
-                <img src="https://ui-avatars.com/api/?name=Giao+Vu&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
             <h2 class="section-title mb-4">
                 <span class="material-symbols-outlined text-primary" style="font-size: 32px;">book</span>
-                Môn học
+                Danh mục Môn học toàn trường
             </h2>
 
-            <div class="card border-0 mb-4 p-3" style="border-radius: 16px;">
+            <div class="card border-0 mb-4 p-3 shadow-sm" style="border-radius: 16px;">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Tìm kiếm môn học</label>
-                        <input type="text" id="searchMH" class="form-control" placeholder="Nhập tên hoặc mã môn..." oninput="renderMH()">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Lọc theo Khoa</label>
-                        <select id="khoaFilter" class="form-select" onchange="renderMH()">
+                        <label class="form-label fw-bold text-muted small">LỌC THEO KHOA QUẢN LÝ</label>
+                        <select id="khoaFilter" class="form-select border-light-subtle rounded-pill px-3 shadow-sm" onchange="renderMH(1)">
                             <option value="">Tất cả các khoa</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 p-3" style="border-radius: 16px;">
+            <div class="card border-0 p-3 shadow-sm animate__animated animate__fadeIn" style="border-radius: 16px;">
                 <div class="table-responsive">
-                    <table class="table align-middle table-custom">
-                        <thead>
+                    <table class="table align-middle table-custom table-hover m-0">
+                        <thead class="table-light">
                             <tr>
-                                <th>Mã MH</th>
-                                <th>Tên môn học</th>
-                                <th class="text-center">Tín chỉ</th>
-                                <th>Khoa quản lý</th>
+                                <th class="ps-4 py-3">Mã MH</th>
+                                <th class="py-3">Tên môn học</th>
+                                <th class="text-center py-3">Tín chỉ</th>
+                                <th class="py-3 pe-4">Khoa quản lý</th>
                             </tr>
                         </thead>
-                        <tbody id="mhBody"></tbody>
+                        <tbody id="mhBody">
+                            <tr><td colspan="4" class="text-center py-5 text-muted fw-medium">Đang truy xuất danh mục môn học đào tạo...</td></tr>
+                        </tbody>
                     </table>
                 </div>
-                <!-- Pagination -->
-                <div class="pagination-container">
-                    <div class="pagination-info" id="paginationInfo"></div>
+                <div class="d-flex justify-content-end align-items-center mt-3 border-top pt-3">
                     <nav>
-                        <ul class="pagination" id="paginationList"></ul>
+                        <ul class="pagination pagination-sm mb-0 rounded-pill shadow-sm" id="paginationList"></ul>
                     </nav>
                 </div>
             </div>
@@ -141,31 +73,93 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
         Auth.checkAuth(['GiaoVu']);
+        const user = Auth.getCurrentUser();
         
+        let allSubjectsData = []; // Mảng lưu trữ danh mục môn học gốc từ CSDL
         let currentPage = 1;
-        const rowsPerPage = 5;
+        const rowsPerPage = 6;
 
-        function init() {
-            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            document.getElementById('khoaFilter').innerHTML += khoaD.map(k => `<option value="${k.MaKhoa}">${k.TenKhoa}</option>`).join('');
-            renderMH();
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Phòng Đào Tạo</div></div>
+                <ul class="nav-menu">
+                    <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                    <li class="active"><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Môn học</a></li>
+                    <li><a href="mo-lop-hoc-phan.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Học kỳ & Mở lớp</a></li>
+                    <li><a href="xem-danh-sach-dk.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Danh sách đăng ký</a></li>
+                    <li><a href="giang-day-diem.html"><span class="material-symbols-outlined menu-icon">menu_book</span>Giảng dạy & Điểm</a></li>
+                </ul>
+                <div style="padding: 1rem; margin-top: auto;">
+                    <ul class="nav-menu" style="padding: 0;">
+                        <li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>`;
+        }
+
+        async function init() {
+            renderSidebar();
+            
+            try {
+                // Tải thông tin cá nhân làm Avatar động
+                let tenGiaoVu = user.name || "Giáo vụ";
+                try {
+                    const profileRes = await Auth.fetchWithAuth('/GiaoVu/ho-so');
+                    if (profileRes.ok) {
+                        const profileData = await profileRes.json();
+                        if (profileData.HoTen) tenGiaoVu = profileData.HoTen;
+                    }
+                } catch(e) {}
+                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGiaoVu)}&background=0D8ABC&color=fff`;
+
+                // Gọi API lấy toàn bộ môn học đào tạo thời gian thực (Dùng chung cổng của Giảng viên)
+                const res = await Auth.fetchWithAuth('/GiaoVu/tat-ca-mon-hoc');
+                if (res.ok) {
+                    allSubjectsData = await res.json();
+                    populateKhoaFilter();
+                    renderMH(1);
+                }
+            } catch (err) {
+                console.error("Lỗi khởi tạo danh mục môn học:", err);
+            }
+        }
+
+        // Tạo bộ lọc khoa thông minh tự động gom cụm dựa theo dữ liệu thực tế trả về
+        function populateKhoaFilter() {
+            const filterSelect = document.getElementById('khoaFilter');
+            const uniqueKhoa = {};
+
+            allSubjectsData.forEach(item => {
+                const maKhoa = item.MaKhoa || item.makhoa;
+                const tenKhoa = item.TenKhoa || item.tenkhoa || `Khoa ${maKhoa}`;
+                if (maKhoa) {
+                    uniqueKhoa[maKhoa] = tenKhoa;
+                }
+            });
+
+            filterSelect.innerHTML = '<option value="">Tất cả các khoa</option>';
+            Object.keys(uniqueKhoa).forEach(ma => {
+                filterSelect.innerHTML += `<option value="${ma}">${uniqueKhoa[ma]}</option>`;
+            });
         }
 
         function renderMH(page = 1) {
             currentPage = page;
-            const search = document.getElementById('searchMH').value.toLowerCase();
+            const search = document.getElementById('searchMH').value.toLowerCase().trim();
             const khoa = document.getElementById('khoaFilter').value;
             
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
+            // Tiến hành lọc Realtime dữ liệu
+            const filtered = allSubjectsData.filter(m => {
+                const maMH = (m.MaMH || m.mamh || '').toLowerCase();
+                const tenMH = (m.TenMH || m.tenmh || '').toLowerCase();
+                const maKhoa = m.MaKhoa || m.makhoa || '';
 
-            const filtered = mhD.filter(m => {
-                const matchSearch = m.TenMH.toLowerCase().includes(search) || m.MaMH.toLowerCase().includes(search);
-                const matchKhoa = !khoa || m.MaKhoa === khoa;
+                const matchSearch = tenMH.includes(search) || maMH.includes(search);
+                const matchKhoa = !khoa || maKhoa === khoa;
                 return matchSearch && matchKhoa;
             });
 
@@ -175,50 +169,51 @@
             const end = start + rowsPerPage;
             const paginatedItems = filtered.slice(start, end);
 
-            document.getElementById('mhBody').innerHTML = paginatedItems.map(m => `
-                <tr>
-                    <td><span class="fw-bold">${m.MaMH}</span></td>
-                    <td class="fw-500">${m.TenMH}</td>
-                    <td class="text-center">${m.SoTinChi}</td>
-                    <td>${(khoaD.find(k => k.MaKhoa === m.MaKhoa) || {}).TenKhoa}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="4" class="text-center py-4">Không tìm thấy môn học phù hợp</td></tr>';
+            const tbody = document.getElementById('mhBody');
+            if (totalRows === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted fw-medium">Không tìm thấy môn học nào phù hợp.</td></tr>';
+                renderPagination(0, 0);
+                return;
+            }
+
+            tbody.innerHTML = paginatedItems.map(m => {
+                const codeMH = m.MaMH || m.mamh;
+                const nameMH = m.TenMH || m.tenmh;
+                const credit = m.SoTinChi !== undefined ? m.SoTinChi : (m.sotinchi || 0);
+                const nameKhoa = m.TenKhoa || m.tenkhoa || `Khoa ${m.MaKhoa}`;
+
+                return `
+                    <tr class="animate__animated animate__fadeIn" style="border-top: 1px solid #f1f5f9;">
+                        <td class="ps-4 py-3 font-monospace fw-bold text-primary">${codeMH}</td>
+                        <td class="fw-semibold text-dark">${nameMH}</td>
+                        <td class="text-center fw-bold text-secondary" style="font-size: 1.05rem;">${credit}</td>
+                        <td class="pe-4 text-muted fw-medium">${nameKhoa}</td>
+                    </tr>
+                `;
+            }).join('');
 
             renderPagination(totalRows, totalPages);
         }
 
         function renderPagination(totalRows, totalPages) {
-            const paginationList = document.getElementById('paginationList');
-            const paginationInfo = document.getElementById('paginationInfo');
+            let container = document.getElementById('paginationContainer');
+            if (!container) {
+                container = document.createElement('div'); container.id = 'paginationContainer';
+                container.className = 'd-flex justify-content-end align-items-center mt-3 border-top pt-3';
+                document.querySelector('.table-responsive').after(container);
+            }
+            if (totalRows === 0) { container.innerHTML = ''; return; }
             
-            if (totalRows === 0) {
-                paginationList.innerHTML = '';
-                paginationInfo.innerText = '';
-                return;
+            let html = '<nav><ul class="pagination pagination-sm mb-0 rounded-pill shadow-sm">';
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link d-flex align-items-center justify-content-center" href="#" onclick="renderMH(${currentPage - 1}); return false;" style="width: 32px; height: 32px;"><span class="material-symbols-outlined" style="font-size: 18px; line-height: 1;">chevron_left</span></a></li>`;
+            
+            for(let i=1; i<=totalPages; i++) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link d-flex align-items-center justify-content-center fw-medium" href="#" onclick="renderMH(${i}); return false;" style="width: 32px; height: 32px;">${i}</a></li>`;
             }
-
-            const start = (currentPage - 1) * rowsPerPage + 1;
-            const end = Math.min(currentPage * rowsPerPage, totalRows);
-            paginationInfo.innerText = `Hiển thị ${start}-${end} trong tổng số ${totalRows} môn học`;
-
-            let html = '';
-            // Prev
-            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="renderMH(${currentPage - 1})"><span class="material-symbols-outlined">chevron_left</span></a>
-            </li>`;
-
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="renderMH(${i})">${i}</a>
-                </li>`;
-            }
-
-            // Next
-            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="renderMH(${currentPage + 1})"><span class="material-symbols-outlined">chevron_right</span></a>
-            </li>`;
-
-            paginationList.innerHTML = html;
+            
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link d-flex align-items-center justify-content-center" href="#" onclick="renderMH(${currentPage + 1}); return false;" style="width: 32px; height: 32px;"><span class="material-symbols-outlined" style="font-size: 18px; line-height: 1;">chevron_right</span></a></li>`;
+            html += '</ul></nav>';
+            container.innerHTML = html;
         }
 
         init();

@@ -8,188 +8,107 @@
     <link rel="stylesheet" href="../Assets/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="nav-brand text-start">
                 <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal; -webkit-text-fill-color: var(--text-muted);">Hệ thống Đăng ký</div>
+                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Phòng Đào Tạo</div>
             </div>
             <ul class="nav-menu">
-                <li class="active">
-                    <a href="dashboard.html">
-                        <span class="material-symbols-outlined menu-icon">dashboard</span>
-                        Tổng quan
-                    </a>
-                </li>
-                <li>
-                    <a href="mon-hoc.html">
-                        <span class="material-symbols-outlined menu-icon">book</span>
-                        Môn học
-                    </a>
-                </li>
-                <li>
-                    <a href="mo-lop-hoc-phan.html">
-                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
-                        Học kỳ & Mở lớp
-                    </a>
-                </li>
-                <li>
-                    <a href="xem-danh-sach-dk.html">
-                        <span class="material-symbols-outlined menu-icon">how_to_reg</span>
-                        Danh sách đăng ký học phần
-                    </a>
-                </li>
-                <li>
-                    <a href="giang-day-diem.html">
-                        <span class="material-symbols-outlined menu-icon">menu_book</span>
-                        Giảng dạy & Điểm
-                    </a>
-                </li>
+                <li class="active"><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span> Tổng quan</a></li>
+                <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span> Môn học</a></li>
+                <li><a href="mo-lop-hoc-phan.html"><span class="material-symbols-outlined menu-icon">calendar_month</span> Học kỳ & Mở lớp</a></li>
+                <li><a href="xem-danh-sach-dk.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span> Danh sách đăng ký</a></li>
+                <li><a href="giang-day-diem.html"><span class="material-symbols-outlined menu-icon">menu_book</span> Giảng dạy & Điểm</a></li>
             </ul>
-            <div style="padding: 1rem;">
+            <div style="padding: 1rem; margin-top: auto;">
                 <ul class="nav-menu" style="padding: 0;">
-                    <li>
-                        <a href="ho-so.html">
-                            <span class="material-symbols-outlined menu-icon">account_circle</span>
-                            Hồ sơ Cá nhân
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <span class="material-symbols-outlined menu-icon">settings</span>
-                            Cài đặt
-                        </a>
-                    </li>
-                    <li style="margin-top: 1rem;">
-                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
-                            <span class="material-symbols-outlined menu-icon">logout</span>
-                            Đăng xuất
-                        </a>
-                    </li>
+                    <li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span> Hồ sơ Cá nhân</a></li>
+                    <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span> Đăng xuất</a></li>
                 </ul>
             </div>
         </aside>
 
-        <!-- Navbar -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" class="search-bar" placeholder="Tra cứu sinh viên, lớp học...">
+                <input type="text" class="search-bar" id="topSearchInput" placeholder="Tìm tên môn hoặc mã môn cần kiểm tra..." oninput="filterDashboardData()">
             </div>
             
             <div class="nav-user">
                 <div class="top-links d-none d-md-flex">
                     <a href="#" class="active">Trang chủ</a>
-                    <a href="#">Thông báo</a>
-                    <a href="#">Hướng dẫn</a>
+                    <a href="#" onclick="alert('Tính năng đang bảo trì')">Thông báo</a>
                 </div>
-                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">notifications</span></button>
-                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">help_outline</span></button>
-                <img src="https://ui-avatars.com/api/?name=Giao+Vu&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
                 <div>
-                    <h1 class="fw-bold mb-1" style="font-size: 2rem;">Chào buổi sáng, Giáo vụ</h1>
-                    <p class="text-muted mb-0">Hôm nay có 4 nhiệm vụ cần xử lý gấp cho Học kỳ 1 - 2024.</p>
+                    <h1 class="fw-bold mb-1" style="font-size: 2rem;" id="welcomeText">Chào buổi sáng, Giáo vụ</h1>
+                    <p class="text-muted mb-0">Hệ thống phân tích tiến độ đào tạo thời gian thực.</p>
                 </div>
-                <a href="mo-lop-hoc-phan.html" class="btn btn-primary d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined">add</span> Mở lớp học kỳ mới
+                <a href="mo-lop-hoc-phan.html" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 fw-bold">
+                    <span class="material-symbols-outlined">add</span> MỞ LỚP HỌC PHẦN MỚI
                 </a>
             </div>
 
-            <div class="row mb-4 g-4">
+            <div class="row mb-4 g-4 animate__animated animate__fadeInUp">
                 <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="title">MÔN HỌC ĐÃ NHẬP</div>
-                        <div class="value">124/150</div>
-                        <div class="stat-icon blue">
-                            <span class="material-symbols-outlined">devices</span>
-                        </div>
+                    <div class="stat-card shadow-sm border-0">
+                        <div class="title">MÔN HỌC ĐÃ MỞ LỚP</div>
+                        <div class="value" id="cardTotalMH">0 / 4</div>
+                        <div class="stat-icon blue"><span class="material-symbols-outlined">devices</span></div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="title">ĐĂNG KÝ MỚI</div>
-                        <div class="value text-success-custom">1,248</div>
-                        <div class="stat-icon green">
-                            <span class="material-symbols-outlined">person_add</span>
-                        </div>
+                    <div class="stat-card shadow-sm border-0">
+                        <div class="title">TỔNG LƯỢT ĐĂNG KÝ HỌC</div>
+                        <div class="value text-success-custom" id="cardTotalDK">0</div>
+                        <div class="stat-icon green"><span class="material-symbols-outlined">person_add</span></div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="title">TỈ LỆ LỚP ĐỦ</div>
-                        <div class="value">85%</div>
-                        <div class="stat-icon gray">
-                            <span class="material-symbols-outlined">group</span>
-                        </div>
+                    <div class="stat-card shadow-sm border-0">
+                        <div class="title">TỶ LỆ LỚP ĐẠT CHỈ TIÊU</div>
+                        <div class="value" id="cardRateLHP">0%</div>
+                        <div class="stat-icon gray"><span class="material-symbols-outlined">group</span></div>
                     </div>
                 </div>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
                 <div class="col-lg-8">
-                    <div class="card p-0" style="border-radius: 16px; overflow: hidden;">
-                        <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold mb-0">Tiến độ Mở lớp Học kỳ 1</h5>
+                    <div class="card p-0 shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+                        <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+                            <h5 class="fw-bold mb-0 text-dark">Tiến độ Mở lớp Học kỳ</h5>
                             <div class="d-flex gap-2">
-                                <select class="form-select form-select-sm" style="border-radius: 8px; width: 140px; background-color: #f8fafc; border: none; font-weight: 500;">
-                                    <option>Khoa CNTT</option>
-                                    <option>Khoa Kinh tế</option>
+                                <select id="deptFilter" class="form-select form-select-sm shadow-sm" style="border-radius: 8px; width: 150px; border: none; font-weight: bold;" onchange="filterDashboardData()">
+                                    <option value="">Tất cả các khoa</option>
+                                    <option value="K01">Khoa CNTT</option>
+                                    <option value="K02">Khoa Kinh tế</option>
                                 </select>
-                                <button class="btn btn-light btn-sm" style="background: #f8fafc; border: none; border-radius: 8px;">
-                                    <span class="material-symbols-outlined" style="font-size: 20px;">filter_list</span>
-                                </button>
                             </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-custom mb-0">
+                            <table class="table table-hover table-custom mb-0 text-center">
                                 <thead>
                                     <tr>
-                                        <th>Mã môn</th>
-                                        <th>Tên môn học</th>
-                                        <th>Số lớp</th>
-                                        <th>Đăng ký</th>
-                                        <th>Trạng thái</th>
+                                        <th class="text-start ps-4">Mã môn</th>
+                                        <th class="text-start">Tên môn học</th>
+                                        <th>Số lớp mở</th>
+                                        <th>Tổng Đăng ký</th>
+                                        <th class="pe-4">Trạng thái</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="fw-medium">COMP101</td>
-                                        <td><div class="fw-medium">Cấu trúc dữ liệu & Giải thuật</div></td>
-                                        <td>08/10</td>
-                                        <td>380/400</td>
-                                        <td><span class="badge-status badge-success">Đã mở đủ</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">MATH202</td>
-                                        <td><div class="fw-medium">Xác suất thống kê</div></td>
-                                        <td>05/08</td>
-                                        <td>210/320</td>
-                                        <td><span class="badge-status badge-warning">Đang mở</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">ENG110</td>
-                                        <td><div class="fw-medium">Tiếng Anh chuyên ngành 1</div></td>
-                                        <td>02/12</td>
-                                        <td>45/480</td>
-                                        <td><span class="badge-status badge-info">Mới khởi tạo</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="fw-medium">SOFT305</td>
-                                        <td><div class="fw-medium">Phát triển phần mềm linh hoạt</div></td>
-                                        <td>00/04</td>
-                                        <td>0/160</td>
-                                        <td><span class="badge-status badge-secondary">Chưa mở</span></td>
-                                    </tr>
+                                <tbody id="progressTableBody">
+                                    <tr><td colspan="5" class="text-center py-5 text-muted">Đang phân tích tiến độ mở lớp...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -197,75 +116,155 @@
                 </div>
 
                 <div class="col-lg-4">
-                    <div class="card mb-4" style="border-radius: 16px;">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold mb-0">Việc cần làm</h5>
-                            <span class="badge bg-danger rounded-pill px-3" style="background-color: #fee2e2 !important; color: #ef4444 !important;">4 Gấp</span>
-                        </div>
-                        
-                        <ul class="task-list">
-                            <li class="task-item red">
-                                <div class="task-title">Phê duyệt danh sách thi</div>
-                                <p class="task-desc">Hết hạn: Hôm nay, 17:00</p>
-                            </li>
-                            <li class="task-item blue">
-                                <div class="task-title">Nhập liệu mã môn học mới</div>
-                                <p class="task-desc">Khoa Công nghệ Thông tin</p>
-                            </li>
-                            <li class="task-item teal">
-                                <div class="task-title">Mở lớp bổ sung: Giải tích 1</div>
-                                <p class="task-desc">Nhu cầu sinh viên: 45 em</p>
-                            </li>
-                        </ul>
-                        
-                        <div class="text-center mt-3">
-                            <a href="#" class="text-decoration-none fw-600" style="color: var(--accent); font-size: 0.9rem;">Xem tất cả tác vụ</a>
-                        </div>
-                    </div>
-
-                    <div class="card" style="border-radius: 16px;">
-                        <h5 class="fw-bold mb-4">Thống kê đào tạo</h5>
-                        
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-medium" style="font-size: 0.9rem;">Phòng học đang sử dụng</span>
-                                <span class="fw-bold" style="color: var(--accent);">82%</span>
+                    <div class="card mb-4 shadow-sm border-0" style="border-radius: 16px;">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="fw-bold mb-0">Việc cần làm</h5>
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">3 Gấp</span>
                             </div>
-                            <div class="progress-bar-custom">
-                                <div class="progress-bar-fill progress-blue" style="width: 82%;"></div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-medium" style="font-size: 0.9rem;">Giảng viên đã phân lịch</span>
-                                <span class="fw-bold" style="color: #10b981;">95%</span>
-                            </div>
-                            <div class="progress-bar-custom">
-                                <div class="progress-bar-fill progress-green" style="width: 95%;"></div>
-                            </div>
+                            <ul class="task-list list-unstyled mb-0">
+                                <li class="task-item red mb-3 p-3 rounded-3" style="background-color: #fef2f2; border-left: 4px solid #ef4444;">
+                                    <div class="fw-bold text-dark mb-1">Phê duyệt danh sách tốt nghiệp</div>
+                                    <p class="small text-muted mb-0">Hết hạn: Hôm nay, 17:00</p>
+                                </li>
+                                <li class="task-item blue mb-3 p-3 rounded-3" style="background-color: #eff6ff; border-left: 4px solid #3b82f6;">
+                                    <div class="fw-bold text-dark mb-1">Kiểm tra phòng máy thực hành</div>
+                                    <p class="small text-muted mb-0">Khoa Công nghệ Thông tin</p>
+                                </li>
+                                <li class="task-item teal p-3 rounded-3" style="background-color: #f0fdfa; border-left: 4px solid #14b8a6;">
+                                    <div class="fw-bold text-dark mb-1">Mở lớp bổ sung học kỳ hè</div>
+                                    <p class="small text-muted mb-0">Theo nguyện vọng sinh viên</p>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-        
-        <div class="fab">
-            <span class="material-symbols-outlined">bolt</span>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        // Check role
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!Auth.isAuthenticated() || Auth.getCurrentUser().Role !== 'GiaoVu') {
-                alert('Bạn không có quyền truy cập trang này!');
-                window.location.href = '../Auth/login.html';
+        Auth.checkAuth(['GiaoVu']);
+        const user = Auth.getCurrentUser();
+
+        let rawClasses = [];      // Danh sách lớp từ CSDL
+        let rawRegistrations = []; // Danh sách sinh viên đăng ký học từ CSDL
+        let summarySubjects = [];  // Mảng tổng hợp dữ liệu tiến độ môn học
+
+        async function init() {
+            try {
+                let tenGiaoVu = user.name || "Giáo vụ";
+                const profileRes = await Auth.fetchWithAuth('/GiaoVu/ho-so');
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    if (profileData.HoTen) tenGiaoVu = profileData.HoTen;
+                }
+                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGiaoVu)}&background=0D8ABC&color=fff`;
+                document.getElementById('welcomeText').innerText = `Chào buổi sáng, ${tenGiaoVu}`;
+
+                // Triệu hồi dữ liệu thật từ hai cổng API Giáo vụ
+                const [resLHP, resReg] = await Promise.all([
+                    Auth.fetchWithAuth('/GiaoVu/danh-sach-lop-hoc-phan'),
+                    Auth.fetchWithAuth('/GiaoVu/danh-sach-dang-ky')
+                ]);
+
+                if (resLHP.ok) rawClasses = await resLHP.json();
+                if (resReg.ok) rawRegistrations = await resReg.json();
+
+                processDashboardData();
+            } catch (err) {
+                console.error("Lỗi khởi tạo dữ liệu Dashboard:", err);
             }
-        });
+        }
+
+        // Hàm xử lý thuật toán gom cụm dữ liệu Realtime
+        function processDashboardData() {
+            // Đổ con số tổng lên Card Đăng ký mới
+            document.getElementById('cardTotalDK').innerText = rawRegistrations.filter(r => r.TrangThai === 'DaDangKy').length.toLocaleString();
+
+            // Nhóm lớp học phần theo từng Môn học (MaMH) để tính tiến độ
+            const subjectMap = {};
+            let classesMeetingTarget = 0;
+
+            rawClasses.forEach(lhp => {
+                const maMH = lhp.MaLHP.split('_')[1] || lhp.MaMH; // Tự bóc tách hoặc lấy MaMH trực tiếp
+                const tenMH = lhp.TenMH || 'Môn học đào tạo';
+                
+                // Quy ước Khoa dựa theo tiền tố môn học mẫu của nhóm (CS: CNTT, EC: Kinh tế)
+                const maKhoa = maMH.startsWith('CS') ? 'K01' : (maMH.startsWith('EC') ? 'K02' : 'K01');
+
+                if (!subjectMap[maMH]) {
+                    subjectMap[maMH] = {
+                        maMH: maMH,
+                        tenMH: tenMH,
+                        maKhoa: maKhoa,
+                        soLopMo: 0,
+                        tongSV: 0,
+                        tongSlot: 0
+                    };
+                }
+
+                subjectMap[maMH].soLopMo += 1;
+                subjectMap[maMH].tongSV += (lhp.SiSoHienTai || 0);
+                subjectMap[maMH].tongSlot += (lhp.SiSoToiDa || 50);
+
+                if (lhp.SiSoHienTai >= (lhp.SiSoToiDa * 0.5)) {
+                    classesMeetingTarget++; // Lớp đạt chỉ tiêu nếu sĩ số đạt trên 50%
+                }
+            });
+
+            // Tính tỷ lệ lớp đạt chỉ tiêu đổ lên card số 3
+            const rate = rawClasses.length > 0 ? Math.round((classesMeetingTarget / rawClasses.length) * 100) : 0;
+            document.getElementById('cardRateLHP').innerText = `${rate}%`;
+
+            // Chuyển Map thành mảng để xử lý hiển thị
+            summarySubjects = Object.values(subjectMap);
+            document.getElementById('cardTotalMH').innerText = `${summarySubjects.length} / 4 Môn`;
+
+            filterDashboardData();
+        }
+
+        // Hàm lọc kết hợp cả Ô Tìm Kiếm và Dropdown Khoa
+        function filterDashboardData() {
+            const searchKeyword = document.getElementById('topSearchInput').value.toLowerCase().trim();
+            const selectedDept = document.getElementById('deptFilter').value;
+
+            const filtered = summarySubjects.filter(sub => {
+                const matchDept = !selectedDept || sub.maKhoa === selectedDept;
+                const matchSearch = !searchKeyword || sub.maMH.toLowerCase().includes(searchKeyword) || sub.tenMH.toLowerCase().includes(searchKeyword);
+                return matchDept && matchSearch;
+            });
+
+            const tbody = document.getElementById('progressTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted fw-medium">Không tìm thấy tiến độ môn học nào trùng khớp.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(sub => {
+                // Đặt trạng thái thông minh dựa trên số lượng sinh viên nạp vào
+                let statusHtml = '<span class="badge bg-secondary-subtle text-secondary px-3 py-1.5 rounded-pill">Chưa mở</span>';
+                if (sub.tongSV >= (sub.tongSlot * 0.8)) {
+                    statusHtml = '<span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill">Đã mở đủ</span>';
+                } else if (sub.soLopMo > 0) {
+                    statusHtml = '<span class="badge bg-warning-subtle text-warning px-3 py-1.5 rounded-pill">Đang mở</span>';
+                }
+
+                return `
+                    <tr class="animate__animated animate__fadeIn" style="border-top: 1px solid #f1f5f9;">
+                        <td class="text-start ps-4 font-monospace fw-bold text-primary">${sub.maMH}</td>
+                        <td class="text-start fw-semibold text-dark">${sub.tenMH}</td>
+                        <td class="fw-bold text-secondary">${sub.soLopMo.toString().padStart(2, '0')} Lớp</td>
+                        <td><b class="text-primary">${sub.tongSV}</b> / ${sub.tongSlot} SV</td>
+                        <td class="pe-4">${statusHtml}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        init();
     </script>
 </body>
 </html>

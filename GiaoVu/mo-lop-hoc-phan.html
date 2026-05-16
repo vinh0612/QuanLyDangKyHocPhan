@@ -12,288 +12,357 @@
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="nav-brand text-start">
                 <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal; -webkit-text-fill-color: var(--text-muted);">Hệ thống Đăng ký</div>
+                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal; -webkit-text-fill-color: var(--text-muted);">Phòng Đào Tạo</div>
             </div>
             <ul class="nav-menu">
-                <li>
-                    <a href="dashboard.html">
-                        <span class="material-symbols-outlined menu-icon">dashboard</span>
-                        Tổng quan
-                    </a>
-                </li>
-                <li>
-                    <a href="mon-hoc.html">
-                        <span class="material-symbols-outlined menu-icon">book</span>
-                        Môn học
-                    </a>
-                </li>
-                <li class="active">
-                    <a href="mo-lop-hoc-phan.html">
-                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
-                        Học kỳ & Mở lớp
-                    </a>
-                </li>
-                <li>
-                    <a href="xem-danh-sach-dk.html">
-                        <span class="material-symbols-outlined menu-icon">how_to_reg</span>
-                        Danh sách đăng ký học phần
-                    </a>
-                </li>
-                <li>
-                    <a href="giang-day-diem.html">
-                        <span class="material-symbols-outlined menu-icon">menu_book</span>
-                        Giảng dạy & Điểm
-                    </a>
-                </li>
+                <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Môn học</a></li>
+                <li class="active"><a href="mo-lop-hoc-phan.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Học kỳ & Mở lớp</a></li>
+                <li><a href="xem-danh-sach-dk.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Danh sách đăng ký</a></li>
+                <li><a href="giang-day-diem.html"><span class="material-symbols-outlined menu-icon">menu_book</span>Giảng dạy & Điểm</a></li>
             </ul>
-            <div style="padding: 1rem;">
+            <div style="padding: 1rem; margin-top: auto;">
                 <ul class="nav-menu" style="padding: 0;">
-                    <li>
-                        <a href="ho-so.html">
-                            <span class="material-symbols-outlined menu-icon">account_circle</span>
-                            Hồ sơ Cá nhân
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <span class="material-symbols-outlined menu-icon">settings</span>
-                            Cài đặt
-                        </a>
-                    </li>
-                    <li style="margin-top: 1rem;">
-                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
-                            <span class="material-symbols-outlined menu-icon">logout</span>
-                            Đăng xuất
-                        </a>
-                    </li>
+                    <li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
+                    <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
                 </ul>
             </div>
         </aside>
 
-        <!-- Navbar -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" class="search-bar" placeholder="Tra cứu sinh viên, lớp học...">
+                <input type="text" class="search-bar" id="searchInput" placeholder="Tra cứu lớp học phần..." oninput="renderLHP()">
             </div>
             
             <div class="nav-user">
                 <div class="top-links d-none d-md-flex">
                     <a href="dashboard.html">Trang chủ</a>
                     <a href="#">Thông báo</a>
-                    <a href="#">Hướng dẫn</a>
                 </div>
-                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">notifications</span></button>
-                <button class="btn btn-link text-muted p-1"><span class="material-symbols-outlined">help_outline</span></button>
-                <img src="https://ui-avatars.com/api/?name=Giao+Vu&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="section-title m-0">
                     <span class="material-symbols-outlined text-primary" style="font-size: 32px;">add_home</span>
-                    Mở lớp học phần
+                    Tiến độ Mở lớp học phần
                 </h2>
-                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="openModal()">
+                <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill fw-bold px-4" onclick="openModal()">
                     <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
-                    Thêm lớp học phần
+                    MỞ LỚP MỚI
                 </button>
             </div>
 
-            <div class="card border-0 mb-4 p-3" style="border-radius: 16px;">
+            <div class="card border-0 mb-4 p-3 shadow-sm" style="border-radius: 16px;">
                 <div class="row align-items-center">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Lọc theo Học kỳ</label>
-                        <select id="hkSelect" class="form-select" onchange="renderLHP()"></select>
+                        <label class="form-label fw-bold text-muted small">LỌC THEO HỌC KỲ</label>
+                        <select id="hkSelect" class="form-select border-light-subtle rounded-pill px-3 shadow-sm" onchange="renderLHP()">
+                            <option value="">Đang truy xuất dữ liệu Học kỳ...</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 p-3" style="border-radius: 16px;">
+            <div class="card border-0 p-3 shadow-sm" style="border-radius: 16px;">
                 <div class="table-responsive">
-                    <table class="table align-middle table-custom">
-                        <thead>
+                    <table class="table align-middle table-custom table-hover m-0">
+                        <thead class="table-light">
                             <tr>
-                                <th>Mã LHP</th>
-                                <th>Tên môn học</th>
-                                <th>Giảng viên</th>
-                                <th>Lịch học</th>
-                                <th>Phòng</th>
-                                <th class="text-center">Sĩ số</th>
-                                <th class="text-center">Thao tác</th>
+                                <th class="ps-4 py-3">Mã LHP</th>
+                                <th>Môn học (Tín chỉ)</th>
+                                <th>Phụ trách</th>
+                                <th>Lịch & Phòng</th>
+                                <th class="text-center pe-4">Sĩ số</th>
                             </tr>
                         </thead>
-                        <tbody id="lhpTableBody"></tbody>
+                        <tbody id="lhpTableBody">
+                            <tr><td colspan="5" class="text-center py-5 text-muted">Đang tải danh sách lớp từ hệ thống...</td></tr>
+                        </tbody>
                     </table>
                 </div>
-                <!-- Pagination -->
-                <div class="pagination-container">
-                    <div class="pagination-info" id="paginationInfo"></div>
+                
+                <div class="d-flex justify-content-end align-items-center mt-3 border-top pt-3">
                     <nav>
-                        <ul class="pagination" id="paginationList"></ul>
+                        <ul class="pagination pagination-sm mb-0 rounded-pill shadow-sm" id="paginationList"></ul>
                     </nav>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal Form -->
     <div class="modal fade" id="lhpModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content" style="border-radius: 24px; border: none;">
-                <div class="modal-header border-0 pt-4 px-4">
-                    <h5 class="fw-bold" id="modalTitle">Thông tin lớp học phần</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg" style="border-radius: 24px; border: none;">
+                <div class="modal-header border-0 pt-4 px-4 bg-primary text-white" style="border-top-left-radius: 24px; border-top-right-radius: 24px;">
+                    <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined">add_task</span> 
+                        <span id="modalTitle">Khởi tạo Lớp học phần mới</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body px-4 pb-4">
+                <div class="modal-body px-4 py-4">
                     <form id="lhpForm">
-                        <input type="hidden" id="editMaLHP">
-                        <div class="row g-3">
+                        <div class="row g-4">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Mã Lớp Học Phần (Tùy chọn)</label>
+                                <input type="text" id="formMaLHP" class="form-control" placeholder="Để trống hệ thống sẽ tự phát sinh (VD: LHP_CS101)">
+                            </div>
+                            
                             <div class="col-md-6">
-                                <label class="form-label fw-600">Học kỳ</label>
-                                <select id="formMaHK" class="form-select" required></select>
+                                <label class="form-label fw-bold">Học kỳ áp dụng <span class="text-danger">*</span></label>
+                                <select id="formMaHK" class="form-select bg-light" required></select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-600">Môn học</label>
-                                <select id="formMaMH" class="form-select" required></select>
+                                <label class="form-label fw-bold">Môn học đào tạo <span class="text-danger">*</span></label>
+                                <select id="formMaMH" class="form-select bg-light" required></select>
                             </div>
+                            
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Giảng viên phụ trách <span class="text-danger">*</span></label>
+                                <select id="formMaGV" class="form-select bg-light" required></select>
+                            </div>
+                            
                             <div class="col-md-6">
-                                <label class="form-label fw-600">Giáo viên</label>
-                                <select id="formMaGV" class="form-select" required></select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-600">Phòng học</label>
-                                <input type="text" id="formPhong" class="form-control" required>
-                            </div>
-                            <div class="col-md-8">
-                                <label class="form-label fw-600">Lịch học</label>
+                                <label class="form-label fw-bold">Lịch học dự kiến</label>
                                 <input type="text" id="formLich" class="form-control" placeholder="Ví dụ: Thứ 2 (7-11)" required>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-600">Sĩ số tối đa</label>
-                                <input type="number" id="formSiSo" class="form-control" min="1" required>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Phòng học</label>
+                                <input type="text" id="formPhong" class="form-control" placeholder="A.102" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-danger">Sĩ số tối đa</label>
+                                <input type="number" id="formSiSo" class="form-control text-center fw-bold text-danger" value="50" min="1" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small">Ngày bắt đầu</label>
+                                <input type="date" id="formNgayBD" class="form-control text-muted">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small">Ngày kết thúc</label>
+                                <input type="date" id="formNgayKT" class="form-control text-muted">
                             </div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer border-0 px-4 pb-4">
-                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Hủy bỏ</button>
-                    <button type="button" class="btn btn-primary px-4" onclick="saveLHP()">Lưu lớp học</button>
+                <div class="modal-footer border-0 px-4 pb-4 bg-light" style="border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-bold" data-bs-dismiss="modal">Hủy thao tác</button>
+                    <button type="button" class="btn btn-primary px-5 rounded-pill fw-bold" id="btnSaveSubmit" onclick="saveLHP()">
+                        <div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined" style="font-size: 18px;">cloud_upload</span> XÁC NHẬN MỞ LỚP</div>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
         Auth.checkAuth(['GiaoVu']);
-        let lhpM;
+        const user = Auth.getCurrentUser();
+        
+        let lhpModal;
+        let allClassesList = []; // Danh sách toàn bộ lớp học phần
+        let supportData = {};    // Dữ liệu bộ lọc (Học kỳ, Môn học, GV)
+        
         let currentPage = 1;
-        const rowsPerPage = 5;
+        const rowsPerPage = 6;
 
-        function init() {
-            lhpM = new bootstrap.Modal(document.getElementById('lhpModal'));
-            const hk = JSON.parse(localStorage.getItem('HocKy') || '[]'), mh = JSON.parse(localStorage.getItem('MonHoc') || '[]'), gv = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            document.getElementById('hkSelect').innerHTML = hk.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} (${h.NamHoc})</option>`).join('');
-            document.getElementById('formMaHK').innerHTML = hk.map(h => `<option value="${h.MaHK}">${h.TenHK}</option>`).join('');
-            document.getElementById('formMaMH').innerHTML = mh.map(m => `<option value="${m.MaMH}">${m.TenMH}</option>`).join('');
-            document.getElementById('formMaGV').innerHTML = gv.map(g => `<option value="${g.MaGV}">${g.HoTen}</option>`).join('');
-            renderLHP();
+        async function init() {
+            lhpModal = new bootstrap.Modal(document.getElementById('lhpModal'));
+            
+            let tenGiaoVu = user.name || "Giáo vụ";
+            try {
+                const profileRes = await Auth.fetchWithAuth('/GiaoVu/ho-so');
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    if (profileData.HoTen) tenGiaoVu = profileData.HoTen;
+                }
+            } catch(e) {}
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGiaoVu)}&background=0D8ABC&color=fff`;
+
+            await loadInitialData();
+        }
+
+        async function loadInitialData() {
+            try {
+                // 1. Lấy dữ liệu danh mục hỗ trợ (Học kỳ, Môn học, GV)
+                const supportRes = await Auth.fetchWithAuth('/GiaoVu/danh-muc-ho-tro');
+                if (supportRes.ok) {
+                    supportData = await supportRes.json();
+                    
+                    // Render Dropdown Học Kỳ ngoài màn hình chính
+                    const hkSelect = document.getElementById('hkSelect');
+                    hkSelect.innerHTML = '<option value="">-- Tất cả học kỳ --</option>' + 
+                        supportData.hocKy.map(h => `<option value="${h.MaHK}">${h.TenHK} (${h.NamHoc})</option>`).join('');
+
+                    // Render Dropdown bên trong Modal Form
+                    document.getElementById('formMaHK').innerHTML = supportData.hocKy.map(h => `<option value="${h.MaHK}">${h.TenHK} (${h.NamHoc})</option>`).join('');
+                    document.getElementById('formMaMH').innerHTML = supportData.monHoc.map(m => `<option value="${m.MaMH}">${m.MaMH} - ${m.TenMH}</option>`).join('');
+                    document.getElementById('formMaGV').innerHTML = supportData.giangVien.map(g => `<option value="${g.MaGV}">${g.MaGV} - ${g.HoTen}</option>`).join('');
+                }
+
+                // 2. Kéo danh sách lớp học phần (Tái sử dụng API của giảng viên vì nó là View chung toàn trường cho Giáo Vụ)
+                const lhpRes = await Auth.fetchWithAuth('/GiaoVu/danh-sach-lop-hoc-phan');
+                if (lhpRes.ok) {
+                    allClassesList = await lhpRes.json();
+                }
+                
+                renderLHP();
+            } catch (err) {
+                console.error("Lỗi khởi tạo màn hình Mở Lớp:", err);
+            }
         }
 
         function renderLHP(page = 1) {
             currentPage = page;
-            const hkid = document.getElementById('hkSelect').value, 
-                  lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]'), 
-                  mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]'), 
-                  gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
+            const hkid = document.getElementById('hkSelect').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
             
-            const filtered = lhpD.filter(l => l.MaHK === hkid);
+            // Lọc logic kết hợp Search và Dropdown Học Kỳ
+            const filtered = allClassesList.filter(l => {
+                const matchHk = !hkid || (l.MaHK || l.mahk) === hkid;
+                const searchStr = `${l.MaLHP} ${l.TenMH} ${l.TenGV}`.toLowerCase();
+                const matchSearch = !searchInput || searchStr.includes(searchInput);
+                return matchHk && matchSearch;
+            });
+
             const totalRows = filtered.length;
             const totalPages = Math.ceil(totalRows / rowsPerPage);
             const start = (currentPage - 1) * rowsPerPage;
             const end = start + rowsPerPage;
             const paginatedItems = filtered.slice(start, end);
 
-            document.getElementById('lhpTableBody').innerHTML = paginatedItems.map(l => `
-                <tr>
-                    <td><span class="fw-600">${l.MaLHP}</span></td>
-                    <td>${(mhD.find(m => m.MaMH === l.MaMH) || {}).TenMH}</td>
-                    <td>${(gvD.find(g => g.MaGV === l.MaGV) || {}).HoTen}</td>
-                    <td>${l.LichHoc}</td>
-                    <td><span class="badge bg-light text-dark border">${l.PhongHoc}</span></td>
-                    <td class="text-center">${l.SiSoHienTai}/${l.SiSoToiDa}</td>
-                    <td class="text-center">
-                        <button class="btn btn-link btn-sm p-1" onclick="editLHP('${l.MaLHP}')"><span class="material-symbols-outlined text-accent">edit</span></button>
-                        <button class="btn btn-link btn-sm p-1" onclick="deleteLHP('${l.MaLHP}', ${l.SiSoHienTai})"><span class="material-symbols-outlined text-danger">delete</span></button>
+            const tbody = document.getElementById('lhpTableBody');
+            
+            if (totalRows === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted fw-medium">Không có lớp học phần nào phù hợp.</td></tr>';
+                renderPagination(0, 0);
+                return;
+            }
+
+            tbody.innerHTML = paginatedItems.map(l => {
+                const maLHP = l.MaLHP || l.malhp;
+                const tenMH = l.TenMH || l.tenmh || 'Môn học';
+                const tenGV = l.TenGV || l.tengv || 'Chưa phân công';
+                const lichHoc = l.LichHoc || 'Chưa xếp';
+                const phong = l.PhongHoc || '---';
+                const sisoHienTai = l.SiSoHienTai !== undefined ? l.SiSoHienTai : 0;
+                const sisoToiDa = l.SiSoToiDa !== undefined ? l.SiSoToiDa : 50;
+                
+                // Cảnh báo màu đỏ nếu sĩ số đã đầy
+                const isFull = sisoHienTai >= sisoToiDa;
+                
+                return `
+                <tr class="animate__animated animate__fadeIn" style="border-top: 1px solid #f1f5f9;">
+                    <td class="ps-4 py-3"><span class="fw-bold font-monospace text-primary">${maLHP}</span></td>
+                    <td>
+                        <div class="fw-bold text-dark">${tenMH}</div>
+                        <div class="small text-muted">${l.TenHK || ''} ${l.NamHoc || ''}</div>
+                    </td>
+                    <td><div class="fw-medium">${tenGV}</div></td>
+                    <td>
+                        <div class="badge bg-light text-dark border px-2 py-1 mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 14px;">schedule</span> ${lichHoc}</div><br>
+                        <div class="badge bg-light text-dark border px-2 py-1"><span class="material-symbols-outlined align-middle" style="font-size: 14px;">location_on</span> P.${phong}</div>
+                    </td>
+                    <td class="text-center pe-4">
+                        <span class="badge ${isFull ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} rounded-pill px-3 py-1.5" style="font-size: 0.95rem;">
+                            ${sisoHienTai} / ${sisoToiDa}
+                        </span>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="7" class="text-center py-4 text-muted">Không có lớp học nào</td></tr>';
+            `}).join('');
 
             renderPagination(totalRows, totalPages);
         }
 
         function renderPagination(totalRows, totalPages) {
-            const paginationList = document.getElementById('paginationList');
-            const paginationInfo = document.getElementById('paginationInfo');
+            let container = document.getElementById('paginationContainer');
+            if (!container) {
+                container = document.createElement('div'); container.id = 'paginationContainer';
+                container.className = 'd-flex justify-content-end align-items-center mt-3 border-top pt-3';
+                document.querySelector('.table-responsive').after(container);
+            }
+            if (totalRows === 0) { container.innerHTML = ''; return; }
             
-            if (totalRows === 0) {
-                paginationList.innerHTML = '';
-                paginationInfo.innerText = '';
+            let html = '<nav><ul class="pagination pagination-sm mb-0 rounded-pill shadow-sm">';
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link d-flex align-items-center justify-content-center" href="#" onclick="renderLHP(${currentPage - 1}); return false;" style="width: 32px; height: 32px;"><span class="material-symbols-outlined" style="font-size: 18px; line-height: 1;">chevron_left</span></a></li>`;
+            
+            for(let i=1; i<=totalPages; i++) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link d-flex align-items-center justify-content-center fw-medium" href="#" onclick="renderLHP(${i}); return false;" style="width: 32px; height: 32px;">${i}</a></li>`;
+            }
+            
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link d-flex align-items-center justify-content-center" href="#" onclick="renderLHP(${currentPage + 1}); return false;" style="width: 32px; height: 32px;"><span class="material-symbols-outlined" style="font-size: 18px; line-height: 1;">chevron_right</span></a></li>`;
+            html += '</ul></nav>';
+            container.innerHTML = html;
+        }
+
+        window.openModal = () => {
+            document.getElementById('lhpForm').reset();
+            lhpModal.show();
+        };
+
+        // GỌI XUỐNG STORED PROCEDURE (sp_GiaoVu_MoLopHocPhan)
+        window.saveLHP = async () => {
+            const form = document.getElementById('lhpForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
                 return;
             }
 
-            const start = (currentPage - 1) * rowsPerPage + 1;
-            const end = Math.min(currentPage * rowsPerPage, totalRows);
-            paginationInfo.innerText = `Hiển thị ${start}-${end} trong tổng số ${totalRows} lớp học`;
+            const btn = document.getElementById('btnSaveSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG XỬ LÝ...';
 
-            let html = '';
-            // Prev
-            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="renderLHP(${currentPage - 1})"><span class="material-symbols-outlined">chevron_left</span></a>
-            </li>`;
-
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="renderLHP(${i})">${i}</a>
-                </li>`;
+            // Tạo mã LHP tự động nếu Giáo vụ không nhập
+            let inputMaLHP = document.getElementById('formMaLHP').value.trim();
+            const maMH = document.getElementById('formMaMH').value;
+            if (!inputMaLHP) {
+                inputMaLHP = `LHP_${maMH}_${Math.floor(Math.random() * 10000)}`;
             }
 
-            // Next
-            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="renderLHP(${currentPage + 1})"><span class="material-symbols-outlined">chevron_right</span></a>
-            </li>`;
+            const payload = {
+                maLHP: inputMaLHP,
+                maHK: document.getElementById('formMaHK').value,
+                maMH: maMH,
+                maGV: document.getElementById('formMaGV').value,
+                lichHoc: document.getElementById('formLich').value,
+                phongHoc: document.getElementById('formPhong').value,
+                siSoToiDa: document.getElementById('formSiSo').value,
+                ngayBatDau: document.getElementById('formNgayBD').value || null,
+                ngayKetThuc: document.getElementById('formNgayKT').value || null
+            };
 
-            paginationList.innerHTML = html;
-        }
+            try {
+                const res = await Auth.fetchWithAuth('/GiaoVu/mo-lop-hoc-phan', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Mở lớp thành công!');
+                    lhpModal.hide();
+                    await loadInitialData(); // Load lại toàn bộ danh sách để thấy lớp mới
+                } else {
+                    alert('LỖI BẢO MẬT/CSDL: ' + data.message);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ!');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined" style="font-size: 18px;">cloud_upload</span> XÁC NHẬN MỞ LỚP</div>';
+            }
+        };
 
-        window.openModal = () => { document.getElementById('modalTitle').innerText = 'Mở lớp học mới'; document.getElementById('lhpForm').reset(); document.getElementById('editMaLHP').value = ''; lhpM.show(); };
-        window.editLHP = (id) => {
-            const l = JSON.parse(localStorage.getItem('LopHocPhan') || '[]').find(x => x.MaLHP === id);
-            if (!l) return;
-            document.getElementById('modalTitle').innerText = 'Sửa lớp học: ' + id;
-            document.getElementById('editMaLHP').value = id;
-            ['MaHK', 'MaMH', 'MaGV'].forEach(k => document.getElementById('form' + k).value = l[k]);
-            document.getElementById('formPhong').value = l.PhongHoc;
-            document.getElementById('formLich').value = l.LichHoc;
-            document.getElementById('formSiSo').value = l.SiSoToiDa;
-            lhpM.show();
-        };
-        window.saveLHP = () => {
-            const id = document.getElementById('editMaLHP').value, d = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const obj = { MaLHP: id || 'LHP' + Date.now(), MaMH: document.getElementById('formMaMH').value, MaGV: document.getElementById('formMaGV').value, MaHK: document.getElementById('formMaHK').value, PhongHoc: document.getElementById('formPhong').value, LichHoc: document.getElementById('formLich').value, SiSoToiDa: parseInt(document.getElementById('formSiSo').value), SiSoHienTai: 0 };
-            if (id) { const i = d.findIndex(x => x.MaLHP === id); obj.SiSoHienTai = d[i].SiSoHienTai; d[i] = obj; } else { d.push(obj); }
-            localStorage.setItem('LopHocPhan', JSON.stringify(d)); lhpM.hide(); renderLHP();
-        };
-        window.deleteLHP = (id, s) => { if (s > 0) return alert('Không thể xóa lớp đã có SV!'); if (confirm('Xóa lớp này?')) { const d = JSON.parse(localStorage.getItem('LopHocPhan') || '[]').filter(x => x.MaLHP !== id); localStorage.setItem('LopHocPhan', JSON.stringify(d)); renderLHP(); } };
         init();
     </script>
 </body>

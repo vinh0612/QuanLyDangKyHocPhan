@@ -21,11 +21,13 @@ app.get('/', (req, res) => {
 const authRoutes = require('./routes/authRoutes');
 const sinhVienRoutes = require('./routes/sinhVienRoutes');
 const giangVienRoutes = require('./routes/giangVienRoutes');
+const giaoVuRoutes = require('./routes/giaoVuRoutes');
 
 // NỐI CÁC ROUTER VÀ O ĐƯỜNG DẪN TƯƠNG ỨNG
 app.use('/api/Auth', authRoutes);
 app.use('/api/SinhVien', sinhVienRoutes);
 app.use('/api/GiangVien', giangVienRoutes);
+app.use('/api/GiaoVu', giaoVuRoutes);
 
 // ============================================================
 // KHỞI ĐỘNG HỆ THỐNG
