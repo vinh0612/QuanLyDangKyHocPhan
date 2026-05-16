@@ -34,7 +34,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="fw-bold mb-1" style="font-size: 2rem;" id="welcomeText">Chào ngày mới, Thầy/Cô!</h1>
-                    <p class="text-muted mb-0" id="todayTaskDesc">Hôm nay bạn chưa có lịch giảng dạy.</p>
+                    <p class="text-muted mb-0" id="todayTaskDesc">Đang tải trạng thái lịch giảng dạy...</p>
                 </div>
                 <button class="btn btn-primary d-flex align-items-center gap-2" onclick="alert('Chức năng Ghi chú cá nhân đang được nâng cấp bảo mật.')">
                     <span class="material-symbols-outlined">add_task</span> Ghi chú giảng dạy
@@ -59,7 +59,7 @@
                     <div class="card border-0 p-4 animate__animated animate__fadeInUp mt-4" style="border-radius: 20px;">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0">Lớp học phụ trách</h5>
-                            <select class="form-select form-select-sm w-auto border-0 bg-light fw-600 px-3" style="border-radius: 8px; min-width: 150px;" id="hkFilter" onchange="renderMyClasses()">
+                            <select class="form-select form-select-sm w-auto border-0 bg-light fw-600 px-3" style="border-radius: 8px; min-width: 150px;" id="hkFilter" onchange="filterAndRenderUI()">
                                 <option value="">Đang truy xuất...</option>
                             </select>
                         </div>
@@ -78,7 +78,7 @@
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="mon-hoc.html" class="card h-100 border-0 text-center p-3 text-decoration-none shadow-sm animate__animated animate__zoomIn animate__delay-1s" style="background: #198754; color: #fff; border-radius: 20px;">
+                            <a href="mon-hoc.html" class="card h-100 border-0 text-center p-3 text-decoration-none shadow-sm animate__animated animate__zoomIn" style="background: #198754; color: #fff; border-radius: 20px;">
                                 <span class="material-symbols-outlined mb-2" style="font-size: 32px;">list_alt</span>
                                 <div class="fw-bold">Danh mục Môn</div>
                             </a>
@@ -114,7 +114,10 @@
 
         function renderSidebar() {
             const sidebar = document.getElementById('dynamicSidebar');
-            if (user.Role === 'TruongBoMon') {
+            // Đồng bộ chuẩn hóa kiểm tra role viết thường/viết hoa từ Token bảo mật
+            const userRoleRaw = user.role ? user.role.toString().replace('role_', '').toLowerCase().trim() : '';
+
+            if (userRoleRaw === 'truongbomon') {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet'; link.href = '../TruongBoMon/css/truong-bo-mon.css';
                 document.head.appendChild(link);
@@ -134,6 +137,7 @@
                     <ul class="nav-menu">
                         <li class="active"><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
                         <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
+                        <li><a href="diem-danh.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Điểm danh</a></li>
                         <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
                         <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
                     </ul>`;
@@ -149,40 +153,36 @@
             document.getElementById('currentDate').innerText = `${days[now.getDay()]} ${now.getDate()}/${now.getMonth() + 1}`;
 
             try {
-                try {
-                    const profileRes = await Auth.fetchWithAuth('/GiangVien/ho-so');
-                    if (profileRes.ok) {
-                        const profileData = await profileRes.json();
-                        const tenGV = profileData.HoTen || profileData.hoten || user.TenLogin;
-                        document.getElementById('welcomeText').innerText = `Chào ngày mới, ${tenGV}!`;
-                        document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGV)}&background=0D8ABC&color=fff`;
-                    }
-                } catch(e) {}
+                // 1. Đồng bộ thông tin cá nhân Giảng viên từ View bảo mật
+                const profileRes = await Auth.fetchWithAuth('/GiangVien/ho-so');
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    const tenGV = profileData.HoTen || user.name;
+                    document.getElementById('welcomeText').innerText = `Chào ngày mới, Thầy ${tenGV}!`;
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGV)}&background=0D8ABC&color=fff`;
+                }
 
-                try {
-                    const scheduleRes = await Auth.fetchWithAuth('/GiangVien/lich-day');
-                    if (scheduleRes.ok) { myTeachingSchedule = await scheduleRes.json(); }
-                } catch(e) {}
+                // 2. ĐÃ ĐỔI DÂY: Trỏ thẳng vào cổng /lop-phu-trach (vw_GV_LopPhuTrach) để lấy đầy đủ Sĩ số và Lịch học chuỗi
+                const scheduleRes = await Auth.fetchWithAuth('/GiangVien/lop-phu-trach');
+                if (scheduleRes.ok) { 
+                    myTeachingSchedule = await scheduleRes.json(); 
+                }
             } catch (err) {
-                console.error(err);
+                console.error("Lỗi đồng bộ dữ liệu Dashboard:", err);
             } finally {
                 populateSemesterFilter();
-                renderMyClasses();
-                renderTodaySchedule();
+                filterAndRenderUI();
             }
         }
 
-        // ĐÃ SỬA: Ép mở khóa vĩnh viễn nút bấm xổ xuống kể cả khi rỗng
         function populateSemesterFilter() {
             const filterSelect = document.getElementById('hkFilter');
-            
-            // Luôn luôn mở khóa
             filterSelect.disabled = false;
 
             if (!myTeachingSchedule || myTeachingSchedule.length === 0) {
                 filterSelect.innerHTML = `
                     <option value="">-- Không có dữ liệu --</option>
-                    <option value="none" disabled>🚫 Chưa có lớp học phần nào</option>
+                    <option value="none" disabled>Chưa phụ trách lớp nào</option>
                 `;
                 return;
             }
@@ -191,23 +191,39 @@
             myTeachingSchedule.forEach(item => {
                 const hk = item.TenHK || item.tenhk;
                 const nam = item.NamHoc || item.namhoc;
-                semesterMap[`${hk}|${nam}`] = `${hk} - Năm học ${nam}`;
+                if (hk && nam) {
+                    semesterMap[`${hk}|${nam}`] = `${hk} - Năm học ${nam}`;
+                }
             });
+
             const sortedKeys = Object.keys(semesterMap).sort((a, b) => b.localeCompare(a));
             filterSelect.innerHTML = '';
-            sortedKeys.forEach(key => { filterSelect.innerHTML += `<option value="${key}">${semesterMap[key]}</option>`; });
+            sortedKeys.forEach(key => { 
+                filterSelect.innerHTML += `<option value="${key}">${semesterMap[key]}</option>`; 
+            });
         }
 
-        function renderMyClasses() {
+        // Gom nhóm hàm render phụ thuộc vào bộ lọc học kỳ để chạy realtime
+        function filterAndRenderUI() {
             const filterSelect = document.getElementById('hkFilter');
             const filterValue = filterSelect ? filterSelect.value : '';
-            const container = document.getElementById('myClassesList');
-            let filteredClasses = filterValue ? myTeachingSchedule.filter(item => {
-                const [hk, nam] = filterValue.split('|');
-                return (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam;
-            }) : [...myTeachingSchedule];
 
-            if (filteredClasses.length === 0) {
+            let filteredClasses = [];
+            if (filterValue) {
+                const [hk, nam] = filterValue.split('|');
+                filteredClasses = myTeachingSchedule.filter(item => (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam);
+            } else {
+                filteredClasses = [...myTeachingSchedule];
+            }
+
+            renderMyClasses(filteredClasses);
+            renderTodaySchedule(filteredClasses);
+        }
+
+        function renderMyClasses(classes) {
+            const container = document.getElementById('myClassesList');
+
+            if (classes.length === 0) {
                 container.innerHTML = '<div class="text-center py-4"><p class="text-muted">Không tìm thấy lớp học phần nào.</p></div>';
                 return;
             }
@@ -215,8 +231,10 @@
             const colors = ['#e0f2fe', '#dcfce7', '#fef3c7', '#f3e8ff'];
             const textColors = ['#0369a1', '#15803d', '#b45309', '#7e22ce'];
 
-            container.innerHTML = filteredClasses.map((item, index) => {
-                const tenMH = item.TenMH || 'Môn học'; const maLHP = item.MaLHP || '---'; const siSo = item.SiSoHienTai || 0;
+            container.innerHTML = classes.map((item, index) => {
+                const tenMH = item.TenMH || 'Môn học'; 
+                const maLHP = item.MaLHP || '---'; 
+                const siSo = item.SiSoHienTai !== undefined ? item.SiSoHienTai : 0;
                 const colorIdx = index % colors.length;
                 const initials = tenMH.substring(0, 1).toUpperCase() + (tenMH.includes(' ') ? tenMH.split(' ').pop().substring(0, 1).toUpperCase() : '');
 
@@ -232,38 +250,41 @@
             }).join('');
         }
 
-        function renderTodaySchedule() {
-            const filterSelect = document.getElementById('hkFilter');
-            const filterValue = filterSelect ? filterSelect.value : '';
+        function renderTodaySchedule(classes) {
             const container = document.getElementById('todayScheduleList');
-            let filteredClasses = filterValue ? myTeachingSchedule.filter(item => {
-                const [hk, nam] = filterValue.split('|');
-                return (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam;
-            }) : [...myTeachingSchedule];
 
-            if (filteredClasses.length === 0) {
-                container.innerHTML = '<p class="text-muted italic text-center p-3 border rounded-3 bg-light">Chưa có lịch giảng dạy chi tiết.</p>';
-                document.getElementById('todayTaskDesc').innerText = "Hiện tại không có lịch lên lớp nào trong hệ thống."; return;
+            if (classes.length === 0) {
+                container.innerHTML = '<p class="text-muted italic text-center p-3 border rounded-3 bg-light">Chưa có lịch giảng dạy chi tiết trong học kỳ chọn.</p>';
+                document.getElementById('todayTaskDesc').innerText = "Hiện tại không có lịch lên lớp nào trong hệ thống."; 
+                return;
             }
-            document.getElementById('todayTaskDesc').innerText = `Thầy/Cô có ${filteredClasses.length} lớp học phần trong kỳ này.`;
+            
+            document.getElementById('todayTaskDesc').innerText = `Thầy/Cô đang phụ trách ${classes.length} lớp học phần trong học kỳ này.`;
 
-            container.innerHTML = filteredClasses.map(item => {
+            container.innerHTML = classes.map(item => {
+                const lichHoc = item.LichHoc || item.lichhoc || 'Chưa xếp lịch';
+                const tenMH = item.TenMH || 'Môn học';
+                const maLHP = item.MaLHP || '---';
+                const phongHoc = item.PhongHoc || item.phonghoc || '---';
+                const siSo = item.SiSoHienTai !== undefined ? item.SiSoHienTai : 0;
+
                 return `
                     <div class="schedule-item shadow-sm border p-3 rounded-4 mb-3" style="border-left: 5px solid #0d6efd !important;">
                         <div class="d-flex justify-content-between align-items-center w-100">
                             <div>
-                                <div class="badge bg-danger-subtle text-danger mb-2 px-2 py-1 fw-bold"><span class="material-symbols-outlined align-middle me-1" style="font-size: 14px;">alarm</span>${item.LichHoc || 'Chưa xếp'}</div>
-                                <div class="fw-bold h5 mb-2 text-dark">${item.TenMH} (${item.MaLHP})</div>
+                                <div class="badge bg-danger-subtle text-danger mb-2 px-2 py-1 fw-bold"><span class="material-symbols-outlined align-middle me-1" style="font-size: 14px;">alarm</span>${lichHoc}</div>
+                                <div class="fw-bold h5 mb-2 text-dark">${tenMH} (${maLHP})</div>
                                 <div class="small text-muted d-flex align-items-center gap-3">
-                                    <span class="bg-light px-2 py-1 rounded"><span class="material-symbols-outlined text-primary" style="font-size:16px">location_on</span> Phòng ${item.PhongHoc || '---'}</span>
-                                    <span class="bg-light px-2 py-1 rounded"><span class="material-symbols-outlined text-success" style="font-size:16px">groups</span> ${item.SiSoHienTai || 0} SV</span>
+                                    <span class="bg-light px-2 py-1 rounded"><span class="material-symbols-outlined text-primary" style="font-size:16px">location_on</span> Phòng ${phongHoc}</span>
+                                    <span class="bg-light px-2 py-1 rounded"><span class="material-symbols-outlined text-success" style="font-size:16px">groups</span> ${siSo} SV</span>
                                 </div>
                             </div>
-                            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold ms-3" onclick="window.location.href='nhap-diem.html?malhp=${item.MaLHP}'"><span class="material-symbols-outlined align-middle me-1" style="font-size: 16px;">edit</span> Chấm Điểm</button>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold ms-3" onclick="window.location.href='nhap-diem.html?malhp=${maLHP}'"><span class="material-symbols-outlined align-middle me-1" style="font-size: 16px;">edit</span> Chấm Điểm</button>
                         </div>
                     </div>`;
             }).join('');
         }
+
         init();
     </script>
 </body>

@@ -19,7 +19,7 @@
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" class="search-bar" placeholder="Tìm kiếm lớp học...">
+                <input type="text" class="search-bar" id="tableSearchInput" placeholder="Tìm kiếm tên môn, mã lớp..." oninput="searchTable()">
             </div>
             <div class="nav-user">
                 <div class="top-links d-none d-md-flex me-3">
@@ -49,7 +49,7 @@
 
             <div class="card border-0 p-3 shadow-sm animate__animated animate__fadeIn" style="border-radius: 16px;">
                 <div class="table-responsive">
-                    <table class="table align-middle table-custom table-hover">
+                    <table class="table align-middle table-custom table-hover m-0">
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4 py-3">Môn học / Mã lớp</th>
@@ -81,18 +81,20 @@
         let allMyClasses = [];
         let filteredClasses = [];
         let currentPage = 1;
-        const rowsPerPage = 5;
+        const rowsPerPage = 6;
 
         function renderSidebar() {
             const sidebar = document.getElementById('dynamicSidebar');
-            if (user.Role === 'TruongBoMon') {
+            const userRoleRaw = user.role ? user.role.toString().replace('role_', '').toLowerCase().trim() : '';
+
+            if (userRoleRaw === 'truongbomon') {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet'; link.href = '../TruongBoMon/css/truong-bo-mon.css';
                 document.head.appendChild(link);
                 sidebar.innerHTML = `
                     <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Trưởng Bộ Môn</div></div>
                     <ul class="nav-menu">
-                        <li><a href="../TruongBoMon/dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
                         <li><a href="../TruongBoMon/quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
                         <li><a href="../TruongBoMon/lich-day-bo-mon.html"><span class="material-symbols-outlined menu-icon">groups</span>Lịch dạy Bộ môn</a></li>
                         <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
@@ -105,6 +107,7 @@
                     <ul class="nav-menu">
                         <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
                         <li class="active"><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
+                        <li><a href="diem-danh.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Điểm danh</a></li>
                         <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
                         <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
                     </ul>`;
@@ -114,14 +117,28 @@
 
         async function init() {
             renderSidebar();
-            const tenHienThi = user.HoTen || user.TenLogin;
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenHienThi)}&background=0D8ABC&color=fff`;
+            
             try {
-                const res = await Auth.fetchWithAuth('/GiangVien/lich-day');
-                if (res.ok) { allMyClasses = await res.json(); }
+                let tenHienThi = user.name || "GV";
+                try {
+                    const profileRes = await Auth.fetchWithAuth('/GiangVien/ho-so');
+                    if (profileRes.ok) {
+                        const profileData = await profileRes.json();
+                        if (profileData.HoTen) tenHienThi = profileData.HoTen;
+                    }
+                } catch (e) {}
+                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenHienThi)}&background=0D8ABC&color=fff`;
+
+                const res = await Auth.fetchWithAuth('/GiangVien/lop-phu-trach');
+                if (res.ok) { 
+                    allMyClasses = await res.json(); 
+                }
+                
                 populateSemesterFilter();
                 renderSchedule();
-            } catch (err) { alert("Lỗi tải lịch: " + err.message); }
+            } catch (err) { 
+                alert("Lỗi tải lịch giảng dạy chi tiết: " + err.message); 
+            }
         }
 
         function populateSemesterFilter() {
@@ -133,8 +150,8 @@
             }
             const semesterMap = {};
             allMyClasses.forEach(item => {
-                const hk = item.TenHK || item.tenhk || item.TenHk || 'Học kỳ (Khác)';
-                const nam = item.NamHoc || item.namhoc || item.Namhoc || '';
+                const hk = item.TenHK || item.tenhk || 'Học kỳ';
+                const nam = item.NamHoc || item.namhoc || '';
                 semesterMap[`${hk}|${nam}`] = `${hk} ${nam ? '- Năm học ' + nam : ''}`;
             });
             const sortedKeys = Object.keys(semesterMap).sort((a, b) => b.localeCompare(a));
@@ -147,9 +164,34 @@
             if (val !== "") {
                 const [hk, nam] = val.split('|');
                 filteredClasses = allMyClasses.filter(item => {
-                    return (item.TenHK || item.tenhk || item.TenHk) === hk && (item.NamHoc || item.namhoc || item.Namhoc) === nam;
+                    return (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam;
                 });
-            } else { filteredClasses = [...allMyClasses]; }
+            } else { 
+                filteredClasses = [...allMyClasses]; 
+            }
+            currentPage = 1;
+            renderScheduleTable();
+        }
+
+        function searchTable() {
+            const keyword = (document.getElementById('tableSearchInput').value || '').toLowerCase().trim();
+            const val = document.getElementById('hkSelect').value;
+            
+            let baseData = [...allMyClasses];
+            if (val !== "") {
+                const [hk, nam] = val.split('|');
+                baseData = allMyClasses.filter(item => (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam);
+            }
+
+            if (keyword) {
+                filteredClasses = baseData.filter(item => {
+                    const name = (item.TenMH || '').toLowerCase();
+                    const code = (item.MaLHP || '').toLowerCase();
+                    return name.includes(keyword) || code.includes(keyword);
+                });
+            } else {
+                filteredClasses = baseData;
+            }
             currentPage = 1;
             renderScheduleTable();
         }
@@ -166,16 +208,23 @@
             }
             noData.classList.add('d-none');
             tbody.innerHTML = paginatedData.map(lhp => {
+                const textMH = lhp.TenMH || 'Môn học';
+                const codeLHP = lhp.MaLHP || '---';
+                const scheduleString = lhp.LichHoc || 'Chưa xếp lịch';
+                const roomString = lhp.PhongHoc || '---';
+                const currSV = lhp.SiSoHienTai !== undefined ? lhp.SiSoHienTai : 0;
+                const maxSV = lhp.SiSoToiDa !== undefined ? lhp.SiSoToiDa : 50;
+
                 return `
                     <tr class="animate__animated animate__fadeIn">
                         <td class="text-start ps-4 py-3">
-                            <div class="fw-bold text-primary mb-1" style="font-size: 1.05rem;">${lhp.TenMH || 'Môn ẩn'}</div>
-                            <div class="small text-muted fw-medium">Lớp: ${lhp.MaLHP || '---'}</div>
+                            <div class="fw-bold text-primary mb-1" style="font-size: 1.05rem;">${textMH}</div>
+                            <div class="small text-muted fw-medium">Lớp: ${codeLHP}</div>
                         </td>
-                        <td class="fw-bold text-dark">${lhp.LichHoc || '---'}</td>
-                        <td><span class="badge bg-light text-dark border px-2 py-1">${lhp.PhongHoc || '---'}</span></td>
-                        <td class="text-center"><span class="badge bg-info-subtle text-info px-3 py-1 rounded-pill">${lhp.SiSoHienTai || 0} / ${lhp.SiSoToiDa || 50}</span></td>
-                        <td class="text-center pe-4"><a href="nhap-diem.html?malhp=${lhp.MaLHP}" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-medium">Quản lý lớp</a></td>
+                        <td class="fw-bold text-dark">${scheduleString}</td>
+                        <td><span class="badge bg-light text-dark border px-2 py-1">${roomString}</span></td>
+                        <td class="text-center"><span class="badge bg-info-subtle text-info px-3 py-1 rounded-pill">${currSV} / ${maxSV}</span></td>
+                        <td class="text-center pe-4"><a href="nhap-diem.html?malhp=${codeLHP}" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-medium">Quản lý lớp</a></td>
                     </tr>`;
             }).join('');
             renderPagination(totalRows, totalPages);
@@ -184,22 +233,36 @@
         function renderPagination(totalRows, totalPages) {
             let container = document.getElementById('paginationContainer');
             if (!container) {
-                container = document.createElement('div'); container.id = 'paginationContainer';
-                container.className = 'd-flex justify-content-between align-items-center mt-3 border-top pt-3';
+                container = document.createElement('div'); 
+                container.id = 'paginationContainer';
+                // ĐÃ FIX: Dùng justify-content-end để đẩy thẳng cụm phân trang sang bên phải
+                container.className = 'd-flex justify-content-end align-items-center mt-3 border-top pt-3';
                 document.querySelector('.table-responsive').after(container);
             }
             if (totalRows === 0) { container.innerHTML = ''; return; }
-            let buttonsHtml = '';
+            
+            let html = '<nav><ul class="pagination pagination-sm mb-0 rounded-pill shadow-sm">';
+            
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link d-flex align-items-center justify-content-center" href="#" onclick="changePage(${currentPage - 1}); return false;" style="width: 32px; height: 32px;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; line-height: 1;">chevron_left</span>
+                        </a>
+                     </li>`;
+            
             for(let i=1; i<=totalPages; i++) {
-                buttonsHtml += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'} mx-1 rounded-circle" style="width:32px; height:32px;" onclick="changePage(${i})">${i}</button>`;
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link d-flex align-items-center justify-content-center fw-medium" href="#" onclick="changePage(${i}); return false;" style="width: 32px; height: 32px;">${i}</a>
+                         </li>`;
             }
-            container.innerHTML = `
-                <div class="small text-muted">Hiển thị <b>${(currentPage - 1) * rowsPerPage + 1}-${Math.min(currentPage * rowsPerPage, totalRows)}</b> / <b>${totalRows}</b> lớp</div>
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-sm btn-light border mx-1 rounded-circle p-1" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span></button>
-                    ${buttonsHtml}
-                    <button class="btn btn-sm btn-light border mx-1 rounded-circle p-1" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span></button>
-                </div>`;
+            
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link d-flex align-items-center justify-content-center" href="#" onclick="changePage(${currentPage + 1}); return false;" style="width: 32px; height: 32px;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; line-height: 1;">chevron_right</span>
+                        </a>
+                     </li>`;
+                     
+            html += '</ul></nav>';
+            container.innerHTML = html;
         }
 
         window.changePage = (page) => { currentPage = page; renderScheduleTable(); };
