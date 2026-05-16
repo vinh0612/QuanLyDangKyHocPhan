@@ -14,7 +14,6 @@
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="nav-brand text-start">
                 <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
@@ -54,12 +53,12 @@
         </header>
 
         <main class="main-content">
-            <div class="profile-header animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #0d6efd, #0dcaf0); height: 200px; border-radius: 24px; position: relative; margin-bottom: 80px;">
+            <div class="profile-header animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #0d6efd, #0dcaf0); height: 200px; border-radius: 24px; position: relative; margin-bottom: 80px; margin-top: 40px;">
                 <div style="position: absolute; bottom: -60px; left: 40px; display: flex; align-items: flex-end; gap: 20px;">
                     <img id="profileAvatar" src="" alt="Avatar" style="width: 120px; height: 120px; border-radius: 30px; border: 5px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); background: #fff;">
                     <div class="mb-3">
-                        <h2 class="fw-bold mb-0" id="profileName" style="color: #334155;">Tên Sinh viên</h2>
-                        <span class="badge bg-primary rounded-pill px-3" id="profileID">MSSV: SV000</span>
+                        <h2 class="fw-bold mb-0" id="profileName" style="color: #334155; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">Đang tải dữ liệu...</h2>
+                        <span class="badge bg-primary rounded-pill px-3 shadow-sm" id="profileID">MSSV: ---</span>
                     </div>
                 </div>
             </div>
@@ -68,18 +67,17 @@
                 <div class="col-lg-8">
                     <div class="card border-0 p-4 shadow-sm" style="border-radius: 20px;">
                         <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                            <span class="material-symbols-outlined text-primary">person</span>
-                            Thông tin chi tiết
+                            <span class="material-symbols-outlined text-primary">person</span> Thông tin chi tiết
                         </h5>
                         <form id="profileForm">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small fw-bold">HỌ VÀ TÊN</label>
-                                    <input type="text" class="form-control" id="formHoTen" readonly>
+                                    <input type="text" class="form-control fw-bold" id="formHoTen" readonly style="background-color: #f8f9fa;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small fw-bold">MÃ SINH VIÊN</label>
-                                    <input type="text" class="form-control" id="formMaSV" readonly>
+                                    <input type="text" class="form-control fw-bold text-primary" id="formMaSV" readonly style="background-color: #f8f9fa;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small fw-bold">NGÀY SINH</label>
@@ -94,19 +92,34 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small fw-bold">SỐ ĐIỆN THOẠI</label>
-                                    <input type="text" class="form-control" id="formSDT">
+                                    <input type="text" class="form-control" id="formSDT" placeholder="Ví dụ: 0901234567" maxlength="20">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small fw-bold">EMAIL</label>
-                                    <input type="email" class="form-control" id="formEmail">
+                                    <input type="email" class="form-control" id="formEmail" maxlength="100">
                                 </div>
-                                <div class="col-md-12">
-                                    <label class="form-label text-muted small fw-bold">ĐỊA CHỈ</label>
+                                
+                                <div class="col-12 mt-4">
+                                    <div class="p-3 bg-success-subtle rounded-3 border border-success border-opacity-25 shadow-sm">
+                                        <label class="form-label text-success small fw-bold mb-1 d-flex align-items-center gap-1">
+                                            <span class="material-symbols-outlined" style="font-size: 16px;">verified_user</span> 
+                                            SỐ CCCD ĐỊNH DANH (DỮ LIỆU ĐƯỢC BẢO MẬT BỞI SQL SERVER)
+                                        </label>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div id="formCCCD" class="fw-bold text-dark font-monospace fs-5">Đang kết nối CSDL...</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mt-3">
+                                    <label class="form-label text-muted small fw-bold">ĐỊA CHỈ THƯỜNG TRÚ</label>
                                     <textarea class="form-control" id="formDiaChi" rows="2"></textarea>
                                 </div>
                             </div>
                             <div class="mt-4 text-end">
-                                <button type="button" class="btn btn-primary px-5 rounded-pill" onclick="saveProfile()">LƯU THAY ĐỔI</button>
+                                <button type="button" class="btn btn-primary px-5 rounded-pill fw-bold shadow-sm" onclick="saveProfile()" id="btnSave">
+                                    LƯU THAY ĐỔI
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -116,16 +129,16 @@
                     <div class="card border-0 p-4 shadow-sm mb-4" style="border-radius: 20px;">
                         <h5 class="fw-bold mb-4">Thông tin Đào tạo</h5>
                         <div class="mb-3">
-                            <div class="text-muted small fw-bold">KHOA</div>
-                            <div id="infoKhoa">Khoa Công nghệ thông tin</div>
+                            <div class="text-muted small fw-bold">KHOA QUẢN LÝ</div>
+                            <div id="infoKhoa" class="fw-bold text-primary fs-6">Đang truy xuất...</div>
                         </div>
                         <div class="mb-3">
                             <div class="text-muted small fw-bold">LỚP SINH HOẠT</div>
-                            <div>D21-TH01</div>
+                            <div id="infoLop" class="fw-medium text-dark">Chưa phân lớp</div>
                         </div>
                         <div class="mb-3">
-                            <div class="text-muted small fw-bold">NIÊN KHÓA</div>
-                            <div>2021 - 2025</div>
+                            <div class="text-muted small fw-bold">NIÊN KHÓA ĐÀO TẠO</div>
+                            <div id="infoNienKhoa" class="fw-medium text-dark">2024 - 2028</div>
                         </div>
                     </div>
                 </div>
@@ -133,59 +146,97 @@
         </main>
     </div>
 
-    <script src="../Assets/js/mock-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        Auth.checkAuth(['SinhVien']);
+        Auth.checkAuth(['Identity_Verification_Passed', 'SinhVien']);
         const user = Auth.getCurrentUser();
 
-        function init() {
-            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
+        async function init() {
+            // Nạp thông tin tài khoản cơ bản lên UI chờ tải dữ liệu thật
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.TenLogin)}&background=0D8ABC&color=fff`;
             document.getElementById('userAvatar').src = avatarUrl;
             document.getElementById('profileAvatar').src = avatarUrl;
-            
-            document.getElementById('profileName').innerText = user.HoTen;
-            document.getElementById('profileID').innerText = `MSSV: ${user.MaNguoiDung}`;
-            
-            document.getElementById('formHoTen').value = user.HoTen;
-            document.getElementById('formMaSV').value = user.MaNguoiDung;
-            document.getElementById('formNgaySinh').value = user.NgaySinh || '';
-            document.getElementById('formGioiTinh').value = user.GioiTinh || 'Nam';
-            document.getElementById('formSDT').value = user.SoDT || '';
-            document.getElementById('formEmail').value = user.Email || '';
-            document.getElementById('formDiaChi').value = user.DiaChi || '';
+            document.getElementById('profileID').innerText = `MSSV: ${user.TenLogin}`;
+            document.getElementById('formMaSV').value = user.TenLogin;
 
-            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
-            const currentSV = svD.find(s => s.MaSV === user.MaNguoiDung);
-            if (currentSV) {
-                const khoa = khoaD.find(k => k.MaKhoa === currentSV.MaKhoa);
-                if (khoa) document.getElementById('infoKhoa').innerText = khoa.TenKhoa;
+            try {
+                // Gọi API kéo dữ liệu View Cá nhân (Đã đi qua Fallback chống sập)
+                const res = await Auth.fetchWithAuth('/SinhVien/ho-so');
+                if (res.ok) {
+                    const profileData = await res.json();
+                    
+                    // Xử lý dữ liệu trả về (tương thích hoa/thường)
+                    const hoTen = profileData.HoTen || profileData.hoten || user.TenLogin;
+                    document.getElementById('profileName').innerText = hoTen;
+                    document.getElementById('formHoTen').value = hoTen;
+                    
+                    // Cập nhật lại Avatar khi đã có Tên đầy đủ
+                    const newAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(hoTen)}&background=0D8ABC&color=fff`;
+                    document.getElementById('userAvatar').src = newAvatarUrl;
+                    document.getElementById('profileAvatar').src = newAvatarUrl;
+
+                    // Đổ dữ liệu vào Form nhập liệu
+                    if (profileData.NgaySinh || profileData.ngaysinh) {
+                        const dateObj = new Date(profileData.NgaySinh || profileData.ngaysinh);
+                        document.getElementById('formNgaySinh').value = dateObj.toISOString().split('T')[0];
+                    }
+                    
+                    document.getElementById('formGioiTinh').value = profileData.GioiTinh || profileData.gioitinh || 'Nam';
+                    document.getElementById('formSDT').value = profileData.SoDT || profileData.sodt || '';
+                    document.getElementById('formEmail').value = profileData.Email || profileData.email || '';
+                    document.getElementById('formDiaChi').value = profileData.DiaChi || profileData.diachi || '';
+                    
+                    // ĐÃ FIX TÊN CỘT: Quét bao lô CCCD và SoCCCD để hứng dữ liệu giải mã
+                    const cccd = profileData.CCCD || profileData.cccd || profileData.SoCCCD || profileData.socccd;
+                    document.getElementById('formCCCD').innerText = cccd ? cccd : "Chưa cập nhật CSDL (Hoặc chưa Mở Khóa)";
+
+                    // Lấy tên khoa, nếu không có tên thì lấy mã khoa, nếu trống thì báo Chưa cập nhật
+                    const tenKhoa = profileData.TenKhoa || profileData.tenkhoa || profileData.MaKhoa || profileData.makhoa;
+                    document.getElementById('infoKhoa').innerText = tenKhoa ? tenKhoa : "Chưa cập nhật Khoa";
+                }
+            } catch (err) {
+                console.error("Lỗi đồng bộ hồ sơ cá nhân:", err);
             }
         }
 
-        window.saveProfile = () => {
-            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
-            const idx = svD.findIndex(s => s.MaSV === user.MaNguoiDung);
-            
-            if (idx !== -1) {
-                svD[idx].NgaySinh = document.getElementById('formNgaySinh').value;
-                svD[idx].GioiTinh = document.getElementById('formGioiTinh').value;
-                svD[idx].SoDT = document.getElementById('formSDT').value;
-                svD[idx].Email = document.getElementById('formEmail').value;
-                svD[idx].DiaChi = document.getElementById('formDiaChi').value;
+        window.saveProfile = async () => {
+            const btnSave = document.getElementById('btnSave');
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG LƯU...';
+
+            const payload = {
+                ngaySinh: document.getElementById('formNgaySinh').value,
+                gioiTinh: document.getElementById('formGioiTinh').value,
+                soDT: document.getElementById('formSDT').value.trim(),
+                email: document.getElementById('formEmail').value.trim(),
+                diaChi: document.getElementById('formDiaChi').value.trim()
+            };
+
+            try {
+                // Gọi API PUT đẩy dữ liệu xuống Stored Procedure
+                const res = await Auth.fetchWithAuth('/SinhVien/ho-so', {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
                 
-                localStorage.setItem('SinhVien', JSON.stringify(svD));
+                const result = await res.json();
                 
-                // Update session
-                const updatedUser = { ...user, ...svD[idx] };
-                sessionStorage.setItem('user', JSON.stringify(updatedUser));
-                
-                alert('Cập nhật thông tin cá nhân thành công!');
-                location.reload();
+                if (res.ok) {
+                    alert('Cập nhật thông tin cá nhân thành công!');
+                    location.reload();
+                } else {
+                    alert(`Lỗi cập nhật hồ sơ: ${result.message}`);
+                }
+            } catch (err) {
+                alert('Lỗi mất kết nối với máy chủ!');
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = 'LƯU THAY ĐỔI';
             }
         };
 
+        // Khởi động đồng bộ dữ liệu
         init();
     </script>
 </body>

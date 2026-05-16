@@ -14,24 +14,19 @@
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="dynamicSidebar">
-            <!-- Sidebar content will be rendered by JavaScript -->
-        </aside>
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-        <!-- Main Content -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
                 <input type="text" class="search-bar" placeholder="Tìm kiếm lớp học...">
             </div>
-            
             <div class="nav-user">
-                <div class="top-links d-none d-md-flex">
-                    <a href="dashboard.html">Trang chủ</a>
-                    <a href="#">Thông báo</a>
+                <div class="top-links d-none d-md-flex me-3">
+                    <a href="dashboard.html" class="text-decoration-none text-main me-3">Trang chủ</a>
+                    <a href="#" onclick="alert('Thông báo đang được cập nhật...')" class="text-decoration-none text-main">Thông báo</a>
                 </div>
-                <img id="userAvatar" src="https://ui-avatars.com/api/?name=Giang+Vien&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
             </div>
         </header>
 
@@ -41,58 +36,61 @@
                 Lịch giảng dạy chi tiết
             </h2>
 
-            <div class="card border-0 mb-4 p-3" style="border-radius: 16px;">
+            <div class="card border-0 mb-4 p-3 shadow-sm" style="border-radius: 16px;">
                 <div class="row align-items-center">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Chọn Học kỳ</label>
-                        <select id="hkSelect" class="form-select" onchange="renderSchedule()"></select>
+                        <label class="form-label fw-bold text-muted small">CHỌN HỌC KỲ TRA CỨU</label>
+                        <select id="hkSelect" class="form-select border-light-subtle rounded-pill px-3 shadow-sm" onchange="renderSchedule()">
+                            <option value="">Đang truy xuất dữ liệu...</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 p-3 animate__animated animate__fadeIn" style="border-radius: 16px;">
+            <div class="card border-0 p-3 shadow-sm animate__animated animate__fadeIn" style="border-radius: 16px;">
                 <div class="table-responsive">
-                    <table class="table align-middle table-custom">
-                        <thead>
+                    <table class="table align-middle table-custom table-hover">
+                        <thead class="table-light">
                             <tr>
-                                <th>Môn học / Mã lớp</th>
+                                <th class="ps-4 py-3">Môn học / Mã lớp</th>
                                 <th>Lịch học</th>
                                 <th>Phòng học</th>
                                 <th class="text-center">Sĩ số hiện tại</th>
-                                <th class="text-center">Thao tác</th>
+                                <th class="text-center pe-4">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody id="scheduleBody"></tbody>
+                        <tbody id="scheduleBody">
+                            <tr><td colspan="5" class="text-center py-5 text-muted">Đang kết nối hệ thống máy chủ...</td></tr>
+                        </tbody>
                     </table>
                 </div>
-                <div id="noData" class="text-center py-5 d-none">
-                    <span class="material-symbols-outlined text-muted" style="font-size: 48px;">event_busy</span>
-                    <div class="text-muted fs-5 mt-2">Không có lịch dạy trong học kỳ này</div>
+                <div id="noData" class="text-center py-5 d-none bg-white rounded-4">
+                    <span class="material-symbols-outlined text-muted" style="font-size: 64px; opacity: 0.3;">event_busy</span>
+                    <div class="text-muted fs-5 mt-3 fw-medium">Không có lịch dạy trong học kỳ này</div>
                 </div>
             </div>
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        Auth.checkAuth(['GiangVien']);
+        Auth.checkAuth(['GiangVien', 'TruongBoMon']);
         const user = Auth.getCurrentUser();
+
+        let allMyClasses = [];
+        let filteredClasses = [];
+        let currentPage = 1;
+        const rowsPerPage = 5;
 
         function renderSidebar() {
             const sidebar = document.getElementById('dynamicSidebar');
             if (user.Role === 'TruongBoMon') {
                 const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = '../TruongBoMon/css/truong-bo-mon.css';
+                link.rel = 'stylesheet'; link.href = '../TruongBoMon/css/truong-bo-mon.css';
                 document.head.appendChild(link);
-
                 sidebar.innerHTML = `
-                    <div class="nav-brand text-start">
-                        <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                        <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Trưởng Bộ Môn</div>
-                    </div>
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Trưởng Bộ Môn</div></div>
                     <ul class="nav-menu">
                         <li><a href="../TruongBoMon/dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
                         <li><a href="../TruongBoMon/quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
@@ -100,138 +98,111 @@
                         <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
                         <li class="menu-divider" style="margin: 1rem 0; border-top: 1px solid #eee; opacity: 0.5;"></li>
                         <li class="active"><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy cá nhân</a></li>
-                    </ul>
-                `;
+                    </ul>`;
             } else {
                 sidebar.innerHTML = `
-                    <div class="nav-brand text-start">
-                        <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                        <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Giảng viên</div>
-                    </div>
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Giảng viên</div></div>
                     <ul class="nav-menu">
                         <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
                         <li class="active"><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
                         <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
                         <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
-                    </ul>
-                `;
+                    </ul>`;
             }
-            sidebar.innerHTML += `
-                <div style="padding: 1rem; margin-top: auto;">
-                    <ul class="nav-menu" style="padding: 0;">
-                        <li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
-                        <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
-                    </ul>
-                </div>
-            `;
+            sidebar.innerHTML += `<div style="padding: 1rem; margin-top: auto;"><ul class="nav-menu" style="padding: 0;"><li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li><li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li></ul></div>`;
         }
 
-        let currentPage = 1;
-        const rowsPerPage = 5;
-        let allMyClasses = [];
-
-        function init() {
+        async function init() {
             renderSidebar();
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
-            
-            const hks = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            document.getElementById('hkSelect').innerHTML = hks.map(hk => `<option value="${hk.MaHK}" ${hk.DangMo ? 'selected' : ''}>${hk.TenHK} - ${hk.NamHoc}</option>`).join('');
+            const tenHienThi = user.HoTen || user.TenLogin;
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenHienThi)}&background=0D8ABC&color=fff`;
+            try {
+                const res = await Auth.fetchWithAuth('/GiangVien/lich-day');
+                if (res.ok) { allMyClasses = await res.json(); }
+                populateSemesterFilter();
+                renderSchedule();
+            } catch (err) { alert("Lỗi tải lịch: " + err.message); }
+        }
 
-            renderSchedule();
+        function populateSemesterFilter() {
+            const select = document.getElementById('hkSelect');
+            select.disabled = false;
+            if (!allMyClasses || allMyClasses.length === 0) {
+                select.innerHTML = '<option value="">-- Tất cả học kỳ --</option><option value="none" disabled>🚫 Chưa có dữ liệu phân công</option>';
+                return;
+            }
+            const semesterMap = {};
+            allMyClasses.forEach(item => {
+                const hk = item.TenHK || item.tenhk || item.TenHk || 'Học kỳ (Khác)';
+                const nam = item.NamHoc || item.namhoc || item.Namhoc || '';
+                semesterMap[`${hk}|${nam}`] = `${hk} ${nam ? '- Năm học ' + nam : ''}`;
+            });
+            const sortedKeys = Object.keys(semesterMap).sort((a, b) => b.localeCompare(a));
+            select.innerHTML = '<option value="">-- Tất cả học kỳ --</option>';
+            sortedKeys.forEach(key => { select.innerHTML += `<option value="${key}">${semesterMap[key]}</option>`; });
         }
 
         function renderSchedule() {
-            const hkId = document.getElementById('hkSelect').value;
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            
-            allMyClasses = lhpData.filter(l => l.MaGV === user.MaNguoiDung && l.MaHK === hkId);
+            const val = document.getElementById('hkSelect').value;
+            if (val !== "") {
+                const [hk, nam] = val.split('|');
+                filteredClasses = allMyClasses.filter(item => {
+                    return (item.TenHK || item.tenhk || item.TenHk) === hk && (item.NamHoc || item.namhoc || item.Namhoc) === nam;
+                });
+            } else { filteredClasses = [...allMyClasses]; }
             currentPage = 1;
             renderScheduleTable();
         }
 
         function renderScheduleTable() {
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
             const tbody = document.getElementById('scheduleBody');
             const noData = document.getElementById('noData');
-
-            // Pagination Logic
-            const totalRows = allMyClasses.length;
+            const totalRows = filteredClasses.length;
             const totalPages = Math.ceil(totalRows / rowsPerPage);
-            const startIdx = (currentPage - 1) * rowsPerPage;
-            const paginatedData = allMyClasses.slice(startIdx, startIdx + rowsPerPage);
+            const paginatedData = filteredClasses.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
             if (totalRows === 0) {
-                tbody.innerHTML = '';
-                noData.classList.remove('d-none');
-                renderPagination(0, 0);
-                return;
+                tbody.innerHTML = ''; noData.classList.remove('d-none'); renderPagination(0, 0); return;
             }
-
             noData.classList.add('d-none');
             tbody.innerHTML = paginatedData.map(lhp => {
-                const mon = mhData.find(m => m.MaMH === lhp.MaMH) || {};
                 return `
-                    <tr>
-                        <td class="text-start ps-4">
-                            <div class="fw-bold text-accent">${mon.TenMH}</div>
-                            <div class="small text-muted">Lớp: ${lhp.MaLHP}</div>
+                    <tr class="animate__animated animate__fadeIn">
+                        <td class="text-start ps-4 py-3">
+                            <div class="fw-bold text-primary mb-1" style="font-size: 1.05rem;">${lhp.TenMH || 'Môn ẩn'}</div>
+                            <div class="small text-muted fw-medium">Lớp: ${lhp.MaLHP || '---'}</div>
                         </td>
-                        <td class="fw-500">${lhp.LichHoc}</td>
-                        <td><span class="badge bg-light text-dark border">${lhp.PhongHoc}</span></td>
-                        <td class="text-center">
-                            <span class="badge ${lhp.SiSoHienTai >= lhp.SiSoToiDa ? 'bg-danger-subtle text-danger' : 'bg-info-subtle text-info'}">
-                                ${lhp.SiSoHienTai} / ${lhp.SiSoToiDa}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            <a href="nhap-diem.html?malhp=${lhp.MaLHP}" class="btn btn-primary btn-sm rounded-pill px-3">Quản lý lớp</a>
-                        </td>
-                    </tr>
-                `;
+                        <td class="fw-bold text-dark">${lhp.LichHoc || '---'}</td>
+                        <td><span class="badge bg-light text-dark border px-2 py-1">${lhp.PhongHoc || '---'}</span></td>
+                        <td class="text-center"><span class="badge bg-info-subtle text-info px-3 py-1 rounded-pill">${lhp.SiSoHienTai || 0} / ${lhp.SiSoToiDa || 50}</span></td>
+                        <td class="text-center pe-4"><a href="nhap-diem.html?malhp=${lhp.MaLHP}" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-medium">Quản lý lớp</a></td>
+                    </tr>`;
             }).join('');
-
             renderPagination(totalRows, totalPages);
         }
 
         function renderPagination(totalRows, totalPages) {
             let container = document.getElementById('paginationContainer');
             if (!container) {
-                container = document.createElement('div');
-                container.id = 'paginationContainer';
-                container.className = 'pagination-container mt-3';
+                container = document.createElement('div'); container.id = 'paginationContainer';
+                container.className = 'd-flex justify-content-between align-items-center mt-3 border-top pt-3';
                 document.querySelector('.table-responsive').after(container);
             }
-
-            if (totalRows === 0) {
-                container.innerHTML = '';
-                return;
+            if (totalRows === 0) { container.innerHTML = ''; return; }
+            let buttonsHtml = '';
+            for(let i=1; i<=totalPages; i++) {
+                buttonsHtml += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'} mx-1 rounded-circle" style="width:32px; height:32px;" onclick="changePage(${i})">${i}</button>`;
             }
-
-            const start = (currentPage - 1) * rowsPerPage + 1;
-            const end = Math.min(currentPage * rowsPerPage, totalRows);
-
             container.innerHTML = `
-                <div class="pagination-info">
-                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> lớp học
-                </div>
-                <div class="pagination-nav">
-                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
-                    ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
-                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
-                    `).join('')}
-                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
-                </div>
-            `;
+                <div class="small text-muted">Hiển thị <b>${(currentPage - 1) * rowsPerPage + 1}-${Math.min(currentPage * rowsPerPage, totalRows)}</b> / <b>${totalRows}</b> lớp</div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm btn-light border mx-1 rounded-circle p-1" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span></button>
+                    ${buttonsHtml}
+                    <button class="btn btn-sm btn-light border mx-1 rounded-circle p-1" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span></button>
+                </div>`;
         }
 
-        function changePage(page) {
-            currentPage = page;
-            renderScheduleTable();
-        }
+        window.changePage = (page) => { currentPage = page; renderScheduleTable(); };
         init();
     </script>
 </body>

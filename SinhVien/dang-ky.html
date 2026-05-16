@@ -14,12 +14,13 @@
         .class-select-row:hover { background-color: #f8fafc; }
         .registered-badge { background: #dcfce7; color: #15803d; font-weight: 600; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; }
         .cart-container { position: sticky; top: 100px; }
+        .course-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .course-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important; }
     </style>
 </head>
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="nav-brand text-start">
                 <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
@@ -34,18 +35,6 @@
             <div style="padding: 1rem; margin-top: auto;">
                 <ul class="nav-menu" style="padding: 0;">
                     <li>
-                        <a href="#" onclick="if(confirm('Xóa dữ liệu học vụ và khởi động lại?')) {
-  const cu=localStorage.getItem('currentUser');
-  localStorage.removeItem('isInitialized');
-  ['DangKyHoc','LopHocPhan','MonHoc','HocKy','SinhVien','GiaoVien','GiaoVu','BoMon','Khoa','BangDiem','GiaoVienDayMon','Users'].forEach(function(k){localStorage.removeItem(k)});
-  if(cu) localStorage.setItem('currentUser',cu);
-  location.reload();
-}" style="color: var(--text-muted); font-size: 0.8rem;">
-                            <span class="material-symbols-outlined menu-icon" style="font-size: 18px;">restart_alt</span>
-                            Cài lại dữ liệu
-                        </a>
-                    </li>
-                    <li style="margin-top: 0.5rem;">
                         <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
                             <span class="material-symbols-outlined menu-icon">logout</span>
                             Đăng xuất
@@ -55,7 +44,6 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
@@ -69,51 +57,47 @@
         <main class="main-content">
             <h2 class="section-title mb-4">
                 <span class="material-symbols-outlined text-primary" style="font-size: 32px;">app_registration</span>
-                Đăng ký Học phần mới
+                Đăng ký Học phần (Hệ thống Giỏ hàng)
             </h2>
 
             <div class="row g-4">
                 <div class="col-lg-8">
-                    <!-- Filters -->
-                    <div class="card border-0 mb-4 p-3" style="border-radius: 16px;">
+                    <div class="card border-0 mb-4 p-3 shadow-sm" style="border-radius: 16px;">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Chọn Khoa</label>
-                                <select id="khoaFilter" class="form-select" onchange="renderCourses()">
+                                <label class="form-label fw-bold text-muted small">LỌC THEO KHOA / NGÀNH</label>
+                                <select id="khoaFilter" class="form-select border-light-subtle rounded-pill fw-bold text-secondary bg-light" onchange="renderCourses()">
                                     <option value="">Tất cả các khoa</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Course List -->
                     <div id="courseList" class="row g-3">
-                        <!-- Dynamic Content -->
+                        <div class="text-center py-5 text-muted">Đang đồng bộ dữ liệu với SQL Server...</div>
                     </div>
                 </div>
 
                 <div class="col-lg-4">
-                    <!-- Registration Summary / Cart -->
                     <div class="cart-container">
                         <div class="card border-0 p-4 shadow-sm" style="border-radius: 20px;">
                             <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined text-accent">shopping_cart</span>
+                                <span class="material-symbols-outlined text-primary" style="font-size: 28px;">shopping_cart_checkout</span>
                                 Phiếu đăng ký tạm
                             </h5>
                             <div id="cartList" class="mb-4">
-                                <!-- Dynamic Content -->
-                            </div>
+                                </div>
                             <div class="border-top pt-3 mb-4">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Tổng số môn:</span>
-                                    <span class="fw-bold" id="cartCount">0 môn</span>
+                                    <span class="text-muted fw-medium">Tổng số môn:</span>
+                                    <span class="fw-bold text-dark" id="cartCount">0 môn</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span class="text-muted">Tổng tín chỉ:</span>
-                                    <span class="fw-bold text-accent" id="cartCredits">0 tín chỉ</span>
+                                    <span class="text-muted fw-medium">Tổng tín chỉ:</span>
+                                    <span class="fw-bold text-primary fs-5" id="cartCredits">0 tín chỉ</span>
                                 </div>
                             </div>
-                            <button class="btn btn-primary w-100 py-2 rounded-pill shadow-sm" id="confirmBtn" onclick="confirmRegistration()" disabled>
+                            <button class="btn btn-primary w-100 py-3 rounded-pill shadow-sm fw-bold fs-6" id="confirmBtn" onclick="confirmRegistration()" disabled>
                                 XÁC NHẬN ĐĂNG KÝ
                             </button>
                         </div>
@@ -123,25 +107,24 @@
         </main>
     </div>
 
-    <!-- Modal: Select Class -->
     <div class="modal fade" id="selectClassModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0" style="border-radius: 24px;">
+            <div class="modal-content border-0 shadow" style="border-radius: 24px;">
                 <div class="modal-header border-0 p-4 pb-0">
-                    <h5 class="modal-title fw-bold" id="modalCourseTitle">Chọn Lớp học phần</h5>
+                    <h5 class="modal-title fw-bold text-primary" id="modalCourseTitle">Chọn Lớp học phần</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="table-responsive">
-                        <table class="table align-middle">
+                        <table class="table align-middle table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Mã lớp</th>
+                                    <th class="ps-3">Mã lớp</th>
                                     <th>Giảng viên</th>
                                     <th>Lịch học</th>
                                     <th>Phòng</th>
-                                    <th>Sĩ số</th>
-                                    <th></th>
+                                    <th class="text-center">Sĩ số</th>
+                                    <th class="text-end pe-3">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="classListBody"></tbody>
@@ -153,56 +136,119 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        Auth.checkAuth(['SinhVien']);
+        Auth.checkAuth(['Identity_Verification_Passed', 'SinhVien']);
         const user = Auth.getCurrentUser();
-        let selectedClasses = []; // Cart
+        
+        let selectedClasses = []; // Giỏ hàng (Mảng lưu tạm)
+        let allOpenLHPs = [];     // Dữ liệu lớp mở từ CSDL
+        let registeredLHPs = [];  // Dữ liệu môn đã đăng ký từ CSDL
+        let currentMaMH = '';     // Cờ hiệu lưu môn đang click xem
+        
+        const modal = new bootstrap.Modal(document.getElementById('selectClassModal'));
 
-        function init() {
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
-            
-            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            document.getElementById('khoaFilter').innerHTML += khoaD.map(k => `<option value="${k.MaKhoa}">${k.TenKhoa}</option>`).join('');
-            
-            renderCourses();
-            renderCart();
+        async function init() {
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.TenLogin)}&background=0D8ABC&color=fff`;
+            await fetchAndRefreshUI();
         }
 
+        async function fetchAndRefreshUI() {
+            try {
+                // Gọi API song song xuống SQL Server
+                const [resLHP, resDiem] = await Promise.all([
+                    Auth.fetchWithAuth('/SinhVien/lhp-hien-tai'),
+                    Auth.fetchWithAuth('/SinhVien/ket-qua-hoc-tap')
+                ]);
+                
+                if (resLHP.ok) allOpenLHPs = await resLHP.json();
+                
+                // Lọc những môn học sinh viên đã đăng ký thành công ở học kỳ hiện tại
+                if (resDiem.ok) {
+                    const dataDiem = await resDiem.json();
+                    if (dataDiem.length > 0) {
+                        const sortedData = [...dataDiem].sort((a, b) => (b.NamHoc || b.namhoc || '').localeCompare(a.NamHoc || a.namhoc || ''));
+                        const latestSemester = sortedData[0].TenHK || sortedData[0].tenhk;
+                        const latestYear = sortedData[0].NamHoc || sortedData[0].namhoc;
+                        registeredLHPs = dataDiem.filter(item => (item.TenHK || item.tenhk) === latestSemester && (item.NamHoc || item.namhoc) === latestYear);
+                    } else {
+                        registeredLHPs = [];
+                    }
+                }
+                
+                populateKhoaFilter();
+                renderCourses();
+                renderCart();
+            } catch (err) {
+                console.error("Lỗi đồng bộ dữ liệu giỏ hàng:", err);
+            }
+        }
+
+        // Tự động phân tích mã môn tạo bộ lọc Khoa
+        function populateKhoaFilter() {
+            const uniqueKhoa = {};
+            allOpenLHPs.forEach(item => {
+                const maMH = item.MaMH || item.mamh || '';
+                const prefix = maMH.replace(/[0-9]/g, '').toUpperCase().trim();
+                if (prefix) {
+                    let tenKhoa = prefix === 'CS' || prefix === 'CNTT' ? "Khoa Công nghệ thông tin" : (prefix === 'EC' || prefix === 'QT' || prefix === 'KT' ? "Khoa Kinh tế & Quản trị" : `Ngành đào tạo ${prefix}`);
+                    uniqueKhoa[prefix] = tenKhoa;
+                }
+            });
+            const filterSelect = document.getElementById('khoaFilter');
+            filterSelect.innerHTML = '<option value="">Tất cả các khoa</option>';
+            Object.keys(uniqueKhoa).forEach(prefix => {
+                filterSelect.innerHTML += `<option value="${prefix}">${uniqueKhoa[prefix]} (${prefix})</option>`;
+            });
+        }
+
+        // Render ra các Thẻ (Card) Môn học
         function renderCourses() {
             const search = document.getElementById('searchCourse').value.toLowerCase();
             const khoa = document.getElementById('khoaFilter').value;
             
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const dkD = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+            // Gom nhóm các lớp học phần cùng mã thành 1 môn học duy nhất
+            const subjectMap = {};
+            allOpenLHPs.forEach(lhp => {
+                const maMH = lhp.MaMH || lhp.mamh || '';
+                const prefix = maMH.replace(/[0-9]/g, '').toUpperCase().trim();
+                if (khoa && prefix !== khoa) return;
 
-            const filtered = mhD.filter(m => {
-                const matchSearch = m.TenMH.toLowerCase().includes(search) || m.MaMH.toLowerCase().includes(search);
-                const matchKhoa = !khoa || m.MaKhoa === khoa;
-                return matchSearch && matchKhoa;
+                const tenMH = lhp.TenMH || lhp.tenmh || '';
+                if (search && !(tenMH.toLowerCase().includes(search) || maMH.toLowerCase().includes(search))) return;
+
+                if (!subjectMap[maMH]) {
+                    subjectMap[maMH] = {
+                        MaMH: maMH,
+                        TenMH: tenMH,
+                        SoTinChi: lhp.SoTinChi !== undefined ? lhp.SoTinChi : (lhp.sotinchi || 0)
+                    };
+                }
             });
 
-            document.getElementById('courseList').innerHTML = filtered.map(m => {
-                // Check if already registered
-                const isReg = dkD.some(dk => {
-                    const lhp = lhpD.find(l => l.MaLHP === dk.MaLHP);
-                    return lhp && lhp.MaMH === m.MaMH && dk.MaSV === user.MaNguoiDung && (dk.TrangThai === 'DaDangKy' || dk.TrangThai === 'Thành công');
-                });
+            const filteredSubjects = Object.values(subjectMap);
 
+            if(filteredSubjects.length === 0) {
+                document.getElementById('courseList').innerHTML = '<div class="text-center py-5 text-muted">Không tìm thấy môn học phù hợp.</div>';
+                return;
+            }
+
+            document.getElementById('courseList').innerHTML = filteredSubjects.map(m => {
+                // Kiểm tra xem môn này đã có trong CSDL (đã lưu) chưa
+                const isReg = registeredLHPs.some(dk => (dk.MaMH || dk.mamh) === m.MaMH);
+                
                 return `
-                    <div class="col-md-6 animate__animated animate__fadeIn">
-                        <div class="course-card d-flex flex-column h-100">
+                    <div class="col-md-6 animate__animated animate__zoomIn">
+                        <div class="course-card d-flex flex-column h-100 p-4 border-0 rounded-4 shadow-sm bg-white" style="border-top: 4px solid #0d6efd !important;">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="small text-muted fw-bold">${m.MaMH}</span>
-                                ${isReg ? '<span class="registered-badge">Đã đăng ký</span>' : ''}
+                                <span class="badge bg-light text-primary border border-primary-subtle px-2 py-1">${m.MaMH}</span>
+                                ${isReg ? '<span class="registered-badge"><span class="material-symbols-outlined" style="font-size: 12px; vertical-align: middle;">check_circle</span> Đã đăng ký</span>' : ''}
                             </div>
-                            <h6 class="fw-bold mb-3">${m.TenMH}</h6>
-                            <div class="mt-auto d-flex justify-content-between align-items-center">
-                                <div class="small text-muted">${m.SoTinChi} tín chỉ</div>
-                                <button class="btn btn-outline-primary btn-sm px-3 rounded-pill" onclick="openClassModal('${m.MaMH}')" ${isReg ? 'disabled' : ''}>
-                                    ${isReg ? 'Đã hoàn tất' : 'Chọn lớp'}
+                            <h6 class="fw-bold mb-3 mt-2 text-dark fs-5">${m.TenMH}</h6>
+                            <div class="mt-auto d-flex justify-content-between align-items-center border-top pt-3">
+                                <div class="small fw-bold text-secondary"><span class="material-symbols-outlined align-middle me-1" style="font-size:16px;">menu_book</span>${m.SoTinChi} tín chỉ</div>
+                                <button class="btn ${isReg ? 'btn-success' : 'btn-outline-primary'} btn-sm px-4 rounded-pill fw-bold" onclick="openClassModal('${m.MaMH}')" ${isReg ? 'disabled' : ''}>
+                                    ${isReg ? 'Hoàn tất' : 'Chọn lớp'}
                                 </button>
                             </div>
                         </div>
@@ -211,67 +257,72 @@
             }).join('');
         }
 
-        const modal = new bootstrap.Modal(document.getElementById('selectClassModal'));
-        let currentMaMH = '';
-
+        // Bấm Chọn lớp -> Mở Popup Modal hiển thị các LHP của môn đó
         window.openClassModal = (maMH) => {
             currentMaMH = maMH;
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            
-            const currentHK = hkD.find(h => h.DangMo);
-            const mh = mhD.find(m => m.MaMH === maMH);
-            document.getElementById('modalCourseTitle').innerText = `Lớp học phần: ${mh.TenMH}`;
-
-            const classes = lhpD.filter(l => l.MaMH === maMH && l.MaHK === currentHK.MaHK);
+            const classes = allOpenLHPs.filter(l => (l.MaMH || l.mamh) === maMH);
+            if (classes.length > 0) {
+                document.getElementById('modalCourseTitle').innerText = `Danh sách lớp: ${classes[0].TenMH || classes[0].tenmh}`;
+            }
 
             document.getElementById('classListBody').innerHTML = classes.map(l => {
-                const gv = gvD.find(g => g.MaGV === l.MaGV) || {};
-                const isSelected = selectedClasses.some(c => c.MaLHP === l.MaLHP);
-                const isConflict = selectedClasses.some(c => c.MaLHP !== l.MaLHP && c.MaMH === l.MaMH);
+                const maLHP = l.MaLHP || l.malhp;
+                const gvName = l.HoTen || l.hoten || l.TenGV || l.tengv || 'Đang chờ phân công';
+                const lichHoc = l.LichHoc || l.lichhoc || 'Chưa xếp';
+                const phongHoc = l.PhongHoc || l.phonghoc || '---';
+                const sisoHT = l.SiSoHienTai !== undefined ? l.SiSoHienTai : (l.siso_hientai || 0);
+                const sisoTD = l.SiSoToiDa !== undefined ? l.SiSoToiDa : (l.siso_toida || 50);
 
-                const isFull = l.SiSoHienTai >= l.SiSoToiDa;
+                // Thuật toán kiểm tra trạng thái
+                const isSelected = selectedClasses.some(c => c.MaLHP === maLHP);
+                const isConflict = selectedClasses.some(c => c.MaLHP !== maLHP && c.MaMH === maMH); // Đã chọn 1 lớp khác cùng môn
+                const isFull = sisoHT >= sisoTD;
+
                 return `
-                    <tr class="class-select-row">
-                        <td class="fw-bold">${l.MaLHP}</td>
-                        <td>${gv.HoTen}</td>
-                        <td>${l.LichHoc}</td>
-                        <td>${l.PhongHoc}</td>
-                        <td>
-                            <span class="${isFull ? 'text-danger fw-bold' : ''}">${l.SiSoHienTai}/${l.SiSoToiDa}</span>
-                            ${isFull ? '<span class="badge bg-danger-subtle text-danger ms-1">Đầy</span>' : ''}
+                    <tr class="class-select-row border-bottom">
+                        <td class="fw-bold text-primary ps-3">${maLHP}</td>
+                        <td class="small fw-medium">${gvName}</td>
+                        <td class="small fw-bold text-dark">${lichHoc}</td>
+                        <td class="small"><span class="badge bg-light text-dark border">${phongHoc}</span></td>
+                        <td class="text-center">
+                            <span class="${isFull ? 'text-danger fw-bold' : 'text-success fw-bold'}">${sisoHT}/${sisoTD}</span>
                         </td>
-                        <td class="text-end">
-                            <button class="btn ${isSelected ? 'btn-danger' : 'btn-primary'} btn-sm rounded-pill" 
-                                onclick="toggleCart('${l.MaLHP}')" ${(isConflict && !isSelected) || (isFull && !isSelected) ? 'disabled' : ''}>
-                                ${isSelected ? 'Hủy chọn' : 'Chọn'}
+                        <td class="text-end pe-3">
+                            <button class="btn ${isSelected ? 'btn-danger' : 'btn-primary'} btn-sm rounded-pill fw-bold px-3 shadow-sm" 
+                                onclick="toggleCart('${maLHP}')" ${(isConflict && !isSelected) || (isFull && !isSelected) ? 'disabled' : ''}>
+                                ${isSelected ? 'Bỏ chọn' : 'Thêm vào giỏ'}
                             </button>
                         </td>
                     </tr>
                 `;
-            }).join('') || '<tr><td colspan="6" class="text-center py-4 text-muted">Không có lớp học phần nào đang mở.</td></tr>';
+            }).join('') || '<tr><td colspan="6" class="text-center py-4 text-muted">Học phần này hiện chưa mở lớp.</td></tr>';
 
             modal.show();
         };
 
+        // Thêm/Xóa khỏi giỏ hàng
         window.toggleCart = (maLHP) => {
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            
             const idx = selectedClasses.findIndex(c => c.MaLHP === maLHP);
             if (idx !== -1) {
+                // Đã có -> Xóa đi
                 selectedClasses.splice(idx, 1);
             } else {
-                const lhp = lhpD.find(l => l.MaLHP === maLHP);
-                const mh = mhD.find(m => m.MaMH === lhp.MaMH);
-                selectedClasses.push({ MaLHP: lhp.MaLHP, TenMH: mh.TenMH, Credits: mh.SoTinChi, MaMH: mh.MaMH });
+                // Chưa có -> Tìm thông tin add vào giỏ
+                const lhp = allOpenLHPs.find(l => (l.MaLHP || l.malhp) === maLHP);
+                if(lhp) {
+                    selectedClasses.push({ 
+                        MaLHP: maLHP, 
+                        TenMH: lhp.TenMH || lhp.tenmh, 
+                        Credits: lhp.SoTinChi !== undefined ? lhp.SoTinChi : (lhp.sotinchi || 0), 
+                        MaMH: lhp.MaMH || lhp.mamh 
+                    });
+                }
             }
             renderCart();
-            openClassModal(currentMaMH); // Refresh modal buttons
+            openClassModal(currentMaMH); // Làm mới lại các nút trong Popup
         };
 
+        // Vẽ danh sách giỏ hàng
         function renderCart() {
             const list = document.getElementById('cartList');
             const totalCredits = selectedClasses.reduce((sum, c) => sum + c.Credits, 0);
@@ -281,67 +332,75 @@
             document.getElementById('confirmBtn').disabled = selectedClasses.length === 0;
 
             if (selectedClasses.length === 0) {
-                list.innerHTML = '<p class="text-muted small text-center py-3 italic">Chưa chọn môn học nào.</p>';
+                list.innerHTML = `
+                    <div class="text-center py-4 bg-light rounded-4 border border-dashed">
+                        <span class="material-symbols-outlined text-muted mb-2" style="font-size: 32px;">shopping_basket</span>
+                        <p class="text-muted small mb-0 fw-medium">Giỏ hàng trống.</p>
+                    </div>`;
                 return;
             }
 
             list.innerHTML = selectedClasses.map(c => `
-                <div class="mb-3 p-2 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                <div class="mb-3 p-3 bg-white rounded-4 d-flex justify-content-between align-items-center shadow-sm border border-primary-subtle animate__animated animate__fadeInRight">
                     <div>
-                        <div class="fw-bold small">${c.TenMH}</div>
-                        <div class="text-muted" style="font-size: 11px;">${c.MaLHP} • ${c.Credits} TC</div>
+                        <div class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">${c.TenMH}</div>
+                        <div class="text-primary fw-bold" style="font-size: 0.8rem;">
+                            <span class="badge bg-primary-subtle text-primary me-1">${c.MaLHP}</span> 
+                            <span class="text-secondary">${c.Credits} TC</span>
+                        </div>
                     </div>
-                    <button class="btn btn-link text-danger p-0" onclick="toggleCart('${c.MaLHP}')">
-                        <span class="material-symbols-outlined" style="font-size: 20px;">remove_circle</span>
+                    <button class="btn btn-link text-danger p-0 ms-2" onclick="toggleCart('${c.MaLHP}')" title="Xóa">
+                        <span class="material-symbols-outlined" style="font-size: 28px;">cancel</span>
                     </button>
                 </div>
             `).join('');
         }
 
-        window.confirmRegistration = () => {
-            if (!confirm('Xác nhận đăng ký các học phần đã chọn?')) return;
+        // Bắn tuần tự giỏ hàng qua API SQL Server
+        window.confirmRegistration = async () => {
+            if (!confirm('Hệ thống sẽ lưu danh sách môn học này vào cơ sở dữ liệu. Bạn xác nhận chứ?')) return;
 
-            const dkD  = JSON.parse(localStorage.getItem('DangKyHoc')  || '[]');
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            let added = 0;
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG XỬ LÝ...';
 
-            selectedClasses.forEach(c => {
-                // Chấp nhận cả 'DaDangKy' và 'Thành công' để tránh trùng lặp
-                const alreadyReg = dkD.some(dk =>
-                    dk.MaSV === user.MaNguoiDung &&
-                    dk.MaLHP === c.MaLHP &&
-                    dk.TrangThai !== 'DaHuy'
-                );
-                if (!alreadyReg) {
-                    dkD.push({
-                        MaDK: 'DK' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                        MaSV: user.MaNguoiDung,
-                        MaLHP: c.MaLHP,
-                        NgayDangKy: new Date().toISOString(),
-                        TrangThai: 'DaDangKy'
+            let successCount = 0;
+            let failMessages = [];
+
+            // Duyệt giỏ hàng, gửi POST tuần tự xuống API
+            for (const c of selectedClasses) {
+                try {
+                    const res = await Auth.fetchWithAuth('/SinhVien/dang-ky', {
+                        method: 'POST',
+                        body: JSON.stringify({ maLHP: c.MaLHP })
                     });
-                    const lhpIdx = lhpD.findIndex(l => l.MaLHP === c.MaLHP);
-                    if (lhpIdx !== -1) lhpD[lhpIdx].SiSoHienTai += 1;
-                    added++;
+                    if (res.ok) {
+                        successCount++;
+                    } else {
+                        const err = await res.json();
+                        failMessages.push(`- Lớp ${c.MaLHP}: ${err.message}`);
+                    }
+                } catch (e) {
+                    failMessages.push(`- Lớp ${c.MaLHP}: Mất kết nối máy chủ`);
                 }
-            });
-
-            localStorage.setItem('DangKyHoc',  JSON.stringify(dkD));
-            localStorage.setItem('LopHocPhan', JSON.stringify(lhpD));
+            }
 
             modal.hide();
-            selectedClasses = [];
-            renderCart();
-            renderCourses();
-
-            if (added > 0) {
-                alert(`Đăng ký thành công ${added} học phần! Xem kết quả tại mục "Đăng ký học phần → Kết quả Đăng ký".`);
-            } else {
-                alert('Tất cả các môn đã được đăng ký trước đó!');
+            selectedClasses = []; // Reset giỏ
+            
+            let finalMsg = `Xử lý hoàn tất! \n✔️ Thành công: ${successCount} học phần.\n`;
+            if (failMessages.length > 0) {
+                finalMsg += `❌ Thất bại:\n` + failMessages.join('\n');
             }
+            
+            alert(finalMsg);
+            
+            // Mở khóa nút và nạp lại giao diện
+            btn.innerHTML = 'XÁC NHẬN ĐĂNG KÝ';
+            btn.disabled = false;
+            await fetchAndRefreshUI();
         };
 
-        init();
     </script>
 </body>
 </html>

@@ -1,0 +1,29 @@
+{
+  "name": "quanlydangkyhocphan",
+  "version": "1.0.0",
+  "description": "",
+  "main": "db.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinh0612/QuanLyDangKyHocPhan.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vinh0612/QuanLyDangKyHocPhan/issues"
+  },
+  "homepage": "https://github.com/vinh0612/QuanLyDangKyHocPhan#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "msnodesqlv8": "^5.2.0",
+    "mssql": "^12.5.4"
+  }
+}

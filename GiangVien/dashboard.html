@@ -14,63 +14,13 @@
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="nav-brand text-start">
-                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Hệ thống Đăng ký</div>
-            </div>
-            <ul class="nav-menu">
-                <li class="active">
-                    <a href="dashboard.html">
-                        <span class="material-symbols-outlined menu-icon">dashboard</span>
-                        Tổng quan
-                    </a>
-                </li>
-                <li>
-                    <a href="lich-day.html">
-                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
-                        Lịch dạy
-                    </a>
-                </li>
-                <li>
-                    <a href="nhap-diem.html">
-                        <span class="material-symbols-outlined menu-icon">edit_square</span>
-                        Quản lý Điểm
-                    </a>
-                </li>
-                <li>
-                    <a href="mon-hoc.html">
-                        <span class="material-symbols-outlined menu-icon">book</span>
-                        Danh mục Môn
-                    </a>
-                </li>
-            </ul>
-            <div style="padding: 1rem;">
-                <ul class="nav-menu" style="padding: 0;">
-                    <li>
-                        <a href="ho-so.html">
-                            <span class="material-symbols-outlined menu-icon">account_circle</span>
-                            Hồ sơ Cá nhân
-                        </a>
-                    </li>
-                    <li style="margin-top: 1rem;">
-                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
-                            <span class="material-symbols-outlined menu-icon">logout</span>
-                            Đăng xuất
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-        <!-- Main Content -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
                 <input type="text" class="search-bar" placeholder="Tìm tài liệu, sinh viên...">
             </div>
-            
             <div class="nav-user">
                 <div class="top-links d-none d-md-flex me-3">
                     <a href="dashboard.html" class="text-decoration-none text-main me-3">Trang chủ</a>
@@ -83,68 +33,61 @@
         <main class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 class="fw-bold mb-1" style="font-size: 2rem;" id="welcomeText">Chào buổi sáng, GV!</h1>
-                    <p class="text-muted mb-0" id="todayTaskDesc">Hôm nay bạn có 2 tiết giảng dạy và 1 cuộc họp bộ môn.</p>
+                    <h1 class="fw-bold mb-1" style="font-size: 2rem;" id="welcomeText">Chào ngày mới, Thầy/Cô!</h1>
+                    <p class="text-muted mb-0" id="todayTaskDesc">Hôm nay bạn chưa có lịch giảng dạy.</p>
                 </div>
-                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="addNote()">
+                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="alert('Chức năng Ghi chú cá nhân đang được nâng cấp bảo mật.')">
                     <span class="material-symbols-outlined">add_task</span> Ghi chú giảng dạy
                 </button>
             </div>
 
             <div class="row g-4">
-                <!-- Left Column -->
                 <div class="col-lg-8">
-                    <!-- Today's Schedule -->
                     <div class="today-card animate__animated animate__fadeIn">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
                                 <span class="material-symbols-outlined text-accent">schedule</span>
-                                Lịch dạy hôm nay
+                                Lịch dạy trong tuần
                             </h5>
-                            <span class="text-muted" id="currentDate">Thứ Ba, 24 Tháng 10</span>
+                            <span class="text-muted fw-bold text-primary" id="currentDate">Đang kết nối...</span>
                         </div>
                         <div id="todayScheduleList">
-                            <!-- Dynamic Content -->
+                            <p class="text-muted italic">Đang tải lịch giảng dạy từ hệ thống CSDL...</p>
                         </div>
                     </div>
 
-                    <!-- Assigned Classes -->
-                    <div class="card border-0 p-4 animate__animated animate__fadeInUp" style="border-radius: 20px;">
+                    <div class="card border-0 p-4 animate__animated animate__fadeInUp mt-4" style="border-radius: 20px;">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0">Lớp học phụ trách</h5>
-                            <select class="form-select form-select-sm w-auto border-0 bg-light fw-600" style="border-radius: 8px;" id="hkFilter">
-                                <!-- Dynamic Content -->
+                            <select class="form-select form-select-sm w-auto border-0 bg-light fw-600 px-3" style="border-radius: 8px; min-width: 150px;" id="hkFilter" onchange="renderMyClasses()">
+                                <option value="">Đang truy xuất...</option>
                             </select>
                         </div>
                         <div id="myClassesList">
-                            <!-- Dynamic Content -->
+                            <p class="text-muted italic">Đang đồng bộ lớp học phần...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column -->
                 <div class="col-lg-4">
-                    <!-- Quick Actions -->
                     <div class="row g-3 mb-4">
                         <div class="col-6">
-                            <a href="nhap-diem.html" class="card h-100 border-0 text-center p-3 text-decoration-none animate__animated animate__zoomIn" style="background: #0d6efd; color: #fff; border-radius: 20px;">
+                            <a href="nhap-diem.html" class="card h-100 border-0 text-center p-3 text-decoration-none shadow-sm animate__animated animate__zoomIn" style="background: #0d6efd; color: #fff; border-radius: 20px;">
                                 <span class="material-symbols-outlined mb-2" style="font-size: 32px;">edit_note</span>
                                 <div class="fw-bold">Quản lý Điểm</div>
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="mon-hoc.html" class="card h-100 border-0 text-center p-3 text-decoration-none animate__animated animate__zoomIn animate__delay-1s" style="background: #198754; color: #fff; border-radius: 20px;">
+                            <a href="mon-hoc.html" class="card h-100 border-0 text-center p-3 text-decoration-none shadow-sm animate__animated animate__zoomIn animate__delay-1s" style="background: #198754; color: #fff; border-radius: 20px;">
                                 <span class="material-symbols-outlined mb-2" style="font-size: 32px;">list_alt</span>
                                 <div class="fw-bold">Danh mục Môn</div>
                             </a>
                         </div>
                     </div>
 
-                    <!-- Notifications -->
-                    <div class="card border-0 p-4 mb-4 animate__animated animate__fadeInRight" style="border-radius: 20px;">
+                    <div class="card border-0 p-4 mb-4 shadow-sm animate__animated animate__fadeInRight" style="border-radius: 20px;">
                         <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                            <span class="material-symbols-outlined text-warning">campaign</span>
-                            Thông báo Khoa
+                            <span class="material-symbols-outlined text-warning">campaign</span> Thông báo Khoa
                         </h5>
                         <div class="task-list">
                             <div class="task-item red">
@@ -152,48 +95,9 @@
                                 <p class="task-desc">Hôm nay - 08:45</p>
                             </div>
                             <div class="task-item blue">
-                                <div class="task-title">Thông báo nộp bảng điểm HK1</div>
-                                <p class="task-desc">Hôm qua - 14:20</p>
+                                <div class="task-title">Thông báo nộp bảng điểm HK cuối</div>
+                                <p class="task-desc">Phòng Đào Tạo - Mới</p>
                             </div>
-                        </div>
-                        <div class="text-center mt-3">
-                            <a href="#" class="text-accent fw-600 text-decoration-none">Xem tất cả thông báo</a>
-                        </div>
-                    </div>
-
-                    <!-- Stats -->
-                    <div class="card border-0 p-4 animate__animated animate__fadeInRight animate__delay-1s" style="border-radius: 20px;">
-                        <h5 class="fw-bold mb-4">Chỉ số giảng dạy</h5>
-                        <div class="d-flex justify-content-between mb-4">
-                            <div class="text-center">
-                                <div class="text-muted small mb-1">TỶ LỆ CHUYÊN CẦN</div>
-                                <div class="h4 fw-bold text-primary">92%</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-muted small mb-1">ĐIỂM ĐÃ CHẤM</div>
-                                <div class="h4 fw-bold text-success">128/145</div>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <div class="text-center">
-                                <div class="text-muted small mb-1">ĐÁNH GIÁ GV</div>
-                                <div class="h4 fw-bold text-warning">4.8/5</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-muted small mb-1">GIỜ DẠY CÒN LẠI</div>
-                                <div class="h4 fw-bold text-info">42h</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Teaching Notes History -->
-                    <div class="card border-0 p-4 mt-4 animate__animated animate__fadeInRight animate__delay-2s" style="border-radius: 20px;">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
-                            <span class="material-symbols-outlined text-info">sticky_note_2</span>
-                            Ghi chú gần đây
-                        </h5>
-                        <div id="noteHistory">
-                            <!-- Dynamic Content -->
                         </div>
                     </div>
                 </div>
@@ -202,137 +106,165 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        Auth.checkAuth(['GiangVien']);
+        Auth.checkAuth(['GiangVien', 'TruongBoMon']);
         const user = Auth.getCurrentUser();
+        let myTeachingSchedule = [];
 
-        function init() {
-            document.getElementById('welcomeText').innerText = `Chào buổi sáng, ${user.HoTen}!`;
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
-            
-            // Set date
-            const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-            const now = new Date();
-            document.getElementById('currentDate').innerText = `${days[now.getDay()]}, ${now.getDate()} Tháng ${now.getMonth() + 1}`;
-
-            // Load HKs
-            const hks = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            document.getElementById('hkFilter').innerHTML = hks.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
-            
-            document.getElementById('hkFilter').onchange = renderMyClasses;
-            
-            renderTodaySchedule();
-            renderMyClasses();
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            if (user.Role === 'TruongBoMon') {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet'; link.href = '../TruongBoMon/css/truong-bo-mon.css';
+                document.head.appendChild(link);
+                sidebar.innerHTML = `
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Trưởng Bộ Môn</div></div>
+                    <ul class="nav-menu">
+                        <li class="active"><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="../TruongBoMon/quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
+                        <li><a href="../TruongBoMon/lich-day-bo-mon.html"><span class="material-symbols-outlined menu-icon">groups</span>Lịch dạy Bộ môn</a></li>
+                        <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                        <li class="menu-divider" style="margin: 1rem 0; border-top: 1px solid #eee; opacity: 0.5;"></li>
+                        <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    </ul>`;
+            } else {
+                sidebar.innerHTML = `
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Giảng viên</div></div>
+                    <ul class="nav-menu">
+                        <li class="active"><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
+                        <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                        <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
+                    </ul>`;
+            }
+            sidebar.innerHTML += `<div style="padding: 1rem; margin-top: auto;"><ul class="nav-menu" style="padding: 0;"><li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li><li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li></ul></div>`;
         }
 
-        function renderTodaySchedule() {
-            const hks = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            const currentHK = hks.find(h => h.DangMo);
-            if (!currentHK) return;
+        async function init() {
+            renderSidebar();
+            
+            const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+            const now = new Date();
+            document.getElementById('currentDate').innerText = `${days[now.getDay()]} ${now.getDate()}/${now.getMonth() + 1}`;
 
-            const lhps = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhs = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            try {
+                try {
+                    const profileRes = await Auth.fetchWithAuth('/GiangVien/ho-so');
+                    if (profileRes.ok) {
+                        const profileData = await profileRes.json();
+                        const tenGV = profileData.HoTen || profileData.hoten || user.TenLogin;
+                        document.getElementById('welcomeText').innerText = `Chào ngày mới, ${tenGV}!`;
+                        document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGV)}&background=0D8ABC&color=fff`;
+                    }
+                } catch(e) {}
+
+                try {
+                    const scheduleRes = await Auth.fetchWithAuth('/GiangVien/lich-day');
+                    if (scheduleRes.ok) { myTeachingSchedule = await scheduleRes.json(); }
+                } catch(e) {}
+            } catch (err) {
+                console.error(err);
+            } finally {
+                populateSemesterFilter();
+                renderMyClasses();
+                renderTodaySchedule();
+            }
+        }
+
+        // ĐÃ SỬA: Ép mở khóa vĩnh viễn nút bấm xổ xuống kể cả khi rỗng
+        function populateSemesterFilter() {
+            const filterSelect = document.getElementById('hkFilter');
             
-            // For demo, we just pick some classes that the teacher teaches in current HK
-            const mySchedule = lhps.filter(l => l.MaGV === user.MaNguoiDung && l.MaHK === currentHK.MaHK);
-            
-            if (mySchedule.length === 0) {
-                document.getElementById('todayScheduleList').innerHTML = '<p class="text-muted italic">Không có tiết dạy trong hôm nay.</p>';
+            // Luôn luôn mở khóa
+            filterSelect.disabled = false;
+
+            if (!myTeachingSchedule || myTeachingSchedule.length === 0) {
+                filterSelect.innerHTML = `
+                    <option value="">-- Không có dữ liệu --</option>
+                    <option value="none" disabled>🚫 Chưa có lớp học phần nào</option>
+                `;
                 return;
             }
 
-            document.getElementById('todayScheduleList').innerHTML = mySchedule.map(s => {
-                const mon = mhs.find(m => m.MaMH === s.MaMH) || {};
-                return `
-                    <div class="schedule-item animate__animated animate__fadeInLeft">
-                        <div>
-                            <div class="small fw-600 text-muted mb-1">${s.LichHoc}</div>
-                            <div class="fw-bold h5 mb-1">${mon.TenMH} (${s.MaLHP})</div>
-                            <div class="small text-muted d-flex align-items-center gap-3">
-                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px">location_on</span> ${s.PhongHoc}</span>
-                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px">groups</span> ${s.SiSoHienTai} sinh viên</span>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="window.location.href='diem-danh.html?malhp=${s.MaLHP}'">Điểm danh</button>
-                            <button class="btn btn-light btn-sm rounded-pill px-3" onclick="window.location.href='tai-lieu.html?mamh=${s.MaMH}'">Tài liệu</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            const semesterMap = {};
+            myTeachingSchedule.forEach(item => {
+                const hk = item.TenHK || item.tenhk;
+                const nam = item.NamHoc || item.namhoc;
+                semesterMap[`${hk}|${nam}`] = `${hk} - Năm học ${nam}`;
+            });
+            const sortedKeys = Object.keys(semesterMap).sort((a, b) => b.localeCompare(a));
+            filterSelect.innerHTML = '';
+            sortedKeys.forEach(key => { filterSelect.innerHTML += `<option value="${key}">${semesterMap[key]}</option>`; });
         }
 
         function renderMyClasses() {
-            const hkId = document.getElementById('hkFilter').value;
-            const lhps = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhs = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            
-            const myClasses = lhps.filter(l => l.MaGV === user.MaNguoiDung && l.MaHK === hkId);
-            
-            if (myClasses.length === 0) {
-                document.getElementById('myClassesList').innerHTML = '<div class="text-center py-5"><p class="text-muted">Không có lớp học nào trong học kỳ này.</p></div>';
+            const filterSelect = document.getElementById('hkFilter');
+            const filterValue = filterSelect ? filterSelect.value : '';
+            const container = document.getElementById('myClassesList');
+            let filteredClasses = filterValue ? myTeachingSchedule.filter(item => {
+                const [hk, nam] = filterValue.split('|');
+                return (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam;
+            }) : [...myTeachingSchedule];
+
+            if (filteredClasses.length === 0) {
+                container.innerHTML = '<div class="text-center py-4"><p class="text-muted">Không tìm thấy lớp học phần nào.</p></div>';
                 return;
             }
 
-            const colors = ['#e0f2fe', '#dcfce7', '#fef3c7', '#f3e8ff', '#fee2e2'];
-            const textColors = ['#0369a1', '#15803d', '#b45309', '#7e22ce', '#b91c1c'];
+            const colors = ['#e0f2fe', '#dcfce7', '#fef3c7', '#f3e8ff'];
+            const textColors = ['#0369a1', '#15803d', '#b45309', '#7e22ce'];
 
-            document.getElementById('myClassesList').innerHTML = myClasses.map((l, i) => {
-                const mon = mhs.find(m => m.MaMH === l.MaMH) || {};
-                const colorIdx = i % colors.length;
+            container.innerHTML = filteredClasses.map((item, index) => {
+                const tenMH = item.TenMH || 'Môn học'; const maLHP = item.MaLHP || '---'; const siSo = item.SiSoHienTai || 0;
+                const colorIdx = index % colors.length;
+                const initials = tenMH.substring(0, 1).toUpperCase() + (tenMH.includes(' ') ? tenMH.split(' ').pop().substring(0, 1).toUpperCase() : '');
+
                 return `
-                    <div class="class-item" onclick="window.location.href='nhap-diem.html?malhp=${l.MaLHP}'" style="cursor: pointer;">
-                        <div class="class-icon" style="background: ${colors[colorIdx]}; color: ${textColors[colorIdx]};">
-                            ${mon.TenMH.substring(0, 2).toUpperCase()}
+                    <div class="class-item shadow-sm mb-3" onclick="window.location.href='nhap-diem.html?malhp=${maLHP}'" style="cursor: pointer; border-left: 4px solid ${textColors[colorIdx]};">
+                        <div class="class-icon fw-bold" style="background: ${colors[colorIdx]}; color: ${textColors[colorIdx]}; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">${initials}</div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="fw-bold text-dark">${tenMH}</div>
+                            <div class="small text-muted mt-1">${maLHP} • ${siSo} Sinh viên</div>
                         </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-bold text-main">${mon.TenMH}</div>
-                            <div class="small text-muted">${l.MaLHP} • ${l.SiSoHienTai} SV</div>
-                        </div>
-                        <span class="material-symbols-outlined text-muted">chevron_right</span>
-                    </div>
-                `;
+                        <span class="material-symbols-outlined text-primary bg-primary-subtle p-1 rounded-circle">chevron_right</span>
+                    </div>`;
             }).join('');
         }
 
-        window.addNote = () => {
-            const note = prompt('Nhập ghi chú giảng dạy cho hôm nay:');
-            if (note) {
-                const notes = JSON.parse(localStorage.getItem('GhiChuGiangVien') || '[]');
-                notes.unshift({
-                    id: Date.now(),
-                    maGV: user.MaNguoiDung,
-                    content: note,
-                    date: new Date().toLocaleString('vi-VN')
-                });
-                localStorage.setItem('GhiChuGiangVien', JSON.stringify(notes.slice(0, 5))); // Keep last 5
-                renderNotes();
-                alert('Hệ thống đã ghi nhận ghi chú!');
-            }
-        };
+        function renderTodaySchedule() {
+            const filterSelect = document.getElementById('hkFilter');
+            const filterValue = filterSelect ? filterSelect.value : '';
+            const container = document.getElementById('todayScheduleList');
+            let filteredClasses = filterValue ? myTeachingSchedule.filter(item => {
+                const [hk, nam] = filterValue.split('|');
+                return (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam;
+            }) : [...myTeachingSchedule];
 
-        function renderNotes() {
-            const notes = JSON.parse(localStorage.getItem('GhiChuGiangVien') || '[]');
-            const myNotes = notes.filter(n => n.maGV === user.MaNguoiDung);
-            const container = document.getElementById('noteHistory');
-            
-            if (myNotes.length === 0) {
-                container.innerHTML = '<p class="text-muted small italic">Chưa có ghi chú nào.</p>';
-                return;
+            if (filteredClasses.length === 0) {
+                container.innerHTML = '<p class="text-muted italic text-center p-3 border rounded-3 bg-light">Chưa có lịch giảng dạy chi tiết.</p>';
+                document.getElementById('todayTaskDesc').innerText = "Hiện tại không có lịch lên lớp nào trong hệ thống."; return;
             }
+            document.getElementById('todayTaskDesc').innerText = `Thầy/Cô có ${filteredClasses.length} lớp học phần trong kỳ này.`;
 
-            container.innerHTML = myNotes.map(n => `
-                <div class="mb-3 p-2 bg-light rounded shadow-sm border-start border-primary border-4 animate__animated animate__fadeIn">
-                    <div class="fw-bold small">${n.content}</div>
-                    <div class="text-muted" style="font-size: 10px;">${n.date}</div>
-                </div>
-            `).join('');
+            container.innerHTML = filteredClasses.map(item => {
+                return `
+                    <div class="schedule-item shadow-sm border p-3 rounded-4 mb-3" style="border-left: 5px solid #0d6efd !important;">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div>
+                                <div class="badge bg-danger-subtle text-danger mb-2 px-2 py-1 fw-bold"><span class="material-symbols-outlined align-middle me-1" style="font-size: 14px;">alarm</span>${item.LichHoc || 'Chưa xếp'}</div>
+                                <div class="fw-bold h5 mb-2 text-dark">${item.TenMH} (${item.MaLHP})</div>
+                                <div class="small text-muted d-flex align-items-center gap-3">
+                                    <span class="bg-light px-2 py-1 rounded"><span class="material-symbols-outlined text-primary" style="font-size:16px">location_on</span> Phòng ${item.PhongHoc || '---'}</span>
+                                    <span class="bg-light px-2 py-1 rounded"><span class="material-symbols-outlined text-success" style="font-size:16px">groups</span> ${item.SiSoHienTai || 0} SV</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold ms-3" onclick="window.location.href='nhap-diem.html?malhp=${item.MaLHP}'"><span class="material-symbols-outlined align-middle me-1" style="font-size: 16px;">edit</span> Chấm Điểm</button>
+                        </div>
+                    </div>`;
+            }).join('');
         }
-
         init();
-        renderNotes();
     </script>
 </body>
 </html>
