@@ -115,17 +115,21 @@
                     <h5 class="fw-bold mb-0" id="courseModalTitle">Cập nhật môn học</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
-                    <input type="hidden" id="editMaMH">
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Tên môn học</label>
-                        <input type="text" id="formTenMH" class="form-control border-0 bg-light p-3" placeholder="Ví dụ: Cấu trúc dữ liệu và Giải thuật">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Số tín chỉ</label>
-                        <input type="number" id="formSoTC" class="form-control border-0 bg-light p-3" min="1" max="10">
-                    </div>
-                </div>
+        <div class="modal-body p-4">
+                <div class="mb-4">
+                <label class="form-label fw-bold small text-muted text-uppercase">Mã môn học</label>
+                <input type="text" id="editMaMH" class="form-control border-0 bg-light p-3" placeholder="Ví dụ: COMP1311">
+            </div>
+    
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-muted text-uppercase">Tên môn học</label>
+                <input type="text" id="formTenMH" class="form-control border-0 bg-light p-3" placeholder="Ví dụ: Cấu trúc dữ liệu và Giải thuật">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted text-uppercase">Số tín chỉ</label>
+                <input type="number" id="formSoTC" class="form-control border-0 bg-light p-3" min="1" max="10">
+            </div>
+        </div>
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow" onclick="saveCourse()">LƯU THAY ĐỔI</button>
                 </div>
@@ -214,53 +218,75 @@
             initAssignTab();
         }
 
-        function renderCourses() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const allMh = JSON.parse(localStorage.getItem('MonHoc') || '[]').filter(m => m.MaKhoa === myKhoaId && (m.TenMH.toLowerCase().includes(search) || m.MaMH.toLowerCase().includes(search)));
-            const gvdm = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]');
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const lhp = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
+    window.renderCourses = async () => {
+    const userStr = localStorage.getItem('currentUser');
+    const token = userStr ? JSON.parse(userStr).Token : null;
+    
+    try {
+        // LẤY DỮ LIỆU TỪ DB LÊN
+        const response = await fetch('http://localhost:5123/api/TruongKhoa/mon-hoc', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) throw new Error('Không lấy được dữ liệu');
+        
+        const dataTuDB = await response.json(); 
+        
+        // --- LOGIC GOM NHÓM MÔN HỌC ---
+        const groupedCourses = [];
+        dataTuDB.forEach(row => {
+            let course = groupedCourses.find(c => c.MaMH === row.MaMH);
+            if (!course) {
+                // Nếu chưa có môn này trong mảng, tạo mới và thêm 1 mảng chứa Giảng Viên
+                course = { ...row, DanhSachGV: [] };
+                groupedCourses.push(course);
+            }
+            // Nếu dòng này có giảng viên, nhét vào mảng của môn đó
+            if (row.MaGV) {
+                course.DanhSachGV.push({ MaGV: row.MaGV, TenGV: row.TenGV });
+            }
+        });
+        
+        window.allCoursesData = groupedCourses; // Lưu cục đã gom nhóm
+        document.getElementById('assignCourseSelect').innerHTML = '<option value="">-- Chọn môn học --</option>' + groupedCourses.map(m => `<option value="${m.MaMH}">${m.TenMH}</option>`).join('');
 
-            // Pagination Logic
-            const totalRows = allMh.length;
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
-            const startIdx = (currentPage - 1) * rowsPerPage;
-            const paginatedData = allMh.slice(startIdx, startIdx + rowsPerPage);
-            
-            document.getElementById('courseTableBody').innerHTML = paginatedData.map(m => `
-                <tr class="animate__animated animate__fadeIn">
-                    <td class="ps-4"><span class="fw-bold text-primary">${m.MaMH}</span></td>
-                    <td class="fw-bold">${m.TenMH}</td>
-                    <td class="text-center"><span class="badge bg-light text-dark border px-3">${m.SoTinChi} TC</span></td>
-                    <td class="text-center">
-                        ${(() => {
-                            const assign = gvdm.find(g => g.MaMH === m.MaMH);
-                            if (assign) {
-                                const gv = gvD.find(x => x.MaGV === assign.MaGV) || {};
-                                return `<span class="badge bg-info-subtle text-info rounded-pill px-3">
-                                            <span class="material-symbols-outlined align-middle fs-6 me-1">person</span>
-                                            ${gv.HoTen || assign.MaGV}
-                                        </span>`;
-                            }
-                            return `<span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">Chưa phân công</span>`;
-                        })()}
-                    </td>
-                    <td class="text-center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <button class="btn btn-sm btn-outline-primary rounded-circle" style="width: 32px; height: 32px; padding: 0;" onclick="editCourse('${m.MaMH}')">
-                                <span class="material-symbols-outlined fs-6">edit</span>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0;" onclick="deleteCourse('${m.MaMH}', ${lhp.some(l => l.MaMH === m.MaMH)})">
-                                <span class="material-symbols-outlined fs-6">delete</span>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('') || '<tr><td colspan="5" class="text-center py-5">Không tìm thấy môn học nào</td></tr>';
-            
-            renderPagination(totalRows, totalPages);
-            document.getElementById('assignCourseSelect').innerHTML = '<option value="">-- Chọn môn học --</option>' + allMh.map(m => `<option value="${m.MaMH}">${m.TenMH}</option>`).join('');
-        }
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const filteredData = groupedCourses.filter(m => m.TenMH.toLowerCase().includes(search) || m.MaMH.toLowerCase().includes(search));
+        // ... (Giữ nguyên đoạn tính toán phân trang totalRows, totalPages...)
+        
+        const totalRows = filteredData.length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        const startIdx = (currentPage - 1) * rowsPerPage;
+        const paginatedData = filteredData.slice(startIdx, startIdx + rowsPerPage);
+        
+        document.getElementById('courseTableBody').innerHTML = paginatedData.map(m => `
+            <tr class="animate__animated animate__fadeIn">
+                <td class="ps-4"><span class="fw-bold text-primary">${m.MaMH}</span></td>
+                <td class="fw-bold">${m.TenMH}</td>
+                <td class="text-center"><span class="badge bg-light text-dark border px-3">${m.SoTinChi} TC</span></td>
+                <td class="text-center">
+                    ${m.DanhSachGV.length > 0 ? 
+                        `<button class="btn btn-sm badge bg-info-subtle text-info rounded-pill px-3 border-0" onclick="switchToAssignTab('${m.MaMH}')">
+                            <span class="material-symbols-outlined align-middle fs-6 me-1">group</span>${m.DanhSachGV.length} Giảng viên
+                        </button>` 
+                        : `<span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">Chưa phân công</span>`
+                    }
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary rounded-circle" style="width: 32px; height: 32px; padding: 0;" onclick="editCourse('${m.MaMH}')"><span class="material-symbols-outlined fs-6">edit</span></button>
+                    <button class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0;" onclick="deleteCourse('${m.MaMH}', ${m.TenGV ? true : false})"><span class="material-symbols-outlined fs-6">delete</span></button>
+                </td>
+            </tr>
+        `).join('') || '<tr><td colspan="5" class="text-center py-5">Không có dữ liệu</td></tr>';
+        
+        renderPagination(totalRows, totalPages);
+        
+    } catch (error) {
+        console.error(error);
+        document.getElementById('courseTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger">Lỗi tải dữ liệu từ máy chủ!</td></tr>';
+    }
+    };
 
         function renderPagination(totalRows, totalPages) {
             let container = document.getElementById('paginationContainer');
@@ -302,54 +328,211 @@
             renderCourses();
         }
 
-        window.openCourseModal = () => { document.getElementById('courseModalTitle').innerText = 'Thêm môn học mới'; document.getElementById('editMaMH').value = ''; document.getElementById('formTenMH').value = ''; document.getElementById('formSoTC').value = 3; cM.show(); };
-        window.editCourse = (id) => { const m = JSON.parse(localStorage.getItem('MonHoc') || '[]').find(x => x.MaMH === id); document.getElementById('courseModalTitle').innerText = 'Sửa môn học: ' + id; document.getElementById('editMaMH').value = id; document.getElementById('formTenMH').value = m.TenMH; document.getElementById('formSoTC').value = m.SoTinChi; cM.show(); };
-        window.saveCourse = () => {
-            const id = document.getElementById('editMaMH').value, d = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const ten = document.getElementById('formTenMH').value;
-            const tc = parseInt(document.getElementById('formSoTC').value);
-            if(!ten || !tc) return alert('Vui lòng nhập đầy đủ thông tin!');
-            
-            const obj = { MaMH: id || 'MH' + Date.now(), TenMH: ten, SoTinChi: tc, MaKhoa: myKhoaId };
-            if (id) { const i = d.findIndex(x => x.MaMH === id); d[i] = obj; } else { d.push(obj); }
-            localStorage.setItem('MonHoc', JSON.stringify(d)); cM.hide(); renderCourses();
-        };
-        window.deleteCourse = (id, has) => { if (has) return alert('Không thể xóa môn đã có lớp học phần!'); if (confirm('Bạn có chắc chắn muốn xóa môn học này không?')) { const d = JSON.parse(localStorage.getItem('MonHoc') || '[]').filter(x => x.MaMH !== id); localStorage.setItem('MonHoc', JSON.stringify(d)); renderCourses(); } };
+window.openCourseModal = () => { 
+    document.getElementById('courseModalTitle').innerText = 'Thêm môn học mới'; 
+    document.getElementById('editMaMH').value = ''; 
+    document.getElementById('editMaMH').readOnly = false; // Cho phép nhập mã mới
+    document.getElementById('formTenMH').value = ''; 
+    document.getElementById('formSoTC').value = 3; 
+    cM.show(); 
+};
 
-        function initAssignTab() { 
-            const gv = JSON.parse(localStorage.getItem('GiaoVien') || '[]').filter(g => g.MaKhoa === myKhoaId); 
-            document.getElementById('formMaGV').innerHTML = gv.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join(''); 
+window.editCourse = (id) => { 
+    const m = JSON.parse(localStorage.getItem('MonHoc') || '[]').find(x => x.MaMH === id); 
+    document.getElementById('courseModalTitle').innerText = 'Sửa môn học: ' + id; 
+    document.getElementById('editMaMH').value = id; 
+    document.getElementById('editMaMH').readOnly = true; // Khóa lại, không cho sửa Khóa chính
+    document.getElementById('formTenMH').value = m.TenMH; 
+    document.getElementById('formSoTC').value = m.SoTinChi; 
+    cM.show(); 
+};
+
+window.saveCourse = async () => {
+    const id = document.getElementById('editMaMH').value.trim();
+    const ten = document.getElementById('formTenMH').value.trim();
+    const tc = parseInt(document.getElementById('formSoTC').value);
+    
+    if(!id || !ten || !tc) return alert('Vui lòng nhập đầy đủ thông tin!');
+    
+    const isEditMode = document.getElementById('editMaMH').readOnly;
+    const url = 'http://localhost:5123/api/TruongKhoa/mon-hoc'; 
+    const method = isEditMode ? 'PUT' : 'POST'; // Sửa thì PUT, Thêm thì POST
+    
+    // Lấy Token từ nơi nhóm bro đang lưu (localStorage hoặc sessionStorage)
+    const userStr = localStorage.getItem('currentUser');
+    const token = userStr ? JSON.parse(userStr).Token : null;
+
+    try {
+        // GỌI API THẬT
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Gắn thẻ ngành vào
+            },
+            body: JSON.stringify({ MaMH: id, TenMH: ten, SoTinChi: tc })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            // Hiển thị lỗi từ SQL Server (ví dụ: Trùng mã môn)
+            alert('Lỗi: ' + result.message);
+            return;
         }
-        window.renderAssignments = () => {
-            const id = document.getElementById('assignCourseSelect').value, btn = document.getElementById('btnAddAssign');
-            if (!id) { btn.disabled = true; document.getElementById('assignTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Vui lòng chọn môn học ở trên</td></tr>'; return; }
-            btn.disabled = false;
-            const gvdm = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]').filter(x => x.MaMH === id), gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]'), bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            document.getElementById('assignTableBody').innerHTML = gvdm.map(a => { const gv = gvD.find(g => g.MaGV === a.MaGV) || {}, bm = bmD.find(b => b.MaBoMon === gv.MaBoMon) || {}; return `<tr><td class="ps-4"><strong>${a.MaGV}</strong></td><td>${gv.HoTen}</td><td>${bm.TenBoMon}</td><td class="text-center"><button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="deleteAssignment('${a.MaGV}', '${id}')"><span class="material-symbols-outlined align-middle fs-6 me-1">person_remove</span> Gỡ bỏ</button></td></tr>`; }).join('') || '<tr><td colspan="4" class="text-center py-5 text-muted">Chưa có Giảng viên nào được phân công giảng dạy môn này.</td></tr>';
-        };
-        window.openAssignModal = () => aM.show();
-        window.saveAssignment = () => {
-            const m = document.getElementById('assignCourseSelect').value, g = document.getElementById('formMaGV').value;
-            let d = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]');
+
+        alert(result.message); // Báo thành công
+        cM.hide(); 
+        renderCourses(); // Load lại danh sách môn học từ DB
+    } catch (error) {
+        console.error(error);
+        alert('Không thể kết nối đến Backend Node.js!');
+    }
+};
+
+        // 1. GỌI API XÓA MÔN HỌC (Đã fix từ LocalStorage sang DB thật)
+        window.deleteCourse = async (id, has) => { 
+            if (has) return alert('Không thể xóa môn đã có giảng viên phân công!'); 
+            if (!confirm('Bạn có chắc chắn muốn xóa môn học này không?')) return;
             
-            // Tìm xem môn này đã có ai dạy chưa
-            const existingIdx = d.findIndex(x => x.MaMH === m);
-            if (existingIdx !== -1) {
-                if(d[existingIdx].MaGV === g) return alert('Giảng viên này đang phụ trách môn này rồi!');
-                if(!confirm('Môn này đã có giảng viên khác phụ trách. Bạn có muốn thay đổi không?')) return;
-                d[existingIdx].MaGV = g;
-            } else {
-                d.push({ MaGV: g, MaMH: m });
+            const userStr = localStorage.getItem('currentUser');
+            const token = userStr ? JSON.parse(userStr).Token : null;
+
+            try {
+                const response = await fetch(`http://localhost:5123/api/TruongKhoa/mon-hoc/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (!response.ok) return alert('Lỗi: ' + result.message);
+                
+                alert(result.message);
+                renderCourses();
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ!');
             }
-            
-            localStorage.setItem('GiaoVienDayMon', JSON.stringify(d)); 
-            aM.hide(); 
-            renderAssignments(); 
-            renderCourses();
         };
-        window.deleteAssignment = (g, m) => { if (confirm('Xác nhận gỡ phân công giảng dạy?')) { const d = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]').filter(x => !(x.MaGV === g && x.MaMH === m)); localStorage.setItem('GiaoVienDayMon', JSON.stringify(d)); renderAssignments(); renderCourses(); } };
+
+        // 2. GỌI API LẤY DANH SÁCH GIẢNG VIÊN VÀO THẺ SELECT
+        window.initAssignTab = async () => { 
+            const userStr = localStorage.getItem('currentUser');
+            const token = userStr ? JSON.parse(userStr).Token : null;
+            
+            try {
+                const res = await fetch('http://localhost:5123/api/TruongKhoa/giang-vien-khoa', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const gv = await res.json();
+                document.getElementById('formMaGV').innerHTML = gv.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join(''); 
+            } catch(err) {
+                console.error("Lỗi tải DS Giảng viên", err);
+            }
+        }
+
+        // 3. HIỂN THỊ GIẢNG VIÊN ĐÃ PHÂN CÔNG (Lấy từ dữ liệu của renderCourses)
+        window.renderAssignments = () => {
+            const id = document.getElementById('assignCourseSelect').value;
+            const btn = document.getElementById('btnAddAssign');
+            if (!id) { 
+                btn.disabled = true; 
+                document.getElementById('assignTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Vui lòng chọn môn học ở trên</td></tr>'; 
+                return; 
+            }
+            btn.disabled = false;
+            
+            const m = (window.allCoursesData || []).find(x => x.MaMH === id);
+            
+            if (m && m.DanhSachGV && m.DanhSachGV.length > 0) {
+                document.getElementById('assignTableBody').innerHTML = m.DanhSachGV.map(gv => `
+                    <tr>
+                        <td class="ps-4"><strong>${gv.MaGV}</strong></td>
+                        <td>${gv.TenGV}</td>
+                        <td>--</td>
+                        <td class="text-center">
+                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="deleteAssignment('${gv.MaGV}', '${id}')">
+                                <span class="material-symbols-outlined align-middle fs-6 me-1">person_remove</span> Gỡ bỏ
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                document.getElementById('assignTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Chưa có Giảng viên nào được phân công giảng dạy môn này.</td></tr>';
+            }
+        };
+
+        window.openAssignModal = () => aM.show();
+
+        // 4. GỌI API PHÂN CÔNG GIẢNG VIÊN (POST)
+        window.saveAssignment = async () => {
+            const m = document.getElementById('assignCourseSelect').value;
+            const g = document.getElementById('formMaGV').value;
+            
+            const userStr = localStorage.getItem('currentUser');
+            const token = userStr ? JSON.parse(userStr).Token : null;
+
+            try {
+                const response = await fetch('http://localhost:5123/api/TruongKhoa/phan-cong', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ MaMH: m, MaGV: g })
+                });
+
+                const result = await response.json();
+                if (!response.ok) return alert('Lỗi: ' + result.message);
+
+                alert(result.message);
+                aM.hide(); 
+                await renderCourses(); // Cập nhật lại danh sách môn
+                document.getElementById('assignCourseSelect').value = m; // Giữ lại lựa chọn hiện tại
+                renderAssignments(); // Cập nhật lại bảng chi tiết
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ!');
+            }
+        };
+
+        // 5. GỌI API GỠ PHÂN CÔNG (DELETE)
+        window.deleteAssignment = async (g, m) => { 
+            if (!confirm('Xác nhận gỡ phân công giảng dạy?')) return;
+            
+            const userStr = localStorage.getItem('currentUser');
+            const token = userStr ? JSON.parse(userStr).Token : null;
+
+            try {
+                const response = await fetch('http://localhost:5123/api/TruongKhoa/phan-cong', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ MaMH: m, MaGV: g })
+                });
+
+                const result = await response.json();
+                if (!response.ok) return alert('Lỗi: ' + result.message);
+
+                alert(result.message);
+                await renderCourses(); 
+                document.getElementById('assignCourseSelect').value = m;
+                renderAssignments(); 
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ!');
+            }
+        };
         
         init();
+    window.switchToAssignTab = (maMH) => {
+        // Chuyển UI sang tab Phân công dạy
+        const assignTabBtn = document.querySelector('button[data-bs-target="#assignTab"]');
+        const tab = new bootstrap.Tab(assignTabBtn);
+        tab.show();
+            
+        // Chọn đúng môn học và load bảng
+        document.getElementById('assignCourseSelect').value = maMH;
+        renderAssignments();
+    };
     </script>
 </body>
 </html>

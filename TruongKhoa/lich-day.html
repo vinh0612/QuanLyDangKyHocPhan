@@ -77,39 +77,70 @@
         const rowsPerPage = 4;
         let allFilteredSchedules = [];
 
-        function init() {
+        // 1. GỌI API KHỞI TẠO (Lấy Info & Dropdown Học Kỳ)
+        async function init() {
             renderSidebar();
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
             
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
-            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            const k = khoaD.find(k => k.MaKhoa === me.MaKhoa);
-            document.getElementById('facultyName').innerText = k ? `Khoa: ${k.TenKhoa}` : 'Khoa: ...';
+            const userStr = localStorage.getItem('currentUser');
+            const token = userStr ? JSON.parse(userStr).Token : null;
+            if (!token) return alert('Lỗi xác thực, vui lòng đăng nhập lại!');
 
-            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            document.getElementById('hkSelect').innerHTML = hkD.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
-            renderSchedule();
+            try {
+                // A. Lấy Tên Khoa (Tạm thời lấy từ LocalStorage hoặc gán cứng, sau này gọi API Info sau)
+                document.getElementById('facultyName').innerText = 'Khoa của bạn'; 
+
+                // B. Lấy danh sách Học Kỳ từ DB
+                const resHK = await fetch('http://localhost:5123/api/TruongKhoa/hoc-ky', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const hocKyList = await resHK.json();
+                
+                // Đổ vào thẻ Select, tự chọn Học kỳ đang mở
+                document.getElementById('hkSelect').innerHTML = hocKyList.map(h => 
+                    `<option value="${h.MaHK}" ${h.LaHKHienTai ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`
+                ).join('');
+
+                // Gọi API lấy lịch dạy theo học kỳ mặc định
+                await renderSchedule();
+
+            } catch (err) {
+                console.error(err);
+                alert('Không thể tải dữ liệu ban đầu!');
+            }
         }
 
-        function renderSchedule() {
+        // 2. GỌI API LẤY LỊCH DẠY THEO HỌC KỲ (Thay cho LocalStorage)
+        window.renderSchedule = async () => {
             const hkId = document.getElementById('hkSelect').value;
             const search = document.getElementById('searchInput').value.toLowerCase();
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
             
-            allFilteredSchedules = lhpD.filter(l => {
-                const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
-                const matchesSearch = mh.TenMH.toLowerCase().includes(search) || l.MaLHP.toLowerCase().includes(search);
-                return l.MaGV === user.MaNguoiDung && l.MaHK === hkId && matchesSearch;
-            });
+            const userStr = localStorage.getItem('currentUser');
+            const token = userStr ? JSON.parse(userStr).Token : null;
 
-            currentPage = 1;
-            renderScheduleCards();
+            try {
+                // Gọi API số 9
+                const resLich = await fetch(`http://localhost:5123/api/TruongKhoa/lich-day/${hkId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const rawData = await resLich.json();
+
+                // Lọc dữ liệu trên FE (nếu có gõ vào ô tìm kiếm)
+                allFilteredSchedules = rawData.filter(l => 
+                    l.TenMH.toLowerCase().includes(search) || l.MaLHP.toLowerCase().includes(search)
+                );
+
+                currentPage = 1;
+                renderScheduleCards();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('scheduleContainer').innerHTML = '<div class="col-12 text-center py-5 text-danger">Lỗi kết nối đến máy chủ!</div>';
+            }
         }
 
+        // 3. VẼ GIAO DIỆN CÁC THẺ LỊCH HỌC (Giữ nguyên giao diện đẹp của ông)
         function renderScheduleCards() {
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
             const totalRows = allFilteredSchedules.length;
             const totalPages = Math.ceil(totalRows / rowsPerPage);
             const startIdx = (currentPage - 1) * rowsPerPage;
@@ -118,42 +149,40 @@
             const container = document.getElementById('scheduleContainer');
             
             if (totalRows === 0) {
-                container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Không có lịch dạy trong học kỳ này.</div>';
+                container.innerHTML = '<div class="col-12 text-center py-5 text-muted">Không có lịch dạy trong học kỳ này hoặc không tìm thấy kết quả.</div>';
                 renderPagination(0, 0);
                 return;
             }
 
-            container.innerHTML = paginatedData.map(l => {
-                const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
-                return `
-                    <div class="col-md-6 animate__animated animate__fadeIn">
-                        <div class="schedule-card h-100">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <div class="badge bg-primary bg-opacity-10 text-primary mb-2">${l.MaLHP}</div>
-                                    <h5 class="fw-bold mb-1">${mh.TenMH}</h5>
-                                    <div class="text-muted small">Thời gian: ${l.LichHoc || 'Chưa cập nhật'}</div>
-                                </div>
-                                <span class="material-symbols-outlined text-muted">more_vert</span>
+            container.innerHTML = paginatedData.map(l => `
+                <div class="col-md-6 animate__animated animate__fadeIn">
+                    <div class="schedule-card h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <div class="badge bg-primary bg-opacity-10 text-primary mb-2">${l.MaLHP}</div>
+                                <h5 class="fw-bold mb-1">${l.TenMH}</h5>
+                                <div class="text-muted small">Thời gian: ${l.LichHoc || 'Chưa cập nhật'}</div>
                             </div>
-                            <div class="d-flex gap-4 border-top pt-3 mt-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="material-symbols-outlined text-muted" style="font-size: 18px;">meeting_room</span>
-                                    <span class="small fw-600">${l.PhongHoc || '---'}</span>
-                                </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="material-symbols-outlined text-muted" style="font-size: 18px;">groups</span>
-                                    <span class="small fw-600">${l.SiSoToiDa} SV</span>
-                                </div>
+                            <span class="material-symbols-outlined text-muted">more_vert</span>
+                        </div>
+                        <div class="d-flex gap-4 border-top pt-3 mt-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-muted" style="font-size: 18px;">meeting_room</span>
+                                <span class="small fw-600">${l.PhongHoc || '---'}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-muted" style="font-size: 18px;">groups</span>
+                                <span class="small fw-600">${l.SiSoToiDa} SV</span>
                             </div>
                         </div>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
 
             renderPagination(totalRows, totalPages);
         }
 
+        // Phân trang
         function renderPagination(totalRows, totalPages) {
             let container = document.getElementById('paginationContainer');
             if (!container) {
@@ -172,30 +201,31 @@
             const end = Math.min(currentPage * rowsPerPage, totalRows);
 
             container.innerHTML = `
-                <div class="dean-card d-flex justify-content-between align-items-center py-3 px-4">
-                    <div class="pagination-info">
-                        Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> lớp học
+                <div class="dean-card d-flex justify-content-between align-items-center py-3 px-4 border shadow-sm">
+                    <div class="pagination-info text-muted small">
+                        Hiển thị <b class="text-dark">${start}-${end}</b> trong tổng số <b class="text-dark">${totalRows}</b> lớp học
                     </div>
-                    <div class="pagination-nav">
-                        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                            <span class="material-symbols-outlined">chevron_left</span>
+                    <div class="pagination-nav gap-1 d-flex">
+                        <button class="btn btn-light btn-sm border" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined align-middle" style="font-size: 20px;">chevron_left</span>
                         </button>
                         ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
-                            <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                            <button class="btn btn-sm ${p === currentPage ? 'btn-primary' : 'btn-light border'}" onclick="changePage(${p})">${p}</button>
                         `).join('')}
-                        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                            <span class="material-symbols-outlined">chevron_right</span>
+                        <button class="btn btn-light btn-sm border" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined align-middle" style="font-size: 20px;">chevron_right</span>
                         </button>
                     </div>
                 </div>
             `;
         }
 
-        function changePage(page) {
+        window.changePage = (page) => {
             currentPage = page;
             renderScheduleCards();
         }
 
+        // CHẠY THÔI
         init();
     </script>
 </body>

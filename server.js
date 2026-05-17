@@ -22,12 +22,15 @@ const authRoutes = require('./routes/authRoutes');
 const sinhVienRoutes = require('./routes/sinhVienRoutes');
 const giangVienRoutes = require('./routes/giangVienRoutes');
 const giaoVuRoutes = require('./routes/giaoVuRoutes');
+const truongKhoaRoutes = require('./routes/truongKhoaRoutes');
 
 // NỐI CÁC ROUTER VÀ O ĐƯỜNG DẪN TƯƠNG ỨNG
 app.use('/api/Auth', authRoutes);
 app.use('/api/SinhVien', sinhVienRoutes);
 app.use('/api/GiangVien', giangVienRoutes);
 app.use('/api/GiaoVu', giaoVuRoutes);
+app.use('/api/TruongKhoa', truongKhoaRoutes);
+console.log("Đã nạp xong API Trưởng Khoa!");
 
 // ============================================================
 // KHỞI ĐỘNG HỆ THỐNG
