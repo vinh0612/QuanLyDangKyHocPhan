@@ -141,56 +141,70 @@
             `;
         }
 
-        function init() {
+        // Hàm tiện ích lấy Token
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
+
+        async function init() {
             renderSidebar();
-            document.getElementById('welcomeText').innerText = `Chào Trưởng khoa, ${user.HoTen}!`;
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
-            
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
-            const myKhoaId = me ? me.MaKhoa : '';
-            
-            const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            const myKhoa = khoaD.find(k => k.MaKhoa === myKhoaId);
-            if (myKhoa) document.getElementById('facultyName').innerText = `Khoa: ${myKhoa.TenKhoa}`;
+            const token = getToken();
+            if (!token) return;
 
-            // Load Stats
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            const currentHK = hkD.find(h => h.DangMo) || {};
+            try {
+                // 1. GỌI API DASHBOARD STATS
+                const resStats = await fetch('http://localhost:5123/api/TruongKhoa/dashboard-stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (resStats.ok) {
+                    const data = await resStats.json();
+                    
+                    // Cập nhật Header
+                    document.getElementById('welcomeText').innerText = `Chào Trưởng khoa, ${data.HoTenTK}!`;
+                    document.getElementById('facultyName').innerText = `Khoa: ${data.TenKhoa}`;
+                    
+                    // Avatar (Lấy tên cuối)
+                    const nameParts = data.HoTenTK.split(' ');
+                    const shortName = nameParts[nameParts.length - 1];
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(shortName)}&background=4f46e5&color=fff`;
 
-            const myMH = mhD.filter(m => m.MaKhoa === myKhoaId);
-            const myGV = gvD.filter(g => g.MaKhoa === myKhoaId);
-            const myBM = bmD.filter(b => b.MaKhoa === myKhoaId);
-            const myLHP = lhpD.filter(l => myMH.some(m => m.MaMH === l.MaMH) && l.MaHK === currentHK.MaHK);
+                    // Cập nhật 4 con số thống kê
+                    document.getElementById('statMH').innerText = data.TongMonHoc || 0;
+                    document.getElementById('statGV').innerText = data.TongGiangVien || 0;
+                    document.getElementById('statBM').innerText = data.TongBoMon || 0;
+                    document.getElementById('statLHP').innerText = data.TongLopMo || 0;
+                }
 
-            document.getElementById('statMH').innerText = myMH.length;
-            document.getElementById('statGV').innerText = myGV.length;
-            document.getElementById('statBM').innerText = myBM.length;
-            document.getElementById('statLHP').innerText = myLHP.length;
+                // 2. GỌI LẠI API DANH SÁCH MÔN HỌC (ĐỂ LẤY 5 MÔN MỚI NHẤT)
+                // (Tận dụng lại cái API số 1 ở tab Quản lý môn học)
+                const resCourses = await fetch('http://localhost:5123/api/TruongKhoa/mon-hoc', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (resCourses.ok) {
+                    const coursesData = await resCourses.json();
+                    // Lấy 5 môn học cuối cùng, đảo ngược lại để môn mới nhất lên đầu
+                    const recentCourses = coursesData.slice(-5).reverse();
+                    
+                    document.getElementById('recentCourses').innerHTML = recentCourses.map(m => `
+                        <tr>
+                            <td><span class="fw-bold text-primary">${m.MaMH}</span></td>
+                            <td class="fw-bold">${m.TenMH}</td>
+                            <td class="text-center">${m.SoTinChi}</td>
+                            <td class="text-center">
+                                <span class="badge ${m.TenGV ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary'} rounded-pill px-3">
+                                    ${m.TenGV ? m.TenGV : 'Chưa phân công'}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('') || '<tr><td colspan="4" class="text-center py-4">Chưa có môn học nào</td></tr>';
+                }
 
-            // Render recent courses
-            const recent = myMH.slice(-5).reverse();
-            const gvdmD = JSON.parse(localStorage.getItem('GiaoVienDayMon') || '[]');
-            
-            document.getElementById('recentCourses').innerHTML = recent.map(m => {
-                const assign = gvdmD.find(x => x.MaMH === m.MaMH);
-                const gv = assign ? gvD.find(g => g.MaGV === assign.MaGV) : null;
-                return `
-                    <tr>
-                        <td><span class="fw-bold text-primary">${m.MaMH}</span></td>
-                        <td class="fw-bold">${m.TenMH}</td>
-                        <td class="text-center">${m.SoTinChi}</td>
-                        <td class="text-center">
-                            <span class="badge ${gv ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary'} rounded-pill px-3">
-                                ${gv ? gv.HoTen : 'Chưa phân công'}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            }).join('') || '<tr><td colspan="4" class="text-center py-4">Chưa có môn học nào</td></tr>';
+            } catch (err) {
+                console.error("Lỗi tải dữ liệu Dashboard:", err);
+            }
         }
 
         init();

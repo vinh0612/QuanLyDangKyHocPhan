@@ -8,6 +8,29 @@ router.use(verifyToken);
 router.use(checkRole(['TruongKhoa']));
 
 // =====================================================================
+// TAB 0: DASHBOARD (TỔNG QUAN KHOA)
+// =====================================================================
+
+// 15. API Lấy toàn bộ số liệu thống kê cho Dashboard
+router.get('/dashboard-stats', async (req, res) => {
+    try {
+        // Gọi Stored Procedure đã được bảo kê
+        const sql = `EXEC sp_TruongKhoa_ThongKeDashboard`;
+        
+        const result = await executeQuery(sql, {}, req.user.name);
+        
+        if (result && result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: "Không tìm thấy dữ liệu thống kê" });
+        }
+    } catch (err) {
+        console.error("Lỗi tải Dashboard:", err);
+        res.status(500).json({ message: "Lỗi hệ thống: " + err.message });
+    }
+});
+
+// =====================================================================
 // TAB 1: QUẢN LÝ MÔN HỌC (CRUD)
 // =====================================================================
 
@@ -210,6 +233,49 @@ router.post('/luu-diem', async (req, res) => {
     } catch (err) {
         console.error("Lỗi lưu điểm:", err);
         res.status(400).json({ message: "Lỗi khi lưu điểm: " + err.message });
+    }
+});
+
+// =====================================================================
+// TAB 5: HỒ SƠ CÁ NHÂN
+// =====================================================================
+
+// 13. API Lấy thông tin cá nhân (Dùng View)
+router.get('/ho-so', async (req, res) => {
+    try {
+        // 1. Gọi View lấy thông tin cơ bản
+        const sql = `SELECT * FROM vw_TK_HoSoCaNhan`;
+        const result = await executeQuery(sql, {}, req.user.name);
+
+        if (result && result.length > 0) {
+            const profile = result[0];
+            
+            // 2. Gọi View lấy danh sách môn học
+            const sqlMonDay = `SELECT TenMH FROM vw_TK_MonPhuTrach`;
+            const monDayResult = await executeQuery(sqlMonDay, {}, req.user.name);
+            
+            // Ép thành mảng tên môn, cách nhau bằng dấu phẩy
+            profile.MonDay = monDayResult.map(m => m.TenMH).join(', '); 
+            
+            res.json(profile);
+        } else {
+            res.status(404).json({ message: "Không tìm thấy dữ liệu cá nhân" });
+        }
+    } catch (err) {
+        console.error("Lỗi get hồ sơ:", err);
+        res.status(500).json({ message: "Lỗi tải hồ sơ: " + err.message });
+    }
+});
+
+// 14. API Cập nhật Email và SĐT (Dùng Stored Procedure)
+router.put('/ho-so', async (req, res) => {
+    const { email, soDT } = req.body;
+    try {
+        const sql = `EXEC sp_TruongKhoa_CapNhatHoSo @Email, @SoDT`;
+        await executeQuery(sql, { Email: email || null, SoDT: soDT || null }, req.user.name);
+        res.json({ message: "Cập nhật hồ sơ thành công!" });
+    } catch (err) {
+        res.status(500).json({ message: "Lỗi cập nhật hồ sơ: " + err.message });
     }
 });
 
