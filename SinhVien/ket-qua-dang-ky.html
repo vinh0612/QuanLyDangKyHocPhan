@@ -84,7 +84,7 @@
                 </div>
                 <div id="emptyState" class="text-center py-5 text-muted d-none bg-white rounded-4">
                     <span class="material-symbols-outlined" style="font-size: 56px; opacity: 0.2;">calendar_today</span>
-                    <p class="mt-2 mb-0 fw-medium fs-5">Không tìm thấy dữ liệu học phần đã đăng ký thành công.</p>
+                    <p class="mt-2 mb-0 fw-medium fs-5">Chưa có học phần nào được đăng ký.</p>
                 </div>
             </div>
         </main>
@@ -102,7 +102,6 @@
             await loadRegisteredData();
         }
 
-        // ĐÃ CHUẨN HÓA: Gọi chính xác API đi qua View bảo mật của nhóm bro
         async function loadRegisteredData() {
             try {
                 const res = await Auth.fetchWithAuth('/SinhVien/lhp-da-dang-ky');
@@ -121,16 +120,22 @@
         function renderResults() {
             const searchKeyword = (document.getElementById('searchRegistered').value || '').toLowerCase().trim();
             
-            // Lọc tìm kiếm nếu sinh viên nhập dữ liệu
-            const filteredData = registeredCoursesData.filter(item => {
+            // BƯỚC 1: LỌC BỎ CÁC MÔN ĐÃ HỦY (Chỉ giữ lại môn có trạng thái 'DaDangKy')
+            const activeCourses = registeredCoursesData.filter(item => {
+                const status = item.TrangThai || item.trangthai;
+                return status === 'DaDangKy'; 
+            });
+
+            // BƯỚC 2: TÌM KIẾM DỰA TRÊN CÁC MÔN CÒN ĐANG HỌC
+            const filteredData = activeCourses.filter(item => {
                 const tenMH = (item.TenMH || item.tenmh || '').toLowerCase();
                 const maLHP = (item.MaLHP || item.malhp || '').toLowerCase();
                 const maMH = (item.MaMH || item.mamh || '').toLowerCase();
                 return tenMH.includes(searchKeyword) || maLHP.includes(searchKeyword) || maMH.includes(searchKeyword);
             });
 
-            // Tính tổng tín chỉ tích lũy của các môn đã đăng ký thành công
-            const totalCredits = registeredCoursesData.reduce((sum, item) => sum + (item.SoTinChi !== undefined ? item.SoTinChi : (item.sotinchi || 0)), 0);
+            // BƯỚC 3: TÍNH TỔNG TÍN CHỈ (Chỉ tính các môn đang hiển thị)
+            const totalCredits = filteredData.reduce((sum, item) => sum + (item.SoTinChi !== undefined ? item.SoTinChi : (item.sotinchi || 0)), 0);
             document.getElementById('totalCredits').innerText = totalCredits;
 
             const tbody = document.getElementById('registeredListBody');
@@ -180,7 +185,7 @@
 
         // Đồng bộ tính năng hủy môn trực tiếp tại trang kết quả
         window.cancelInResultPage = async (maLHP) => {
-            if (!confirm(`Bạn có chắc chắn muốn hủy học phần ${maLHP}? Hành động này sẽ xóa dữ liệu khỏi hệ thống.`)) return;
+            if (!confirm(`Bạn có chắc chắn muốn hủy học phần ${maLHP}? Hành động này không thể hoàn tác.`)) return;
             try {
                 const res = await Auth.fetchWithAuth('/SinhVien/huy-dang-ky', {
                     method: 'POST',
@@ -188,8 +193,8 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    alert('Hủy học phần thành công!');
-                    await loadRegisteredData(); // Nạp lại bảng realtime
+                    alert('Hủy học phần thành công! Lớp đã được xóa khỏi danh sách.');
+                    await loadRegisteredData(); // Nạp lại bảng realtime, môn đã hủy sẽ lập tức bốc hơi
                 } else {
                     alert(data.message || 'Hủy thất bại!');
                 }

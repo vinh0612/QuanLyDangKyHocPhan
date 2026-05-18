@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-=======
-.env 
->>>>>>> 11f9b35321d1dc40d8b758f16b2628bd49158235
