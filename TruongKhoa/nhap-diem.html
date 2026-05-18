@@ -100,74 +100,111 @@
         const rowsPerPage = 10;
         let allFilteredRegs = [];
 
-        function init() {
+        // Lấy Token xác thực
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
+
+        // 1. GỌI API KHỞI TẠO (Lấy thông tin và Danh sách Lớp học phần)
+        async function init() {
             renderSidebar();
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
             
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
-            const k = JSON.parse(localStorage.getItem('Khoa') || '[]').find(k => k.MaKhoa === me.MaKhoa);
-            document.getElementById('facultyName').innerText = k ? `Khoa: ${k.TenKhoa}` : 'Khoa: ...';
+            const token = getToken();
+            if (!token) return alert("Vui lòng đăng nhập lại!");
 
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const myClasses = lhpD.filter(l => l.MaGV === user.MaNguoiDung);
-            
-            document.getElementById('lhpSelect').innerHTML = '<option value="">-- Chọn lớp học phần --</option>' + 
-                myClasses.map(l => {
-                    const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
-                    return `<option value="${l.MaLHP}">${l.MaLHP} - ${mh.TenMH}</option>`;
-                }).join('');
+            try {
+                // Tạm gán tên khoa, nếu nhóm ông có API lấy info user thì nạp vào đây
+                document.getElementById('facultyName').innerText = 'Khoa của bạn';
+
+                // Gọi API số 10: Lấy danh sách lớp học phần
+                const response = await fetch('http://localhost:5123/api/TruongKhoa/lop-hoc-phan', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const myClasses = await response.json();
+
+                // Đổ vào Dropdown
+                document.getElementById('lhpSelect').innerHTML = '<option value="">-- Chọn lớp học phần --</option>' + 
+                    myClasses.map(l => `<option value="${l.MaLHP}">${l.MaLHP} - ${l.TenMH}</option>`).join('');
+
+            } catch (err) {
+                console.error("Lỗi khởi tạo:", err);
+            }
         }
 
-        function renderGrades() {
+        // 2. GỌI API LẤY DANH SÁCH ĐIỂM (Khi chọn lớp hoặc gõ tìm kiếm)
+        window.renderGrades = async () => {
             const malhp = document.getElementById('lhpSelect').value;
+            const token = getToken();
+
             if (!malhp) { 
                 document.getElementById('gradeTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Vui lòng chọn lớp học phần để nhập điểm</td></tr>'; 
                 renderPagination(0, 0);
                 return; 
             }
             
-            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]').filter(d => d.MaLHP === malhp && d.TrangThai !== 'DaHuy');
-            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            
-            allFilteredRegs = dkData.filter(d => {
-                const sv = svD.find(s => s.MaSV === d.MaSV) || {};
-                return sv.HoTen.toLowerCase().includes(search) || sv.MaSV.toLowerCase().includes(search);
-            });
+            try {
+                // Gọi API số 11: Lấy danh sách sinh viên & điểm
+                const response = await fetch(`http://localhost:5123/api/TruongKhoa/diem-lhp/${malhp}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const dataTuDB = await response.json();
 
-            currentPage = 1;
-            renderGradeTable();
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                
+                // Lọc theo thanh tìm kiếm (FE)
+                allFilteredRegs = dataTuDB.filter(d => 
+                    d.HoTen.toLowerCase().includes(search) || d.MaSV.toLowerCase().includes(search)
+                );
+
+                currentPage = 1;
+                renderGradeTable();
+            } catch (err) {
+                console.error("Lỗi tải điểm:", err);
+                document.getElementById('gradeTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-5 text-danger">Lỗi tải dữ liệu từ máy chủ!</td></tr>';
+            }
         }
 
+        // 3. VẼ BẢNG ĐIỂM VÀ PHÂN TRANG
         function renderGradeTable() {
-            const svD = JSON.parse(localStorage.getItem('SinhVien') || '[]');
-            const bdD = JSON.parse(localStorage.getItem('BangDiem') || '[]');
-
-            // Pagination Logic
             const totalRows = allFilteredRegs.length;
             const totalPages = Math.ceil(totalRows / rowsPerPage);
             const startIdx = (currentPage - 1) * rowsPerPage;
             const paginatedData = allFilteredRegs.slice(startIdx, startIdx + rowsPerPage);
 
             document.getElementById('gradeTableBody').innerHTML = paginatedData.map(d => {
-                const sv = svD.find(s => s.MaSV === d.MaSV) || {};
-                const grade = bdD.find(b => b.MaDK === d.MaDK) || { DiemGiuaKy: 0, DiemCuoiKy: 0, DiemTongKet: 0 };
+                const qt = d.DiemGiuaKy !== null ? d.DiemGiuaKy : '';
+                const ck = d.DiemCuoiKy !== null ? d.DiemCuoiKy : '';
                 
-                const qt = grade.DiemGiuaKy || 0;
-                const ck = grade.DiemCuoiKy || 0;
-                const tk = (qt * 0.4 + ck * 0.6).toFixed(1);
-                const pass = tk >= 4.0;
+                // Tính điểm tổng kết an toàn
+                let tk = '---';
+                let pass = false;
+                if (qt !== '' && ck !== '') {
+                    const numTk = (parseFloat(qt) * 0.4 + parseFloat(ck) * 0.6);
+                    tk = numTk.toFixed(1);
+                    pass = numTk >= 4.0;
+                }
 
                 return `
                     <tr class="animate__animated animate__fadeIn" data-ma-dk="${d.MaDK}">
-                        <td class="ps-4 fw-bold">${d.MaSV}</td>
-                        <td class="fw-bold">${sv.HoTen}</td>
-                        <td class="text-center"><input type="number" class="grade-input qt" value="${qt}" min="0" max="10" step="0.1" oninput="updateRow(this)"></td>
-                        <td class="text-center"><input type="number" class="grade-input ck" value="${ck}" min="0" max="10" step="0.1" oninput="updateRow(this)"></td>
-                        <td class="text-center"><span class="fw-bold tk ${pass ? 'text-success' : 'text-danger'}">${tk}</span></td>
-                        <td class="text-center"><span class="badge ${pass ? 'bg-success' : 'bg-danger'} rounded-pill px-3">${pass ? 'Đạt' : 'Nợ môn'}</span></td>
+                        <td class="ps-4 fw-bold text-primary">${d.MaSV}</td>
+                        <td class="fw-bold">${d.HoTen}</td>
+                        <td class="text-center">
+                            <input type="number" class="grade-input qt border rounded px-2 py-1 text-center bg-light" style="width: 70px;" value="${qt}" min="0" max="10" step="0.1" oninput="updateRow(this)">
+                        </td>
+                        <td class="text-center">
+                            <input type="number" class="grade-input ck border rounded px-2 py-1 text-center bg-light" style="width: 70px;" value="${ck}" min="0" max="10" step="0.1" oninput="updateRow(this)">
+                        </td>
+                        <td class="text-center">
+                            <span class="fw-bold tk ${tk !== '---' && pass ? 'text-success' : (tk !== '---' ? 'text-danger' : 'text-muted')}">${tk}</span>
+                        </td>
+                        <td class="text-center">
+                            ${tk !== '---' ? 
+                                `<span class="badge ${pass ? 'bg-success' : 'bg-danger'} rounded-pill px-3 py-2">${pass ? 'Đạt' : 'Nợ môn'}</span>` 
+                                : `<span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2">Chưa có</span>`
+                            }
+                        </td>
                     </tr>
                 `;
             }).join('') || '<tr><td colspan="6" class="text-center py-5">Không tìm thấy sinh viên nào</td></tr>';
@@ -175,12 +212,38 @@
             renderPagination(totalRows, totalPages);
         }
 
+        // Tự động nhảy số Tổng kết khi gõ
+        window.updateRow = (input) => {
+            const tr = input.closest('tr');
+            const qtVal = tr.querySelector('.qt').value;
+            const ckVal = tr.querySelector('.ck').value;
+            const tkEl = tr.querySelector('.tk');
+            const badge = tr.querySelector('.badge');
+            
+            if (qtVal !== '' && ckVal !== '') {
+                const qt = parseFloat(qtVal) || 0;
+                const ck = parseFloat(ckVal) || 0;
+                const tk = (qt * 0.4 + ck * 0.6);
+                
+                tkEl.innerText = tk.toFixed(1);
+                tkEl.className = `fw-bold tk ${tk >= 4.0 ? 'text-success' : 'text-danger'}`;
+                badge.className = `badge ${tk >= 4.0 ? 'bg-success' : 'bg-danger'} rounded-pill px-3 py-2`;
+                badge.innerText = tk >= 4.0 ? 'Đạt' : 'Nợ môn';
+            } else {
+                tkEl.innerText = '---';
+                tkEl.className = 'fw-bold tk text-muted';
+                badge.className = 'badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2';
+                badge.innerText = 'Chưa có';
+            }
+        };
+
+        // Phân trang
         function renderPagination(totalRows, totalPages) {
             let container = document.getElementById('paginationContainer');
             if (!container) {
                 container = document.createElement('div');
                 container.id = 'paginationContainer';
-                container.className = 'pagination-container';
+                container.className = 'pagination-container py-3 px-4 bg-light border-top d-flex justify-content-between align-items-center';
                 document.querySelector('.dean-card').appendChild(container);
             }
 
@@ -193,71 +256,75 @@
             const end = Math.min(currentPage * rowsPerPage, totalRows);
 
             container.innerHTML = `
-                <div class="pagination-info">
-                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> sinh viên
+                <div class="pagination-info text-muted small">
+                    Hiển thị <b class="text-dark">${start}-${end}</b> trong tổng số <b class="text-dark">${totalRows}</b> sinh viên
                 </div>
-                <div class="pagination-nav">
-                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_left</span>
+                <div class="pagination-nav d-flex gap-1">
+                    <button class="btn btn-sm btn-white border" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined align-middle" style="font-size: 18px;">chevron_left</span>
                     </button>
                     ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
-                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                        <button class="btn btn-sm ${p === currentPage ? 'btn-primary' : 'btn-white border'}" onclick="changePage(${p})">${p}</button>
                     `).join('')}
-                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_right</span>
+                    <button class="btn btn-sm btn-white border" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined align-middle" style="font-size: 18px;">chevron_right</span>
                     </button>
                 </div>
             `;
         }
 
-        function changePage(page) {
+        window.changePage = (page) => {
             currentPage = page;
             renderGradeTable();
         }
 
-        window.updateRow = (input) => {
-            const tr = input.closest('tr');
-            const qt = parseFloat(tr.querySelector('.qt').value) || 0;
-            const ck = parseFloat(tr.querySelector('.ck').value) || 0;
-            const tk = (qt * 0.4 + ck * 0.6).toFixed(1);
-            const tkEl = tr.querySelector('.tk');
-            tkEl.innerText = tk;
-            tkEl.className = `fw-bold tk ${tk >= 4.0 ? 'text-success' : 'text-danger'}`;
-            tr.querySelector('.badge').className = `badge ${tk >= 4.0 ? 'bg-success' : 'bg-danger'} rounded-pill px-3`;
-            tr.querySelector('.badge').innerText = tk >= 4.0 ? 'Đạt' : 'Nợ môn';
-        };
-
-        window.saveAllGrades = () => {
+        // 4. GỌI API LƯU ĐIỂM HÀNG LOẠT
+        window.saveAllGrades = async () => {
             const malhp = document.getElementById('lhpSelect').value;
-            if (!malhp) return;
-            const bdData = JSON.parse(localStorage.getItem('BangDiem') || '[]');
+            if (!malhp) return alert("Vui lòng chọn lớp học phần trước khi lưu!");
+
+            const token = getToken();
+            const danhSachDiem = [];
+            
+            // Lấy tất cả các dòng dữ liệu đang hiển thị
             const rows = document.querySelectorAll('#gradeTableBody tr[data-ma-dk]');
             
             rows.forEach(tr => {
-                const maDK = tr.dataset.maDk;
-                const qt = parseFloat(tr.querySelector('.qt').value) || 0;
-                const ck = parseFloat(tr.querySelector('.ck').value) || 0;
-                const tk = parseFloat(tr.querySelector('.tk').innerText) || 0;
+                const qtVal = tr.querySelector('.qt').value;
+                const ckVal = tr.querySelector('.ck').value;
                 
-                const idx = bdData.findIndex(b => b.MaDK === maDK);
-                if (idx !== -1) {
-                    bdData[idx].DiemGiuaKy = qt;
-                    bdData[idx].DiemCuoiKy = ck;
-                    bdData[idx].DiemTongKet = tk;
-                } else {
-                    bdData.push({
-                        MaBD: 'BD' + Date.now() + Math.random().toString(36).substr(2, 5),
-                        MaDK: maDK,
-                        DiemGiuaKy: qt,
-                        DiemCuoiKy: ck,
-                        DiemTongKet: tk
+                // Chỉ lưu những dòng có nhập điểm
+                if (qtVal !== '' && ckVal !== '') {
+                    danhSachDiem.push({
+                        MaDK: tr.dataset.maDk,
+                        DiemGiuaKy: parseFloat(qtVal) || 0,
+                        DiemCuoiKy: parseFloat(ckVal) || 0
                     });
                 }
             });
-            
-            localStorage.setItem('BangDiem', JSON.stringify(bdData));
-            alert('Đã lưu tất cả điểm thành công!');
-            renderGrades();
+
+            if (danhSachDiem.length === 0) return alert("Không có điểm nào được nhập để lưu!");
+
+            try {
+                // Gọi API số 12: Gửi cục data xuống Backend
+                const response = await fetch('http://localhost:5123/api/TruongKhoa/luu-diem', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ danhSachDiem })
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+
+                alert("🎉 " + result.message);
+                renderGrades(); // Load lại data từ Server để xác nhận
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi: " + err.message);
+            }
         };
 
         init();

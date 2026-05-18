@@ -56,15 +56,15 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small text-muted text-uppercase">Email công vụ</label>
-                        <input type="email" id="email" class="form-control">
+                        <input type="email" id="email" class="form-control" autocomplete="off">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small text-muted text-uppercase">Số điện thoại</label>
-                        <input type="text" id="sdt" class="form-control">
+                        <input type="text" id="sdt" class="form-control" autocomplete="off">
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold small text-muted text-uppercase">Môn học phụ trách chuyên môn</label>
-                        <textarea id="monDay" class="form-control" rows="2"></textarea>
+                        <textarea id="monDay" class="form-control bg-light" rows="2" readonly></textarea>
                     </div>
                     
                     <div class="col-12 text-end mt-4">
@@ -110,39 +110,83 @@
             `;
         }
 
-        function loadProfile() {
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const data = gvD.find(g => g.MaGV === user.MaNguoiDung);
-            
-            if (data) {
-                document.getElementById('hoTen').value = data.HoTen;
-                document.getElementById('maGV').value = data.MaGV;
-                document.getElementById('email').value = data.Email || '';
-                document.getElementById('sdt').value = data.SDT || '';
-                document.getElementById('monDay').value = data.MonDay || '';
-                
-                const khoaD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-                const k = khoaD.find(k => k.MaKhoa === data.MaKhoa);
-                document.getElementById('donVi').value = k ? k.TenKhoa : '---';
-                document.getElementById('facultyName').innerText = k ? `Khoa: ${k.TenKhoa}` : 'Khoa: ...';
+        // Hàm tiện ích lấy Token
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
 
-                document.getElementById('headerName').innerText = data.HoTen;
-                document.getElementById('headerID').innerText = data.MaGV;
-                document.getElementById('avatarLarge').innerText = "TK";
-                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TK&background=4f46e5&color=fff`;
+        // 1. TẢI DỮ LIỆU TỪ BACKEND
+        async function loadProfile() {
+            const token = getToken();
+            if (!token) return;
+
+            try {
+                const response = await fetch('http://localhost:5123/api/TruongKhoa/ho-so', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Điền vào Form
+                    document.getElementById('hoTen').value = data.HoTen || '';
+                    document.getElementById('maGV').value = data.MaGV || '';
+                    document.getElementById('email').value = data.Email || data.email || '';
+                    document.getElementById('sdt').value = data.SoDT || data.SDT || data.SoDienThoai || '';
+                    document.getElementById('donVi').value = data.TenKhoa || '---';
+                    document.getElementById('monDay').value = data.MonDay || 'Chưa được phân công môn nào';
+
+                    // Cập nhật Header UI
+                    document.getElementById('facultyName').innerText = `Khoa: ${data.TenKhoa || '...'}`;
+                    document.getElementById('headerName').innerText = data.HoTen || 'Trưởng Khoa';
+                    document.getElementById('headerID').innerText = data.MaGV || '---';
+                    
+                    // Xử lý Avatar xịn
+                    const nameParts = (data.HoTen || 'TK').split(' ');
+                    const shortName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : nameParts[0];
+                    document.getElementById('avatarLarge').innerText = shortName.substring(0, 2).toUpperCase();
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(shortName)}&background=4f46e5&color=fff`;
+                }
+            } catch (err) {
+                console.error("Lỗi tải hồ sơ:", err);
             }
         }
 
-        document.getElementById('profileForm').onsubmit = (e) => {
+        // 2. GỬI DỮ LIỆU CẬP NHẬT LÊN BACKEND
+        document.getElementById('profileForm').onsubmit = async (e) => {
             e.preventDefault();
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const idx = gvD.findIndex(g => g.MaGV === user.MaNguoiDung);
-            if (idx !== -1) {
-                gvD[idx].Email = document.getElementById('email').value;
-                gvD[idx].SDT = document.getElementById('sdt').value;
-                gvD[idx].MonDay = document.getElementById('monDay').value;
-                localStorage.setItem('GiaoVien', JSON.stringify(gvD));
-                alert('Đã cập nhật hồ sơ thành công!');
+            const token = getToken();
+            const btn = e.target.querySelector('button[type="submit"]');
+            
+            const email = document.getElementById('email').value;
+            const soDT = document.getElementById('sdt').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG LƯU...';
+
+            try {
+                const response = await fetch('http://localhost:5123/api/TruongKhoa/ho-so', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ email, soDT })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert("✅ " + result.message);
+                } else {
+                    alert("❌ Lỗi: " + result.message);
+                }
+            } catch (err) {
+                alert("Lỗi kết nối máy chủ!");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined align-middle me-2">save</span> LƯU THAY ĐỔI';
             }
         };
 

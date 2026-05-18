@@ -179,17 +179,34 @@ router.post('/cap-nhat-ho-so', async (req, res) => {
 // ============================================================
 // CÁC API PHỤ TRỢ (Dùng để đổ dữ liệu vào thẻ <select> khi mở lớp mới)
 // ============================================================
+
+// 1. API đổ dữ liệu Học kỳ và Môn học (Load 1 lần lúc mở form)
 router.get('/danh-muc-ho-tro', async (req, res) => {
     try {
-        // Lấy danh sách Môn học, Học kỳ, và Giảng viên để hiển thị lên Form Mở lớp
         const monHoc = await executeQuery("SELECT MaMH, TenMH FROM MonHoc", {}, req.user.name);
-        const hocKy = await executeQuery("SELECT MaHK, TenHK, NamHoc FROM HocKy", {}, req.user.name);
-        const giangVien = await executeQuery("SELECT MaGV, HoTen FROM GiaoVien", {}, req.user.name);
+        const hocKy = await executeQuery("SELECT MaHK, TenHK, NamHoc FROM HocKy ORDER BY NamHoc DESC", {}, req.user.name);
+        // 🔥 Đã xóa cái lệnh lấy full Giảng Viên ở đây đi rồi!
         
-        res.json({ monHoc, hocKy, giangVien });
+        res.json({ monHoc, hocKy });
     } catch (err) {
         res.status(500).json({ message: "Lỗi tải danh mục hỗ trợ: " + err.message });
     }
 });
+
+// 2. Lấy Giảng Viên CÓ GIẤY PHÉP theo từng môn học
+router.get('/giang-vien-theo-mon/:maMH', async (req, res) => {
+    const { maMH } = req.params;
+    try {
+        // 🔥 Gọi thẳng vào View đã được cấp quyền cho Giáo Vụ
+        const sql = `SELECT MaGV, HoTen FROM vw_GiaoVu_GiangVienDayMon WHERE MaMH = @MaMH`;
+        
+        const result = await executeQuery(sql, { MaMH: maMH }, req.user.name);
+        res.json(result || []);
+    } catch (err) {
+        console.error("Lỗi lấy GV theo môn:", err);
+        res.status(500).json({ message: "Lỗi lấy Giảng viên: " + err.message });
+    }
+});
+
 
 module.exports = router;
