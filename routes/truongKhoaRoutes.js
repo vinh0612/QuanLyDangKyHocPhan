@@ -159,4 +159,58 @@ router.get('/lich-day/:maHK', async (req, res) => {
     }
 });
 
+// =====================================================================
+// TAB 4: QUẢN LÝ ĐIỂM SỐ
+// =====================================================================
+
+// 10. API Lấy danh sách lớp học phần đang dạy (Đổ vào Dropdown)
+router.get('/lop-hoc-phan', async (req, res) => {
+    try {
+        const sql = `SELECT * FROM vw_TK_LopCuaToi`;
+        const result = await executeQuery(sql, {}, req.user.name);
+        res.json(result || []);
+    } catch (err) {
+        console.error("Lỗi get Lớp HP:", err);
+        res.status(500).json({ message: "Lỗi tải lớp học phần" });
+    }
+});
+
+// 11. API Lấy danh sách Sinh viên và Điểm theo Mã Lớp
+router.get('/diem-lhp/:maLHP', async (req, res) => {
+    const { maLHP } = req.params;
+    try {
+        const sql = `SELECT * FROM vw_TK_DanhSachDiem WHERE MaLHP = @MaLHP`;
+        const result = await executeQuery(sql, { MaLHP: maLHP }, req.user.name);
+        res.json(result || []);
+    } catch (err) {
+        console.error("Lỗi get Bảng điểm:", err);
+        res.status(500).json({ message: "Lỗi tải bảng điểm" });
+    }
+});
+
+// 12. API Lưu điểm (Dùng chung Stored Procedure của Giảng Viên)
+router.post('/luu-diem', async (req, res) => {
+    const { danhSachDiem } = req.body; 
+    // danhSachDiem là mảng: [{ MaDK: 'DK01', DiemGiuaKy: 8, DiemCuoiKy: 7.5 }, ...]
+    
+    try {
+        // Lặp qua từng sinh viên để gọi Stored Procedure lưu điểm
+        for (const diem of danhSachDiem) {
+            await executeQuery(
+                "EXEC sp_GiangVien_NhapDiem @MaDK, @DiemGiuaKy, @DiemCuoiKy",
+                { 
+                    MaDK: diem.MaDK, 
+                    DiemGiuaKy: diem.DiemGiuaKy, 
+                    DiemCuoiKy: diem.DiemCuoiKy 
+                },
+                req.user.name
+            );
+        }
+        res.json({ message: "Lưu toàn bộ điểm thành công!" });
+    } catch (err) {
+        console.error("Lỗi lưu điểm:", err);
+        res.status(400).json({ message: "Lỗi khi lưu điểm: " + err.message });
+    }
+});
+
 module.exports = router;

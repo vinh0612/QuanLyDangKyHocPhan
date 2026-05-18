@@ -194,7 +194,7 @@
 
         async function loadInitialData() {
             try {
-                // 1. Lấy dữ liệu danh mục hỗ trợ (Học kỳ, Môn học, GV)
+                // 1. Lấy dữ liệu danh mục hỗ trợ (Chỉ còn Học kỳ, Môn học)
                 const supportRes = await Auth.fetchWithAuth('/GiaoVu/danh-muc-ho-tro');
                 if (supportRes.ok) {
                     supportData = await supportRes.json();
@@ -206,11 +206,14 @@
 
                     // Render Dropdown bên trong Modal Form
                     document.getElementById('formMaHK').innerHTML = supportData.hocKy.map(h => `<option value="${h.MaHK}">${h.TenHK} (${h.NamHoc})</option>`).join('');
-                    document.getElementById('formMaMH').innerHTML = supportData.monHoc.map(m => `<option value="${m.MaMH}">${m.MaMH} - ${m.TenMH}</option>`).join('');
-                    document.getElementById('formMaGV').innerHTML = supportData.giangVien.map(g => `<option value="${g.MaGV}">${g.MaGV} - ${g.HoTen}</option>`).join('');
+                    document.getElementById('formMaMH').innerHTML = '<option value="">-- Chọn môn học --</option>' + 
+                        supportData.monHoc.map(m => `<option value="${m.MaMH}">${m.MaMH} - ${m.TenMH}</option>`).join('');
+                        
+                    // XÓA cái dòng render formMaGV cũ đi, để trống.
+                    document.getElementById('formMaGV').innerHTML = '<option value="">-- Vui lòng chọn môn học trước --</option>';
                 }
 
-                // 2. Kéo danh sách lớp học phần (Tái sử dụng API của giảng viên vì nó là View chung toàn trường cho Giáo Vụ)
+                // 2. Kéo danh sách lớp học phần
                 const lhpRes = await Auth.fetchWithAuth('/GiaoVu/danh-sach-lop-hoc-phan');
                 if (lhpRes.ok) {
                     allClassesList = await lhpRes.json();
@@ -364,6 +367,34 @@
         };
 
         init();
+
+        // Bắt sự kiện khi Giáo vụ chọn / đổi Môn học trong form
+        document.getElementById('formMaMH').addEventListener('change', async function() {
+            const maMH = this.value;
+            const gvSelect = document.getElementById('formMaGV');
+            
+            if (!maMH) {
+                gvSelect.innerHTML = '<option value="">-- Vui lòng chọn môn học trước --</option>';
+                return;
+            }
+
+            gvSelect.innerHTML = '<option value="">Đang tải danh sách Giảng viên...</option>';
+
+            try {
+                // Bắn API lên Server hỏi: "Môn này ai được phép dạy?"
+                const res = await Auth.fetchWithAuth(`/GiaoVu/giang-vien-theo-mon/${maMH}`);
+                if (res.ok) {
+                    const dsGiangVien = await res.json();
+                    if (dsGiangVien.length > 0) {
+                        gvSelect.innerHTML = dsGiangVien.map(g => `<option value="${g.MaGV}">${g.MaGV} - ${g.HoTen}</option>`).join('');
+                    } else {
+                        gvSelect.innerHTML = '<option value="">-- Chưa có giảng viên nào được phân công dạy môn này --</option>';
+                    }
+                }
+            } catch (err) {
+                gvSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu --</option>';
+            }
+        });
     </script>
 </body>
 </html>
