@@ -100,105 +100,135 @@
 
         let currentPage = 1;
         const rowsPerPage = 7;
+        let allSubjects = [];
 
-        function init() {
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
+
+        async function init() {
             renderSidebar();
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TB&background=0D8ABC&color=fff`;
+            document.getElementById('deptName').innerText = `Bộ môn của bạn`; // Mặc định an toàn
             
-            // Set Department Name
-            const boMonData = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            const gvData = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const myGV = gvData.find(g => g.MaGV === user.MaNguoiDung);
-            if (myGV) {
-                const myBM = boMonData.find(b => b.MaBoMon === myGV.MaBoMon);
-                if (myBM) document.getElementById('deptName').innerText = `Bộ môn: ${myBM.TenBoMon}`;
+            const token = getToken();
+            if (!token) return;
+
+            try {
+                // 1. Tải Học Kỳ (Tái sử dụng API cũ)
+                const hkRes = await fetch('http://localhost:5123/api/TruongBoMon/hoc-ky', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (hkRes.ok) {
+                    const hkData = await hkRes.json();
+                    document.getElementById('hkFilter').innerHTML = hkData.map(h => 
+                        `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`
+                    ).join('');
+                }
+
+                // 2. Tải danh sách môn học cho Học kỳ hiện tại
+                await loadSubjects();
+
+                // 3. Gắn sự kiện (Thay đổi HK thì gọi lại DB, còn Lọc/Tìm kiếm thì filter trên RAM)
+                document.getElementById('hkFilter').onchange = () => { loadSubjects(); };
+                document.getElementById('searchInput').oninput = () => { currentPage = 1; renderSubjects(); };
+                document.getElementById('typeFilter').onchange = () => { currentPage = 1; renderSubjects(); };
+
+            } catch (error) {
+                console.error("Lỗi khởi tạo:", error);
             }
+        }
 
-            // Set HKs
-            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            document.getElementById('hkFilter').innerHTML = hkD.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
+        // Bắn API gọi danh sách môn học kèm thống kê số lớp
+        async function loadSubjects() {
+            const hkId = document.getElementById('hkFilter').value;
+            const token = getToken();
+            if (!hkId) return;
 
-            renderSubjects();
-            document.getElementById('searchInput').oninput = () => { currentPage = 1; renderSubjects(); };
-            document.getElementById('typeFilter').onchange = () => { currentPage = 1; renderSubjects(); };
-            document.getElementById('hkFilter').onchange = () => { currentPage = 1; renderSubjects(); };
+            try {
+                const res = await fetch(`http://localhost:5123/api/TruongBoMon/danh-sach-mon-hoc/${hkId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    allSubjects = await res.json();
+                    currentPage = 1;
+                    renderSubjects();
+                }
+            } catch (err) {
+                console.error("Lỗi load môn học:", err);
+            }
         }
 
         function renderSubjects() {
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const khoaData = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            const search = document.getElementById('searchInput').value.toLowerCase();
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
             const type = document.getElementById('typeFilter').value;
-            const hkId = document.getElementById('hkFilter').value;
 
-            let filtered = mhData.filter(m => m.TenMH.toLowerCase().includes(search) || m.MaMH.toLowerCase().includes(search));
+            // Lọc dữ liệu trên Frontend
+            let filtered = allSubjects.filter(m => 
+                (m.TenMH && m.TenMH.toLowerCase().includes(search)) || 
+                (m.MaMH && m.MaMH.toLowerCase().includes(search))
+            );
 
             if (type === 'open') {
-                const openMHIds = [...new Set(lhpData.filter(l => l.MaHK === hkId).map(l => l.MaMH))];
-                filtered = filtered.filter(m => openMHIds.includes(m.MaMH));
+                filtered = filtered.filter(m => m.SoLopMo > 0);
             }
 
-            // Pagination Logic
+            // Phân trang
             const totalRows = filtered.length;
             const totalPages = Math.ceil(totalRows / rowsPerPage);
             const start = (currentPage - 1) * rowsPerPage;
             const paginatedData = filtered.slice(start, start + rowsPerPage);
 
             const tbody = document.getElementById('subjectBody');
+            
+            if (totalRows === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Không tìm thấy môn học nào</td></tr>';
+                renderPagination(0, 0);
+                return;
+            }
+
             tbody.innerHTML = paginatedData.map(m => {
-                const lhpOfThisMh = lhpData.filter(l => l.MaMH === m.MaMH && l.MaHK === hkId);
-                const isOpen = lhpOfThisMh.length > 0;
-                const khoa = khoaData.find(k => k.MaKhoa === m.MaKhoa) || {};
+                const isOpen = m.SoLopMo > 0;
                 return `
                     <tr class="animate__animated animate__fadeIn">
                         <td class="ps-4 fw-bold text-primary">${m.MaMH}</td>
-                        <td class="fw-bold">${m.TenMH}</td>
-                        <td>${m.SoTinChi}</td>
-                        <td>${khoa.TenKhoa || '---'}</td>
-                        <td>
-                            <span class="badge ${isOpen ? 'bg-success-subtle text-success' : 'bg-light text-muted'} rounded-pill px-3">
-                                ${isOpen ? 'Đang mở lớp (' + lhpOfThisMh.length + ')' : 'Chưa mở lớp'}
+                        <td class="fw-bold text-dark">${m.TenMH}</td>
+                        <td class="text-center">${m.SoTinChi}</td>
+                        <td>${m.TenKhoa}</td>
+                        <td class="text-center">
+                            <span class="badge ${isOpen ? 'bg-success-subtle text-success' : 'bg-light text-muted'} rounded-pill px-3 py-2 shadow-sm">
+                                ${isOpen ? 'Đang mở lớp (' + m.SoLopMo + ')' : 'Chưa mở lớp'}
                             </span>
                         </td>
                     </tr>
                 `;
-            }).join('') || '<tr><td colspan="5" class="text-center py-5">Không tìm thấy môn học nào</td></tr>';
+            }).join('');
 
             renderPagination(totalRows, totalPages);
         }
 
+        // --- Giữ nguyên hàm renderPagination và changePage của ông nhé ---
         function renderPagination(totalRows, totalPages) {
             let container = document.getElementById('paginationContainer');
             if (!container) {
                 container = document.createElement('div');
                 container.id = 'paginationContainer';
-                container.className = 'pagination-container';
+                container.className = 'd-flex justify-content-between align-items-center py-3 px-4 border-top bg-light';
                 document.querySelector('.tbm-card').appendChild(container);
             }
-
-            if (totalRows === 0) {
-                container.innerHTML = '';
-                return;
-            }
-
+            if (totalRows === 0) { container.innerHTML = ''; return; }
             const start = (currentPage - 1) * rowsPerPage + 1;
             const end = Math.min(currentPage * rowsPerPage, totalRows);
-
             container.innerHTML = `
-                <div class="pagination-info">
-                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> môn học
-                </div>
-                <div class="pagination-nav">
-                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
+                <div class="pagination-info small text-muted">Hiển thị <b class="text-dark">${start}-${end}</b> trong tổng số <b class="text-dark">${totalRows}</b> môn học</div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-white border shadow-sm" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><span class="material-symbols-outlined align-middle" style="font-size:18px;">chevron_left</span></button>
                     ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
-                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+                        <button class="btn btn-sm ${p === currentPage ? 'btn-primary' : 'btn-white border shadow-sm'}" onclick="changePage(${p})">${p}</button>
                     `).join('')}
-                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
+                    <button class="btn btn-sm btn-white border shadow-sm" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><span class="material-symbols-outlined align-middle" style="font-size:18px;">chevron_right</span></button>
                 </div>
             `;
         }

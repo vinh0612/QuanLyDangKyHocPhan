@@ -81,4 +81,38 @@ router.get('/danh-sach-sinh-vien/:maLHP', async (req, res) => {
     }
 });
 
+// 7. API Cập nhật bảng điểm (Lưu nhiều sinh viên cùng lúc)
+router.put('/cap-nhat-diem', async (req, res) => {
+    const { maLHP, bangDiem } = req.body; 
+    // bangDiem có cấu trúc: [{ maSV: 'SV01', diemGK: 8, diemCK: 9 }, ...]
+    try {
+        for (let item of bangDiem) {
+            const sql = `EXEC sp_TBM_CapNhatDiem @MaLHP, @MaSV, @DiemGK, @DiemCK`;
+            await executeQuery(sql, { 
+                MaLHP: maLHP, 
+                MaSV: item.maSV, 
+                DiemGK: item.diemGK, 
+                DiemCK: item.diemCK 
+            }, req.user.name);
+        }
+        res.json({ message: `Đã lưu thành công điểm cho ${bangDiem.length} sinh viên!` });
+    } catch (err) {
+        // Bắt lỗi RAISERROR từ SQL
+        const errMsg = err.message.replace(/\[.*?\]/g, '').trim();
+        res.status(400).json({ message: errMsg });
+    }
+});
+
+// 8. API Thống kê Danh sách Môn học (Kèm số lớp đang mở theo Học Kỳ)
+router.get('/danh-sach-mon-hoc/:maHK', async (req, res) => {
+    const { maHK } = req.params;
+    try {
+        const sql = `EXEC sp_TBM_ThongKeMonHoc @MaHK`;
+        const result = await executeQuery(sql, { MaHK: maHK }, req.user.name);
+        res.json(result || []);
+    } catch (err) {
+        res.status(500).json({ message: "Lỗi tải danh mục môn học: " + err.message });
+    }
+});
+
 module.exports = router;
