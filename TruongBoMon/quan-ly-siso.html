@@ -102,48 +102,75 @@
 
         let currentPage = 1;
         const rowsPerPage = 7;
+        let allClasses = []; // Biến toàn cục lưu danh sách lớp
 
-        function init() {
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
+
+        async function init() {
             renderSidebar();
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TB&background=0D8ABC&color=fff`;
-            
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
-            const bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            const myBM = bmD.find(b => b.MaBoMon === me.MaBoMon);
-            if (myBM) document.getElementById('deptName').innerText = `Bộ môn: ${myBM.TenBoMon}`;
+            // Tạm ẩn tên bộ môn cho đến khi có API load thông tin profile
+            document.getElementById('deptName').innerText = `Bộ môn của bạn`; 
 
-            // HKs
-            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            document.getElementById('hkFilter').innerHTML = hkD.map(h => `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`).join('');
+            const token = getToken();
+            if (!token) return;
 
-            document.getElementById('hkFilter').onchange = () => { currentPage = 1; renderClasses(); };
-            document.getElementById('searchInput').oninput = () => { currentPage = 1; renderClasses(); };
+            try {
+                // 1. Tải Học Kỳ đổ vào Dropdown
+                const hkRes = await fetch('http://localhost:5123/api/TruongBoMon/hoc-ky', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (hkRes.ok) {
+                    const hkData = await hkRes.json();
+                    document.getElementById('hkFilter').innerHTML = hkData.map(h => 
+                        `<option value="${h.MaHK}" ${h.DangMo ? 'selected' : ''}>${h.TenHK} - ${h.NamHoc}</option>`
+                    ).join('');
+                }
 
-            renderClasses();
+                // 2. Tải toàn bộ danh sách lớp của Bộ môn
+                await loadClassesFromServer(token);
+
+                // Gắn sự kiện lọc
+                document.getElementById('hkFilter').onchange = () => { currentPage = 1; renderClasses(); };
+                document.getElementById('searchInput').oninput = () => { currentPage = 1; renderClasses(); };
+
+            } catch (error) {
+                console.error("Lỗi khởi tạo:", error);
+            }
+        }
+
+        async function loadClassesFromServer(token) {
+            try {
+                const res = await fetch('http://localhost:5123/api/TruongBoMon/lop-hoc-phan', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    allClasses = await res.json();
+                    renderClasses();
+                }
+            } catch (err) {
+                console.error("Lỗi fetch lớp học phần:", err);
+            }
         }
 
         function renderClasses() {
             const hkId = document.getElementById('hkFilter').value;
-            const search = document.getElementById('searchInput').value.toLowerCase();
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
             
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            
-            const me = gvD.find(g => g.MaGV === user.MaNguoiDung);
-            const myGVIds = gvD.filter(g => g.MaBoMon === me.MaBoMon).map(g => g.MaGV);
-
-            const filtered = lhpD.filter(l => {
-                const isMyBM = myGVIds.includes(l.MaGV);
+            // Lọc trên Frontend (Theo Học kỳ & Thanh tìm kiếm)
+            const filtered = allClasses.filter(l => {
                 const isCurrentHK = l.MaHK === hkId;
-                const mh = mhD.find(m => m.MaMH === l.MaMH) || {};
-                const gv = gvD.find(g => g.MaGV === l.MaGV) || {};
-                const matchesSearch = l.MaLHP.toLowerCase().includes(search) || mh.TenMH.toLowerCase().includes(search) || gv.HoTen.toLowerCase().includes(search);
-                return isMyBM && isCurrentHK && matchesSearch;
+                const matchesSearch = !search || 
+                                      l.MaLHP.toLowerCase().includes(search) || 
+                                      (l.TenMH && l.TenMH.toLowerCase().includes(search)) || 
+                                      (l.TenGV && l.TenGV.toLowerCase().includes(search));
+                return isCurrentHK && matchesSearch;
             });
 
-            // Pagination Logic
+            // Phân trang
             const totalRows = filtered.length;
             const totalPages = Math.ceil(totalRows / rowsPerPage);
             const startIdx = (currentPage - 1) * rowsPerPage;
@@ -156,90 +183,90 @@
                 return;
             }
 
-            body.innerHTML = paginatedData.map(l => {
-                const mh = mhD.find(m => m.MaMH === l.MaMH) || { TenMH: '---' };
-                const gv = gvD.find(g => g.MaGV === l.MaGV) || { HoTen: '---' };
-                return `
-                    <tr class="student-row">
-                        <td class="ps-4 fw-bold text-dark">${l.MaLHP}</td>
-                        <td>${mh.TenMH}</td>
-                        <td>${gv.HoTen}</td>
-                        <td class="text-center">
-                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">${l.SiSoHienTai} sinh viên</span>
-                        </td>
-                        <td class="text-center">
-                            <input type="number" class="grade-input" style="width: 80px;" id="input-${l.MaLHP}" value="${l.SiSoToiDa}" min="${l.SiSoHienTai}">
-                        </td>
-                        <td class="text-end pe-4">
-                            <button class="btn btn-tbm px-3 py-1" style="font-size: 0.8rem;" onclick="updateCapacity('${l.MaLHP}')">
-                                <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">save</span> Lưu
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            body.innerHTML = paginatedData.map(l => `
+                <tr class="student-row animate__animated animate__fadeIn">
+                    <td class="ps-4 fw-bold text-primary">${l.MaLHP}</td>
+                    <td class="fw-bold">${l.TenMH}</td>
+                    <td>${l.TenGV}</td>
+                    <td class="text-center">
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">${l.SiSoHienTai} sinh viên</span>
+                    </td>
+                    <td class="text-center">
+                        <input type="number" class="grade-input border rounded text-center px-2 py-1 bg-light" style="width: 80px;" id="input-${l.MaLHP}" value="${l.SiSoToiDa}" min="${l.SiSoHienTai}">
+                    </td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-tbm btn-primary px-3 py-1 shadow-sm rounded-pill" style="font-size: 0.8rem;" onclick="updateCapacity('${l.MaLHP}', ${l.SiSoHienTai})">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">save</span> Lưu
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
 
             renderPagination(totalRows, totalPages);
         }
 
+        // Logic phân trang giữ nguyên của bro
         function renderPagination(totalRows, totalPages) {
             let container = document.getElementById('paginationContainer');
             if (!container) {
                 container = document.createElement('div');
                 container.id = 'paginationContainer';
-                container.className = 'pagination-container';
+                container.className = 'pagination-container d-flex justify-content-between align-items-center py-3 px-4 bg-light border-top';
                 document.querySelector('.tbm-card').appendChild(container);
             }
-
-            if (totalRows === 0) {
-                container.innerHTML = '';
-                return;
-            }
-
+            if (totalRows === 0) { container.innerHTML = ''; return; }
             const start = (currentPage - 1) * rowsPerPage + 1;
             const end = Math.min(currentPage * rowsPerPage, totalRows);
 
             container.innerHTML = `
-                <div class="pagination-info">
-                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> lớp học phần
+                <div class="pagination-info small text-muted">
+                    Hiển thị <b class="text-dark">${start}-${end}</b> trong tổng số <b class="text-dark">${totalRows}</b> lớp học phần
                 </div>
-                <div class="pagination-nav">
-                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
-                    ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
-                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
-                    `).join('')}
-                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
+                <div class="pagination-nav d-flex gap-1">
+                    <button class="btn btn-sm btn-white border" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><span class="material-symbols-outlined align-middle" style="font-size:18px;">chevron_left</span></button>
+                    ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `<button class="btn btn-sm ${p === currentPage ? 'btn-primary' : 'btn-white border'}" onclick="changePage(${p})">${p}</button>`).join('')}
+                    <button class="btn btn-sm btn-white border" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><span class="material-symbols-outlined align-middle" style="font-size:18px;">chevron_right</span></button>
                 </div>
             `;
         }
 
-        function changePage(page) {
-            currentPage = page;
-            renderClasses();
-        }
+        window.changePage = (page) => { currentPage = page; renderClasses(); }
 
-        window.updateCapacity = (maLHP) => {
+        // Bắn API Cập nhật
+        window.updateCapacity = async (maLHP, siSoHienTai) => {
             const input = document.getElementById(`input-${maLHP}`);
             const newVal = parseInt(input.value);
             
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const lIdx = lhpD.findIndex(l => l.MaLHP === maLHP);
+            if (newVal < siSoHienTai) {
+                alert('⚠️ Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký!');
+                // Khôi phục lại giá trị cũ nếu nhập bậy
+                const oldData = allClasses.find(l => l.MaLHP === maLHP);
+                if (oldData) input.value = oldData.SiSoToiDa;
+                return;
+            }
             
-            if (lIdx !== -1) {
-                if (newVal < lhpD[lIdx].SiSoHienTai) {
-                    alert('Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký!');
-                    input.value = lhpD[lIdx].SiSoToiDa;
-                    return;
+            const token = getToken();
+            try {
+                const res = await fetch('http://localhost:5123/api/TruongBoMon/cap-nhat-si-so', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ maLHP: maLHP, siSoToiDa: newVal })
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    alert('🎉 ' + result.message);
+                    // Cập nhật ngầm biến lưu trữ để khỏi tải lại trang
+                    const classIdx = allClasses.findIndex(l => l.MaLHP === maLHP);
+                    if(classIdx !== -1) allClasses[classIdx].SiSoToiDa = newVal;
+                } else {
+                    alert('❌ Lỗi: ' + result.message);
                 }
-                
-                lhpD[lIdx].SiSoToiDa = newVal;
-                localStorage.setItem('LopHocPhan', JSON.stringify(lhpD));
-                alert(`Đã cập nhật sĩ số lớp ${maLHP} thành ${newVal}`);
-                renderClasses();
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ!');
             }
         };
 

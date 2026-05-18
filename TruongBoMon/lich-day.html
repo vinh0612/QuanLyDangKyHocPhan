@@ -105,62 +105,91 @@
             `;
         }
 
-        function init() {
+        let personalSchedules = []; // Biến lưu trữ lịch dạy từ server
+
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
+
+        async function init() {
             renderSidebar();
             document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TB&background=0D8ABC&color=fff`;
-            
-            // Set Department Name
-            const boMonData = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            const gvData = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const myGV = gvData.find(g => g.MaGV === user.MaNguoiDung);
-            if (myGV) {
-                const myBM = boMonData.find(b => b.MaBoMon === myGV.MaBoMon);
-                if (myBM) document.getElementById('deptName').innerText = `Bộ môn: ${myBM.TenBoMon}`;
+            document.getElementById('deptName').innerText = `Bộ môn của bạn`; // Mặc định an toàn
+
+            const token = getToken();
+            if (!token) return;
+
+            try {
+                // 1. Tải danh sách Học Kỳ đổ vào Select Box (Tái sử dụng API cũ)
+                const hkRes = await fetch('http://localhost:5123/api/TruongBoMon/hoc-ky', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (hkRes.ok) {
+                    const hkData = await hkRes.json();
+                    document.getElementById('hkSelect').innerHTML = hkData.map(hk => 
+                        `<option value="${hk.MaHK}" ${hk.DangMo ? 'selected' : ''}>${hk.TenHK} - ${hk.NamHoc}</option>`
+                    ).join('');
+                }
+
+                // 2. Tải lịch giảng dạy cá nhân từ Server về
+                const scheduleRes = await fetch('http://localhost:5123/api/TruongBoMon/lich-day-ca-nhan', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (scheduleRes.ok) {
+                    personalSchedules = await scheduleRes.json();
+                    renderSchedule();
+                }
+
+            } catch (error) {
+                console.error("Lỗi khởi tạo trang lịch dạy:", error);
             }
-
-            const hks = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            document.getElementById('hkSelect').innerHTML = hks.map(hk => `<option value="${hk.MaHK}" ${hk.DangMo ? 'selected' : ''}>${hk.TenHK} - ${hk.NamHoc}</option>`).join('');
-
-            renderSchedule();
         }
 
         function renderSchedule() {
             const hkId = document.getElementById('hkSelect').value;
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-
-            const myClasses = lhpData.filter(l => l.MaGV === user.MaNguoiDung && l.MaHK === hkId);
             const tbody = document.getElementById('scheduleBody');
             const noData = document.getElementById('noData');
 
-            if (myClasses.length === 0) {
+            // Lọc danh sách theo học kỳ được chọn
+            const filteredSchedule = personalSchedules.filter(l => l.MaHK === hkId);
+
+            if (filteredSchedule.length === 0) {
                 tbody.innerHTML = '';
                 noData.classList.remove('d-none');
                 return;
             }
 
             noData.classList.add('d-none');
-            tbody.innerHTML = myClasses.map(lhp => {
-                const mon = mhData.find(m => m.MaMH === lhp.MaMH) || {};
-                return `
-                    <tr>
-                        <td>
-                            <div class="fw-bold text-accent">${mon.TenMH}</div>
-                            <div class="small text-muted">Lớp: ${lhp.MaLHP}</div>
-                        </td>
-                        <td class="fw-500">${lhp.LichHoc}</td>
-                        <td><span class="badge bg-light text-dark border">${lhp.PhongHoc}</span></td>
-                        <td class="text-center">
-                            <span class="badge ${lhp.SiSoHienTai >= lhp.SiSoToiDa ? 'bg-danger-subtle text-danger' : 'bg-info-subtle text-info'}">
-                                ${lhp.SiSoHienTai} / ${lhp.SiSoToiDa}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            <a href="nhap-diem.html?malhp=${lhp.MaLHP}" class="btn btn-primary btn-sm rounded-pill px-3">Quản lý lớp</a>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            tbody.innerHTML = filteredSchedule.map(lhp => `
+                <tr class="animate__animated animate__fadeIn">
+                    <td>
+                        <div class="fw-bold text-primary" style="font-size: 1.05rem;">${lhp.TenMH}</div>
+                        <div class="small text-muted font-monospace">Mã lớp: ${lhp.MaLHP}</div>
+                    </td>
+                    <td class="fw-semibold text-dark">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined text-muted" style="font-size: 18px;">schedule</span>
+                            ${lhp.LichHoc || 'Chưa xếp lịch'}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-2.5 py-1.5" style="font-size: 0.85rem;">
+                            P.${lhp.PhongHoc || '---'}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge ${lhp.SiSoHienTai >= lhp.SiSoToiDa ? 'bg-danger-subtle text-danger' : 'bg-info-subtle text-info'} rounded-pill px-3 py-1.5" style="font-size: 0.9rem;">
+                            ${lhp.SiSoHienTai || 0} / ${lhp.SiSoToiDa || 40}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <a href="nhap-diem.html?malhp=${lhp.MaLHP}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">edit_square</span> Quản lý lớp
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
         }
         init();
     </script>
