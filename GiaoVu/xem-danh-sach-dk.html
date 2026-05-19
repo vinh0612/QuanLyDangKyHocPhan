@@ -182,12 +182,12 @@
             // SỬA CHỖ NÀY: So sánh với chuỗi tiếng Việt có dấu y như trong Database
             document.getElementById('activeReg').innerText = filteredRegs.filter(x => {
                 const st = (x.TrangThai || x.trangthai || '').trim();
-                return st === 'Đang học' || st === 'Thành công'; 
+                return st === 'DaDangKy'; // Đã đổi cho khớp DB
             }).length;
             
             document.getElementById('cancelledReg').innerText = filteredRegs.filter(x => {
                 const st = (x.TrangThai || x.trangthai || '').trim();
-                return st === 'Đã hủy' || st === 'Đã hủy môn';
+                return st === 'DaHuy';
             }).length;
 
             if (searchKeyword) {
@@ -219,9 +219,7 @@
                 const dateStr = rawDate ? new Date(rawDate).toLocaleString('vi-VN') : '---';
                 
                 const status = (d.TrangThai || d.trangthai || '').trim();
-                
-                // SỬA CHỖ NÀY: Dùng .includes() để bắt các biến thể của chữ "hủy" cho chắc ăn
-                const isHuy = status === 'DaHuy'
+                const isHuy = status === 'DaHuy';
                 
                 return `
                 <tr class="animate__animated animate__fadeIn" style="border-top: 1px solid #f1f5f9;">

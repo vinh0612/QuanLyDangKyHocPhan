@@ -154,9 +154,13 @@
                 const search = document.getElementById('searchInput').value.toLowerCase();
                 
                 // Lọc theo thanh tìm kiếm (FE)
-                allFilteredRegs = dataTuDB.filter(d => 
-                    d.HoTen.toLowerCase().includes(search) || d.MaSV.toLowerCase().includes(search)
-                );
+                allFilteredRegs = dataTuDB.filter(d => {
+                    // Lấy đúng tên biến từ Database lên (TenSV), thêm '' để chống lỗi undefined
+                    const tenSV = (d.TenSV || d.tensv || d.HoTen || '').toLowerCase();
+                    const maSV = (d.MaSV || d.masv || '').toLowerCase();
+                    
+                    return tenSV.includes(search) || maSV.includes(search);
+                });
 
                 currentPage = 1;
                 renderGradeTable();
@@ -189,7 +193,7 @@
                 return `
                     <tr class="animate__animated animate__fadeIn" data-ma-dk="${d.MaDK}">
                         <td class="ps-4 fw-bold text-primary">${d.MaSV}</td>
-                        <td class="fw-bold">${d.HoTen}</td>
+                        <td class="fw-bold">${d.TenSV || d.tensv || d.HoTen || 'Chưa có tên'}</td>
                         <td class="text-center">
                             <input type="number" class="grade-input qt border rounded px-2 py-1 text-center bg-light" style="width: 70px;" value="${qt}" min="0" max="10" step="0.1" oninput="updateRow(this)">
                         </td>
