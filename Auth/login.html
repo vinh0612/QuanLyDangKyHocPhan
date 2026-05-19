@@ -8,7 +8,31 @@
     <link rel="stylesheet" href="../Assets/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <style>
-        .password-toggle { cursor: pointer; position: absolute; right: 15px; top: 38px; color: var(--text-muted); font-size: 20px; }
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear,
+        input[type="password"]::-webkit-textfield-decoration-button,
+        input[type="password"]::-webkit-textfield-decoration-container {
+            display: none !important;
+        }
+
+        .password-toggle {
+            cursor: pointer; 
+            position: absolute; 
+            right: 10px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: var(--text-muted); 
+            font-size: 20px; 
+            z-index: 10; 
+            /* 👇 Đóng khung cố định để icon không bị nhảy */
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-user-select: none;
+            user-select: none; /* Tránh bị bôi đen text khi click liên tục */
+        }
         .demo-accounts { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); }
         .demo-toggle { font-size: 0.85rem; color: var(--accent); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
     </style>
@@ -32,10 +56,12 @@
                         <input type="text" id="tenLogin" class="form-control" placeholder="Mã SV hoặc Mã GV" required>
                     </div>
                 </div>
-                <div class="mb-4 position-relative">
+                <div class="mb-4">
                     <label class="form-label fw-bold">Mật khẩu</label>
-                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
-                    <span class="material-symbols-outlined password-toggle" onclick="togglePassword()" id="pwdIcon">visibility</span>
+                    <div class="position-relative">
+                        <input type="password" id="password" class="form-control pe-5" placeholder="••••••••" required>
+                        <span class="material-symbols-outlined password-toggle" onclick="togglePassword()" id="pwdIcon">visibility</span>
+                    </div>
                 </div>
 
                 <div id="loginError" class="alert alert-danger d-none py-3 small rounded-4"></div>
