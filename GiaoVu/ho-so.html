@@ -19,6 +19,7 @@
             display: flex;
             align-items: center;
             gap: 2rem;
+            box-shadow: 0 10px 30px rgba(13, 138, 188, 0.2);
         }
         .profile-avatar-lg {
             width: 120px;
@@ -37,71 +38,9 @@
 </head>
 <body>
     <div id="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="nav-brand text-start">
-                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Hệ thống Đăng ký</div>
-            </div>
-            <ul class="nav-menu">
-                <li>
-                    <a href="dashboard.html">
-                        <span class="material-symbols-outlined menu-icon">dashboard</span>
-                        Tổng quan
-                    </a>
-                </li>
-                <li>
-                    <a href="mon-hoc.html">
-                        <span class="material-symbols-outlined menu-icon">book</span>
-                        Môn học
-                    </a>
-                </li>
-                <li>
-                    <a href="mo-lop-hoc-phan.html">
-                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
-                        Học kỳ & Mở lớp
-                    </a>
-                </li>
-                <li>
-                    <a href="xem-danh-sach-dk.html">
-                        <span class="material-symbols-outlined menu-icon">how_to_reg</span>
-                        Danh sách đăng ký học phần
-                    </a>
-                </li>
-                <li>
-                    <a href="giang-day-diem.html">
-                        <span class="material-symbols-outlined menu-icon">menu_book</span>
-                        Giảng dạy & Điểm
-                    </a>
-                </li>
-            </ul>
-            <div style="padding: 1rem;">
-                <ul class="nav-menu" style="padding: 0;">
-                    <li class="active">
-                        <a href="ho-so.html">
-                            <span class="material-symbols-outlined menu-icon">account_circle</span>
-                            Hồ sơ Cá nhân
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <span class="material-symbols-outlined menu-icon">settings</span>
-                            Cài đặt
-                        </a>
-                    </li>
-                    <li style="margin-top: 1rem;">
-                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
-                            <span class="material-symbols-outlined menu-icon">logout</span>
-                            Đăng xuất
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-        <!-- Main Content -->
-        <div class="main-body">
-            <!-- Navbar -->
+        <div class="main-body w-100">
             <header class="navbar">
                 <div class="search-container">
                     <span class="material-symbols-outlined search-icon">search</span>
@@ -111,9 +50,9 @@
                 <div class="nav-user">
                     <div class="top-links d-none d-md-flex">
                         <a href="dashboard.html">Trang chủ</a>
-                        <a href="#">Thông báo</a>
+                        <a href="#" onclick="alert('Tính năng đang bảo trì')">Thông báo</a>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name=Giao+Vu&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2" style="width: 36px; height: 36px; border-radius: 50%;">
                 </div>
             </header>
 
@@ -121,15 +60,15 @@
                 <div class="profile-header animate__animated animate__fadeIn">
                     <div class="profile-avatar-lg" id="avatarLarge">?</div>
                     <div>
-                        <h1 id="headerName" class="fw-bold mb-1">Họ và Tên</h1>
+                        <h1 id="headerName" class="fw-bold mb-2">Đang tải thông tin...</h1>
                         <div class="d-flex gap-3">
-                            <span class="badge bg-white text-primary">Cán bộ Giáo vụ</span>
-                            <span class="badge bg-white text-primary" id="headerID">GVU01</span>
+                            <span class="badge bg-white text-primary px-3 py-2 fw-bold">Cán bộ Giáo vụ</span>
+                            <span class="badge bg-white text-primary px-3 py-2 fw-bold font-monospace" id="headerID">---</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="card border-0 p-4 animate__animated animate__fadeInUp" style="border-radius: 24px;">
+                <div class="card border-0 p-4 shadow-sm animate__animated animate__fadeInUp" style="border-radius: 24px;">
                     <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
                         <span class="material-symbols-outlined text-accent">edit_note</span>
                         Chỉnh sửa thông tin cá nhân
@@ -138,27 +77,31 @@
                     <form id="profileForm" class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Họ và tên</label>
-                            <input type="text" id="hoTen" class="form-control bg-light" readonly>
+                            <input type="text" id="hoTen" class="form-control bg-light text-muted fw-medium" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Mã nhân viên</label>
-                            <input type="text" id="maNV" class="form-control bg-light" readonly>
+                            <input type="text" id="maNV" class="form-control bg-light text-muted fw-medium font-monospace" readonly>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Số điện thoại</label>
-                            <input type="text" id="sdt" class="form-control" placeholder="Nhập số điện thoại">
+                            <label class="form-label fw-bold">Giới tính</label>
+                            <input type="text" id="gioiTinh" class="form-control bg-light text-muted fw-medium" readonly>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label fw-bold">Số điện thoại liên lạc</label>
+                            <input type="text" id="sdt" class="form-control" placeholder="Nhập số điện thoại mới...">
+                        </div>
+                        <div class="col-md-12">
                             <label class="form-label fw-bold">Email công vụ</label>
                             <input type="email" id="email" class="form-control" placeholder="example@school.edu.vn">
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Địa chỉ cư trú</label>
-                            <textarea id="diaChi" class="form-control" rows="2" placeholder="Nhập địa chỉ hiện tại"></textarea>
+                            <textarea id="diaChi" class="form-control" rows="2" placeholder="Nhập địa chỉ hiện tại..."></textarea>
                         </div>
                         
-                        <div class="col-12 text-end mt-4">
-                            <button type="submit" class="btn btn-primary px-5 py-2">
+                        <div class="col-12 text-end mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary px-5 py-2.5 rounded-pill shadow-sm fw-bold" id="btnSubmit">
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="material-symbols-outlined">save</span>
                                     LƯU THAY ĐỔI
@@ -172,45 +115,95 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
         Auth.checkAuth(['GiaoVu']);
         const user = Auth.getCurrentUser();
 
-        function loadProfile() {
-            const gvD = JSON.parse(localStorage.getItem('GiaoVu') || '[]');
-            const data = gvD.find(g => g.MaGV_GV === user.MaNguoiDung);
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            sidebar.innerHTML = `
+                <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Phòng Đào Tạo</div></div>
+                <ul class="nav-menu">
+                    <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                    <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Môn học</a></li>
+                    <li><a href="mo-lop-hoc-phan.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Học kỳ & Mở lớp</a></li>
+                    <li><a href="xem-danh-sach-dk.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Danh sách đăng ký</a></li>
+                    <li><a href="giang-day-diem.html"><span class="material-symbols-outlined menu-icon">menu_book</span>Giảng dạy & Điểm</a></li>
+                </ul>
+                <div style="padding: 1rem; margin-top: auto;">
+                    <ul class="nav-menu" style="padding: 0;">
+                        <li class="active"><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>`;
+        }
 
-            if (data) {
-                document.getElementById('hoTen').value = data.HoTen;
-                document.getElementById('maNV').value = data.MaGV_GV;
-                document.getElementById('sdt').value = data.SDT;
-                document.getElementById('email').value = data.Email;
-                document.getElementById('diaChi').value = data.DiaChi;
-                
-                document.getElementById('headerName').innerText = data.HoTen;
-                document.getElementById('headerID').innerText = data.MaGV_GV;
-                document.getElementById('avatarLarge').innerText = data.HoTen.charAt(0);
+        async function loadProfile() {
+            try {
+                const res = await Auth.fetchWithAuth('/GiaoVu/ho-so');
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // SỬA TẠI ĐÂY: Trỏ đúng tên cột MaGiaoVu từ View vw_GiaoVu_CaNhan của nhóm
+                    const hoTen = data.HoTen || data.hoten || user.name;
+                    const maNV = data.MaGiaoVu || data.magiaovu || user.name;
+                    const gioiTinhRaw = data.GioiTinh || data.gioitinh;
+                    const gioiTinh = gioiTinhRaw === 'M' ? 'Nam' : (gioiTinhRaw === 'F' ? 'Nữ' : 'Chưa xác định');
+
+                    document.getElementById('hoTen').value = hoTen;
+                    document.getElementById('maNV').value = maNV; // Hết bị undefined ở ô nhập
+                    document.getElementById('gioiTinh').value = gioiTinh;
+                    document.getElementById('sdt').value = data.SoDT || data.sdt || '';
+                    document.getElementById('email').value = data.Email || data.email || '';
+                    document.getElementById('diaChi').value = data.DiaChi || data.diachi || '';
+                    
+                    document.getElementById('headerName').innerText = hoTen;
+                    document.getElementById('headerID').innerText = maNV; // Hết bị undefined ở Badge Header
+                    document.getElementById('avatarLarge').innerText = hoTen.charAt(0).toUpperCase();
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(hoTen)}&background=0D8ABC&color=fff`;
+                } else {
+                    alert("Không thể tải hồ sơ Giáo vụ từ máy chủ!");
+                }
+            } catch (error) {
+                console.error("Lỗi tải hồ sơ:", error);
             }
         }
 
-        document.getElementById('profileForm').onsubmit = (e) => {
+        document.getElementById('profileForm').onsubmit = async (e) => {
             e.preventDefault();
-            const gvD = JSON.parse(localStorage.getItem('GiaoVu') || '[]');
-            const idx = gvD.findIndex(g => g.MaGV_GV === user.MaNguoiDung);
-            
-            if (idx !== -1) {
-                gvD[idx].SDT = document.getElementById('sdt').value;
-                gvD[idx].Email = document.getElementById('email').value;
-                gvD[idx].DiaChi = document.getElementById('diaChi').value;
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG LƯU...';
+
+            const payload = {
+                diaChi: document.getElementById('diaChi').value,
+                soDT: document.getElementById('sdt').value,
+                email: document.getElementById('email').value
+            };
+
+            try {
+                const res = await Auth.fetchWithAuth('/GiaoVu/cap-nhat-ho-so', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
                 
-                localStorage.setItem('GiaoVu', JSON.stringify(gvD));
-                alert('Đã cập nhật thông tin cá nhân thành công!');
-                loadProfile();
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Đã cập nhật hồ sơ cá nhân thành công!');
+                    loadProfile(); 
+                } else {
+                    alert('Lỗi cập nhật: ' + (data.message || 'Thất bại từ hệ thống.'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ backend!');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined">save</span> LƯU THAY ĐỔI</div>';
             }
         };
 
+        renderSidebar();
         loadProfile();
     </script>
 </body>

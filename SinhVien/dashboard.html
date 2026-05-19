@@ -14,7 +14,6 @@
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="nav-brand text-start">
                 <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
@@ -64,7 +63,6 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
@@ -84,45 +82,40 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="fw-bold mb-1" style="font-size: 2rem;" id="welcomeText">Chào bạn, Sinh viên!</h1>
-                    <p class="text-muted mb-0" id="currentSemesterText">Học kỳ 2, Năm học 2023-2024</p>
+                    <p class="text-muted mb-0" id="currentSemesterText">Đang tải học kỳ hiện tại...</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary d-flex align-items-center gap-2 rounded-pill" onclick="window.location.href='dang-ky.html'">
+                    <button class="btn btn-outline-primary d-flex align-items-center gap-2 rounded-pill" onclick="window.location.href='dang-ky-mon.html'">
                         <span class="material-symbols-outlined">add</span> Đăng ký môn mới
                     </button>
                 </div>
             </div>
 
             <div class="row g-4">
-                <!-- Left Column -->
                 <div class="col-lg-8">
-                    <!-- Registration Status -->
                     <div class="reg-status-card animate__animated animate__fadeIn mb-4">
                         <div class="row align-items-center">
                             <div class="col-md-7">
                                 <h4 class="fw-bold mb-2">Đăng ký học phần đang mở!</h4>
-                                <p class="mb-3 opacity-75">Học kỳ 2 (2023-2024) đang cho phép đăng ký. Vui lòng hoàn tất trước ngày 30/10.</p>
-                                <a href="dang-ky-mon.html" class="btn btn-white text-primary fw-bold rounded-pill px-4" style="background: #fff;">Đến trang đăng ký</a>
+                                <p class="mb-3 opacity-75">Học kỳ mới đang cho phép đăng ký trực tuyến. Vui lòng hoàn tất đăng ký đúng hạn quy định.</p>
+                                <a href="dang-ky-mon.html" class="btn btn-white text-primary fw-bold rounded-pill px-4" style="background: #fff; text-decoration: none;">Đến trang đăng ký</a>
                             </div>
                             <div class="col-md-5 text-end d-none d-md-block">
                                 <div class="h1 fw-bold mb-0" id="regCount">0/20</div>
-                                <div class="small opacity-75">Tín chỉ đã đăng ký</div>
+                                <div class="small opacity-75">Tín chỉ học kỳ này</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Current Schedule / Registered Classes -->
                     <div class="card border-0 p-4 animate__animated animate__fadeInUp" style="border-radius: 20px;">
                         <h5 class="fw-bold mb-4">Lịch học trong tuần</h5>
                         <div id="weeklySchedule">
-                            <!-- Dynamic Content -->
+                            <p class="text-muted italic p-2">Đang tải lịch học từ hệ thống...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column -->
                 <div class="col-lg-4">
-                    <!-- Academic Stats -->
                     <div class="card border-0 p-4 mb-4 animate__animated animate__fadeInRight" style="border-radius: 20px;">
                         <h5 class="fw-bold mb-4">Tiến độ học tập</h5>
                         <div class="text-center mb-4">
@@ -138,17 +131,16 @@
                         </div>
                     </div>
 
-                    <!-- Recent Notifications -->
                     <div class="card border-0 p-4 animate__animated animate__fadeInRight animate__delay-1s" style="border-radius: 20px;">
                         <h5 class="fw-bold mb-4">Thông báo mới nhất</h5>
                         <div class="task-list">
                             <div class="task-item blue">
-                                <div class="task-title">Lịch thi giữa kỳ HK2</div>
-                                <p class="task-desc">Phòng Đào tạo - 2 giờ trước</p>
+                                <div class="task-title">Lịch thi giữa kỳ học phần</div>
+                                <p class="task-desc">Phòng Đào tạo - Vừa xong</p>
                             </div>
                             <div class="task-item teal">
-                                <div class="task-title">Thông báo nộp học phí</div>
-                                <p class="task-desc">Phòng Tài vụ - Hôm qua</p>
+                                <div class="task-title">Thông báo nộp học phí bổ sung</div>
+                                <p class="task-desc">Phòng Kế hoạch Tài chính - Hôm qua</p>
                             </div>
                         </div>
                     </div>
@@ -158,100 +150,139 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
+        // 1. CHỐT CHẶN BẢO MẬT: Kiểm tra Token xem đúng quyền SinhVien không trước khi hiển thị dữ liệu
         Auth.checkAuth(['SinhVien']);
         const user = Auth.getCurrentUser();
 
-        function init() {
-            document.getElementById('welcomeText').innerText = `Chào bạn, ${user.HoTen}!`;
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
-            
-            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const bdData = JSON.parse(localStorage.getItem('BangDiem') || '[]');
-            const hkData = JSON.parse(localStorage.getItem('HocKy') || '[]');
-
-            const currentHK = hkData.find(h => h.DangMo) || hkData[hkData.length - 1];
-            document.getElementById('currentSemesterText').innerText = `${currentHK.TenHK}, Năm học ${currentHK.NamHoc}`;
-
-            // Registration Count
-            const myRegs = dkData.filter(dk => dk.MaSV === user.MaNguoiDung && dk.TrangThai === 'DaDangKy');
-            let totalCredits = 0;
-            myRegs.forEach(reg => {
-                const lhp = lhpData.find(l => l.MaLHP === reg.MaLHP);
-                const mh = mhData.find(m => m.MaMH === lhp.MaMH);
-                totalCredits += mh.SoTinChi;
-            });
-            document.getElementById('regCount').innerText = `${totalCredits}/20`;
-
-            // GPA and Credit Progress
-            const myGrades = bdData.filter(b => {
-                const reg = dkData.find(dk => dk.MaDK === b.MaDK);
-                return reg && reg.MaSV === user.MaNguoiDung;
-            });
-
-            function getLetterGrade(score) {
-                if (score >= 8.5) return 4.0;
-                if (score >= 7.0) return 3.0;
-                if (score >= 5.5) return 2.0;
-                if (score >= 4.0) return 1.0;
-                return 0.0;
-            }
-
-            let gpaSum = 0;
-            let earnedCredits = 0; // Credits for passed courses
-            let totalAttemptedCredits = 0; // Credits for all graded courses
-
-            myGrades.forEach(g => {
-                const reg = dkData.find(dk => dk.MaDK === g.MaDK);
-                const lhp = lhpData.find(l => l.MaLHP === reg.MaLHP);
-                const mh = mhData.find(m => m.MaMH === lhp.MaMH);
+        async function init() {
+            try {
+                // 2. GỌI API HỒ SƠ: Lấy họ tên sinh viên thật từ SQL Server
+                const profileRes = await Auth.fetchWithAuth('/SinhVien/ho-so');
+                const profile = await profileRes.json();
                 
-                totalAttemptedCredits += mh.SoTinChi;
-                const point = getLetterGrade(g.DiemTongKet);
-                gpaSum += point * mh.SoTinChi;
-
-                if (g.DiemTongKet >= 4) { // Pass
-                    earnedCredits += mh.SoTinChi;
+                if (profileRes.ok && profile) {
+                    const tenHienThi = profile.HoTen || profile.hoten || profile.ho_ten || user.TenLogin;
+                    document.getElementById('welcomeText').innerText = `Chào bạn, ${tenHienThi}!`;
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenHienThi)}&background=0D8ABC&color=fff`;
+                } else {
+                    document.getElementById('welcomeText').innerText = `Chào bạn, ${user.TenLogin}!`;
                 }
-            });
 
-            const gpa = totalAttemptedCredits > 0 ? (gpaSum / totalAttemptedCredits).toFixed(2) : '0.0';
-            document.getElementById('gpaText').innerText = gpa;
-            document.getElementById('creditCurrent').innerText = `${earnedCredits} tín chỉ`;
-            const progress = (earnedCredits / 135 * 100);
-            document.getElementById('creditProgress').style.width = `${progress}%`;
+                // 3. NẠP ĐỒNG THỜI DỮ LIỆU: Bảng điểm và Danh sách tất cả lớp học phần đang mở của trường
+                const [ketQuaRes, lhpRes] = await Promise.all([
+                    Auth.fetchWithAuth('/SinhVien/ket-qua-hoc-tap'),
+                    Auth.fetchWithAuth('/SinhVien/lhp-hien-tai')
+                ]);
 
-            // Weekly Schedule
-            const scheduleContainer = document.getElementById('weeklySchedule');
-            if (myRegs.length === 0) {
-                scheduleContainer.innerHTML = '<p class="text-muted italic">Bạn chưa đăng ký môn học nào trong học kỳ này.</p>';
-            } else {
-                scheduleContainer.innerHTML = myRegs.map(reg => {
-                    const lhp = lhpData.find(l => l.MaLHP === reg.MaLHP);
-                    const mh = mhData.find(m => m.MaMH === lhp.MaMH);
-                    return `
-                        <div class="mb-3 p-3 border rounded-4 d-flex align-items-center gap-3">
-                            <div class="bg-primary-subtle text-primary p-2 rounded-3">
-                                <span class="material-symbols-outlined">event_note</span>
+                const dataDiem = await ketQuaRes.json();
+                const dataLHP = await lhpRes.json();
+
+                if (!ketQuaRes.ok || !lhpRes.ok) {
+                    console.error("Lỗi đồng bộ gói tin API từ máy chủ");
+                    return;
+                }
+
+                // Hàm quy đổi điểm hệ 10 sang thang điểm 4 theo quy chế đào tạo
+                function getLetterGrade(score) {
+                    if (score === null || score === undefined) return null;
+                    if (score >= 8.5) return 4.0;
+                    if (score >= 7.0) return 3.0;
+                    if (score >= 5.5) return 2.0;
+                    if (score >= 4.0) return 1.0;
+                    return 0.0;
+                }
+
+                let gpaSum = 0;
+                let earnedCredits = 0;          // Tổng tín chỉ tích lũy đạt điều kiện ra trường (Điểm tổng kết >= 4.0)
+                let totalAttemptedCredits = 0;   // Tổng tín chỉ các môn ĐÃ CÓ ĐIỂM dùng để tính điểm trung bình GPA
+                let currentSemesterCredits = 0;  // Tổng tín chỉ đăng ký học ở học kỳ mới này
+                let currentScheduleHtml = '';
+
+                // Tự động phân tích nhận diện Học kỳ mới nhất xuất hiện trong Database để làm học kỳ hiện hành
+                let latestSemester = "Học kỳ 2";
+                let latestYear = "2025-2026";
+                if (dataDiem.length > 0) {
+                    const sortedData = [...dataDiem].sort((a, b) => (b.NamHoc || b.namhoc || '').localeCompare(a.NamHoc || a.namhoc || ''));
+                    latestSemester = sortedData[0].TenHK || sortedData[0].tenhk || "Học kỳ 2";
+                    latestYear = sortedData[0].NamHoc || sortedData[0].namhoc || "2025-2026";
+                }
+                document.getElementById('currentSemesterText').innerText = `${latestSemester}, Năm học ${latestYear}`;
+
+                // Vòng lặp quét qua toàn bộ danh sách lớp của Sinh viên trả về từ Database
+                dataDiem.forEach(item => {
+                    // KỸ THUẬT TRA CỨU CHÉO (Cross-Referencing): Tìm chi tiết lịch học/phòng học từ danh sách lớp đang mở
+                    const maLhpGoc = item.MaLHP || item.malhp;
+                    const fullLhpInfo = dataLHP.find(l => l.MaLHP === maLhpGoc || l.malhp === maLhpGoc) || {};
+
+                    // Chuẩn hóa đồng bộ linh hoạt chữ HOA / chữ thường của các trường dữ liệu
+                    const credit = item.SoTinChi || item.sotinchi || fullLhpInfo.SoTinChi || fullLhpInfo.sotinchi || 0;
+                    const score = item.DiemTongKet !== undefined ? item.DiemTongKet : item.diemtongket;
+                    const tenMH = item.TenMH || item.tenmh || fullLhpInfo.TenMH || fullLhpInfo.tenmh || '---';
+                    const lichHoc = fullLhpInfo.LichHoc || fullLhpInfo.lichhoc || item.LichHoc || item.lichhoc || 'Chưa xếp lịch';
+                    const phongHoc = fullLhpInfo.PhongHoc || fullLhpInfo.phonghoc || item.PhongHoc || item.phonghoc || 'Chưa xếp phòng';
+                    const tenHK = item.TenHK || item.tenhk;
+                    const namHoc = item.NamHoc || item.namhoc;
+
+                    // A. Xử lý môn học quá khứ: Nếu môn này đã có điểm chính thức -> Cập nhật vào công thức GPA
+                    if (score !== null && score !== undefined) {
+                        totalAttemptedCredits += credit;
+                        const point = getLetterGrade(score);
+                        gpaSum += point * credit;
+
+                        if (score >= 4.0) { 
+                            earnedCredits += credit; // Chỉ những môn thi đạt mới được tính vào tín chỉ tích lũy ra trường
+                        }
+                    }
+
+                    // B. Xử lý môn học hiện tại: Nếu thuộc học kỳ hiện hành -> Tính tín chỉ kỳ này và dựng Lịch học
+                    if (tenHK === latestSemester && namHoc === latestYear) {
+                        currentSemesterCredits += credit;
+
+                        currentScheduleHtml += `
+                            <div class="mb-3 p-3 border rounded-4 d-flex align-items-center gap-3 animate__animated animate__fadeIn">
+                                <div class="bg-primary-subtle text-primary p-2 rounded-3">
+                                    <span class="material-symbols-outlined">event_note</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-dark">${tenMH}</div>
+                                    <div class="small text-muted">${lichHoc} • Phòng ${phongHoc}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="badge bg-light text-primary border">${maLhpGoc}</div>
+                                </div>
                             </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold">${mh.TenMH}</div>
-                                <div class="small text-muted">${lhp.LichHoc} • Phòng ${lhp.PhongHoc}</div>
-                            </div>
-                            <div class="text-end">
-                                <div class="badge bg-light text-primary border">${lhp.MaLHP}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                        `;
+                    }
+                });
+
+                // 4. KẾT XUẤT DỮ LIỆU LÊN CÁC ID GIAO DIỆN
+                // Cập nhật số lượng tín chỉ đăng ký học ở kỳ này
+                document.getElementById('regCount').innerText = `${currentSemesterCredits}/20`;
+
+                // Cập nhật điểm trung bình GPA tích lũy hệ 4 công thức chuẩn
+                const gpa = totalAttemptedCredits > 0 ? (gpaSum / totalAttemptedCredits).toFixed(2) : '0.0';
+                document.getElementById('gpaText').innerText = gpa;
+
+                // Cập nhật số tín chỉ tích lũy đạt được và thanh tiến độ ra trường (Chuẩn đồ án: 135 tín chỉ)
+                document.getElementById('creditCurrent').innerText = `${earnedCredits} tín chỉ`;
+                const phanTramTienDo = (earnedCredits / 135) * 100;
+                document.getElementById('creditProgress').style.width = `${Math.min(phanTramTienDo, 100)}%`;
+
+                // Cập nhật bảng danh sách lịch học trực quan trong tuần
+                const scheduleContainer = document.getElementById('weeklySchedule');
+                if (currentScheduleHtml === '') {
+                    scheduleContainer.innerHTML = '<p class="text-muted italic p-2">Bạn chưa đăng ký môn học nào hoặc chưa được xếp lịch học trong học kỳ này.</p>';
+                } else {
+                    scheduleContainer.innerHTML = currentScheduleHtml;
+                }
+
+            } catch (error) {
+                console.error("Lỗi đồng bộ dữ liệu hệ thống:", error);
             }
         }
 
+        // Thực thi kích hoạt luồng nạp dữ liệu khi trang web được tải xong
         init();
     </script>
-</body>
-</html>

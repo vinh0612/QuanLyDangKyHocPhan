@@ -13,57 +13,8 @@
 </head>
 <body>
     <div id="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="nav-brand text-start">
-                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Hệ thống Đăng ký</div>
-            </div>
-            <ul class="nav-menu">
-                <li>
-                    <a href="dashboard.html">
-                        <span class="material-symbols-outlined menu-icon">dashboard</span>
-                        Tổng quan
-                    </a>
-                </li>
-                <li>
-                    <a href="lich-day.html">
-                        <span class="material-symbols-outlined menu-icon">calendar_month</span>
-                        Lịch dạy
-                    </a>
-                </li>
-                <li>
-                    <a href="nhap-diem.html">
-                        <span class="material-symbols-outlined menu-icon">edit_square</span>
-                        Quản lý Điểm
-                    </a>
-                </li>
-                <li>
-                    <a href="mon-hoc.html">
-                        <span class="material-symbols-outlined menu-icon">book</span>
-                        Danh mục Môn
-                    </a>
-                </li>
-            </ul>
-            <div style="padding: 1rem;">
-                <ul class="nav-menu" style="padding: 0;">
-                    <li class="active">
-                        <a href="ho-so.html">
-                            <span class="material-symbols-outlined menu-icon">account_circle</span>
-                            Hồ sơ Cá nhân
-                        </a>
-                    </li>
-                    <li style="margin-top: 1rem;">
-                        <a href="#" onclick="Auth.logout()" style="color: #ef4444;">
-                            <span class="material-symbols-outlined menu-icon">logout</span>
-                            Đăng xuất
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-        <!-- Main Content -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
@@ -72,10 +23,10 @@
             
             <div class="nav-user">
                 <div class="top-links d-none d-md-flex">
-                    <a href="dashboard.html">Trang chủ</a>
-                    <a href="#">Thông báo</a>
+                    <a href="dashboard.html" class="text-decoration-none text-main me-3">Trang chủ</a>
+                    <a href="#" class="text-decoration-none text-main" onclick="alert('Tính năng đang bảo trì')">Thông báo</a>
                 </div>
-                <img id="userAvatar" src="https://ui-avatars.com/api/?name=Giang+Vien&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
             </div>
         </header>
 
@@ -83,15 +34,15 @@
             <div class="profile-header animate__animated animate__fadeIn">
                 <div class="profile-avatar-lg" id="avatarLarge">?</div>
                 <div>
-                    <h1 id="headerName" class="fw-bold mb-1">Họ và Tên</h1>
-                    <div class="d-flex gap-3">
-                        <span class="badge bg-white text-primary" id="displayRole">Giảng viên</span>
-                        <span class="badge bg-white text-primary" id="headerID">GV001</span>
+                    <h1 id="headerName" class="fw-bold mb-1">Đang tải thông tin...</h1>
+                    <div class="d-flex gap-3 mt-2">
+                        <span class="badge bg-white text-primary px-3 py-2 fw-bold" id="displayRole">Giảng viên</span>
+                        <span class="badge bg-white text-primary px-3 py-2 fw-bold font-monospace" id="headerID">---</span>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 p-4 animate__animated animate__fadeInUp" style="border-radius: 24px;">
+            <div class="card border-0 p-4 animate__animated animate__fadeInUp shadow-sm" style="border-radius: 24px;">
                 <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
                     <span class="material-symbols-outlined text-accent">edit_note</span>
                     Thông tin chi tiết Giảng viên
@@ -100,32 +51,36 @@
                 <form id="profileForm" class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Họ và tên</label>
-                        <input type="text" id="hoTen" class="form-control bg-light" readonly>
+                        <input type="text" id="hoTen" class="form-control bg-light text-muted fw-medium" readonly>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Ngày sinh</label>
-                        <input type="date" id="ngaySinh" class="form-control bg-light" readonly>
+                        <input type="date" id="ngaySinh" class="form-control bg-light text-muted fw-medium" readonly>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Bộ môn / Khoa</label>
-                        <input type="text" id="donVi" class="form-control bg-light" readonly>
+                        <label class="form-label fw-bold">Giới tính</label>
+                        <input type="text" id="gioiTinh" class="form-control bg-light text-muted fw-medium" readonly>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Số điện thoại</label>
-                        <input type="text" id="sdt" class="form-control" placeholder="Nhập số điện thoại">
+                        <label class="form-label fw-bold">Đơn vị quản lý (Bộ môn - Khoa)</label>
+                        <input type="text" id="donVi" class="form-control bg-light text-muted fw-medium font-monospace" readonly>
                     </div>
-                    <div class="col-md-12">
-                        <label class="form-label fw-bold">Email</label>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Số điện thoại liên lạc</label>
+                        <input type="text" id="sdt" class="form-control" placeholder="Nhập số điện thoại mới...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Email công việc</label>
                         <input type="email" id="email" class="form-control" placeholder="example@school.edu.vn">
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-bold">Địa chỉ hiện tại</label>
-                        <textarea id="diaChi" class="form-control" rows="2" placeholder="Nhập địa chỉ cư trú"></textarea>
+                        <label class="form-label fw-bold">Địa chỉ cư trú</label>
+                        <textarea id="diaChi" class="form-control" rows="2" placeholder="Nhập địa chỉ cư trú..."></textarea>
                     </div>
                     
-                    <div class="col-12 text-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm">
-                            <div class="d-flex align-items-center gap-2">
+                    <div class="col-12 text-end mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary px-5 py-2.5 rounded-pill shadow-sm" id="btnSubmit">
+                            <div class="d-flex align-items-center gap-2 fw-bold">
                                 <span class="material-symbols-outlined">save</span>
                                 CẬP NHẬT THÔNG TIN
                             </div>
@@ -137,54 +92,127 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        Auth.checkAuth(['GiangVien']);
+        Auth.checkAuth(['GiangVien', 'TruongBoMon']);
         const user = Auth.getCurrentUser();
 
-        function loadProfile() {
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            const kD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            
-            const data = gvD.find(g => g.MaGV === user.MaNguoiDung);
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const userRoleRaw = user.role ? user.role.toString().replace('role_', '').toLowerCase().trim() : '';
 
-            if (data) {
-                document.getElementById('hoTen').value = data.HoTen;
-                document.getElementById('ngaySinh').value = data.NgaySinh || '';
-                document.getElementById('sdt').value = data.SDT;
-                document.getElementById('email').value = data.Email;
-                document.getElementById('diaChi').value = data.DiaChi;
-                
-                const bm = bmD.find(b => b.MaBoMon === data.MaBoMon) || {};
-                const khoa = kD.find(k => k.MaKhoa === data.MaKhoa) || {};
-                document.getElementById('donVi').value = `${bm.TenBoMon || ''} - ${khoa.TenKhoa || ''}`;
+            if (userRoleRaw === 'truongbomon') {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet'; link.href = '../TruongBoMon/css/truong-bo-mon.css';
+                document.head.appendChild(link);
+                sidebar.innerHTML = `
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Trưởng Bộ Môn</div></div>
+                    <ul class="nav-menu">
+                        <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="../TruongBoMon/quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
+                        <li><a href="../TruongBoMon/lich-day-bo-mon.html"><span class="material-symbols-outlined menu-icon">groups</span>Lịch dạy Bộ môn</a></li>
+                        <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                        <li class="menu-divider" style="margin: 1rem 0; border-top: 1px solid #eee; opacity: 0.5;"></li>
+                        <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    </ul>`;
+            } else {
+                sidebar.innerHTML = `
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Giảng viên</div></div>
+                    <ul class="nav-menu">
+                        <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
+                        <li><a href="diem-danh.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Điểm danh</a></li>
+                        <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                        <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
+                    </ul>`;
+            }
+            sidebar.innerHTML += `
+                <div style="padding: 1rem; margin-top: auto;">
+                    <ul class="nav-menu" style="padding: 0;">
+                        <li class="active"><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
+                        <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
+                    </ul>
+                </div>`;
+        }
 
-                document.getElementById('headerName').innerText = data.HoTen;
-                document.getElementById('headerID').innerText = data.MaGV;
-                document.getElementById('displayRole').innerText = user.Role;
-                document.getElementById('avatarLarge').innerText = data.HoTen.charAt(0);
-                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.HoTen)}&background=0D8ABC&color=fff`;
+        // ==========================================
+        // 1. TẢI DỮ LIỆU ĐỌC TỪ VIEW SQL SERVER
+        // ==========================================
+        async function loadProfile() {
+            try {
+                const res = await Auth.fetchWithAuth('/GiangVien/ho-so');
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    const hoTen = data.HoTen || data.hoten || user.name;
+                    const ngaySinhRaw = data.NgaySinh || data.ngaysinh;
+                    const formattedDate = ngaySinhRaw ? new Date(ngaySinhRaw).toISOString().split('T')[0] : '';
+                    
+                    document.getElementById('hoTen').value = hoTen;
+                    document.getElementById('ngaySinh').value = formattedDate;
+                    document.getElementById('gioiTinh').value = (data.GioiTinh || data.gioitinh) === 'M' ? 'Nam' : ((data.GioiTinh || data.gioitinh) === 'F' ? 'Nữ' : 'Chưa cập nhật');
+                    document.getElementById('sdt').value = data.SoDT || data.sdt || '';
+                    document.getElementById('email').value = data.Email || data.email || '';
+                    document.getElementById('diaChi').value = data.DiaChi || data.diachi || '';
+                    
+                    // Ghép chuỗi Mã Bộ môn và Mã Khoa
+                    const maBoMon = data.MaBoMon || data.mabomon || 'BM_UNKNOWN';
+                    const maKhoa = data.MaKhoa || data.makhoa || 'K_UNKNOWN';
+                    document.getElementById('donVi').value = `${maBoMon} - ${maKhoa}`;
+
+                    document.getElementById('headerName').innerText = hoTen;
+                    document.getElementById('headerID').innerText = data.MaGV || data.magv || user.name;
+                    
+                    const userRoleRaw = user.role ? user.role.toString().replace('role_', '').toLowerCase().trim() : '';
+                    document.getElementById('displayRole').innerText = userRoleRaw === 'truongbomon' ? "Trưởng bộ môn" : "Giảng viên";
+                    
+                    document.getElementById('avatarLarge').innerText = hoTen.charAt(0).toUpperCase();
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(hoTen)}&background=0D8ABC&color=fff`;
+                } else {
+                    alert("Không thể tải hồ sơ Giảng viên từ máy chủ!");
+                }
+            } catch (error) {
+                console.error("Lỗi:", error);
             }
         }
 
-        document.getElementById('profileForm').onsubmit = (e) => {
+        // ==========================================
+        // 2. ĐẨY DỮ LIỆU GHI QUA STORED PROCEDURE
+        // ==========================================
+        document.getElementById('profileForm').onsubmit = async (e) => {
             e.preventDefault();
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const idx = gvD.findIndex(g => g.MaGV === user.MaNguoiDung);
-            
-            if (idx !== -1) {
-                gvD[idx].SDT = document.getElementById('sdt').value;
-                gvD[idx].Email = document.getElementById('email').value;
-                gvD[idx].DiaChi = document.getElementById('diaChi').value;
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG CẬP NHẬT...';
+
+            const payload = {
+                diaChi: document.getElementById('diaChi').value,
+                soDT: document.getElementById('sdt').value,
+                email: document.getElementById('email').value
+            };
+
+            try {
+                const res = await Auth.fetchWithAuth('/GiangVien/cap-nhat-ho-so', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
                 
-                localStorage.setItem('GiaoVien', JSON.stringify(gvD));
-                alert('Đã cập nhật hồ sơ cá nhân thành công!');
-                loadProfile();
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Đã cập nhật hồ sơ cá nhân thành công!');
+                    loadProfile(); // Tải lại ngay lập tức để đồng bộ Avatar
+                } else {
+                    alert('Lỗi cập nhật: ' + (data.message || 'Thất bại từ hệ thống.'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ backend!');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<div class="d-flex align-items-center gap-2 fw-bold"><span class="material-symbols-outlined">save</span>CẬP NHẬT THÔNG TIN</div>';
             }
         };
 
+        renderSidebar();
         loadProfile();
     </script>
 </body>

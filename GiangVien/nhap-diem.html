@@ -14,67 +14,52 @@
 <body>
 
     <div id="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="dynamicSidebar">
-            <!-- Sidebar content will be rendered by JavaScript -->
-        </aside>
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-        <!-- Main Content -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" class="search-bar" placeholder="Tra cứu sinh viên...">
+                <input type="text" class="search-bar" placeholder="Tra cứu sinh viên..." oninput="filterStudents(this.value)">
             </div>
-            
             <div class="nav-user">
-                <div class="top-links d-none d-md-flex">
-                    <a href="dashboard.html">Trang chủ</a>
-                    <a href="#">Thông báo</a>
-                </div>
-                <img id="userAvatar" src="https://ui-avatars.com/api/?name=Giang+Vien&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
+                <div class="top-links d-none d-md-flex"><a href="dashboard.html">Trang chủ</a><a href="#">Thông báo</a></div>
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
             </div>
         </header>
 
         <main class="main-content">
             <h2 class="section-title mb-4">
-                <span class="material-symbols-outlined text-primary" style="font-size: 32px;">edit_square</span>
-                Quản lý Điểm & Lớp học
+                <span class="material-symbols-outlined text-primary" style="font-size: 32px;">edit_square</span> Quản lý Điểm & Lớp học
             </h2>
 
-            <div class="card border-0 mb-4 p-3" style="border-radius: 16px;">
+            <div class="card border-0 mb-4 p-3 shadow-sm" style="border-radius: 16px;">
                 <div class="row align-items-center">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Chọn Lớp học phần phụ trách</label>
-                        <select id="lhpSelect" class="form-select" onchange="loadStudentGrades()"></select>
+                        <label class="form-label fw-bold text-muted small">CHỌN LỚP HỌC PHẦN PHỤ TRÁCH</label>
+                        <select id="lhpSelect" class="form-select border-light-subtle rounded-pill px-3 shadow-sm" onchange="loadStudentGrades()">
+                            <option value="">Đang tải danh sách lớp...</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div id="gradePanel" class="card border-0 p-4 d-none animate__animated animate__fadeIn" style="border-radius: 20px;">
+            <div id="gradePanel" class="card border-0 p-4 d-none animate__animated animate__fadeIn shadow-sm" style="border-radius: 20px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h4 class="fw-bold m-0" id="currentLHPTitle">Tên môn học</h4>
-                        <p class="text-muted mb-0" id="currentLHPSubtitle">Mã lớp: LHP001 • Sĩ số: 45</p>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="exportExcel()">
-                            <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">download</span> Xuất Excel
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="enableAllEditing()">
-                            <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">edit_note</span> Sửa tất cả
-                        </button>
+                        <p class="text-muted mb-0 mt-1" id="currentLHPSubtitle">Mã lớp: --- • Sĩ số: ---</p>
                     </div>
                 </div>
                 
                 <div class="table-responsive">
-                    <table class="table align-middle text-center table-custom">
-                        <thead>
+                    <table class="table align-middle text-center table-custom table-hover m-0">
+                        <thead class="table-light">
                             <tr>
                                 <th class="text-start ps-4">Sinh viên</th>
                                 <th>Giữa kỳ (40%)</th>
                                 <th>Cuối kỳ (60%)</th>
                                 <th>Tổng kết</th>
-                                <th>Trạng thái</th>
+                                <th>Kết quả</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
@@ -82,301 +67,205 @@
                     </table>
                 </div>
                 
-                <div class="text-end mt-4">
-                    <button class="btn btn-primary px-5 py-2 rounded-pill shadow-sm" onclick="saveAllGrades()">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="material-symbols-outlined">save</span>
-                            LƯU TOÀN BỘ BẢNG ĐIỂM
-                        </div>
+                <div class="text-end mt-4 pt-3 border-top">
+                    <button class="btn btn-primary px-5 py-2 rounded-pill shadow-sm fw-bold" onclick="saveAllGrades()" id="btnSave">
+                        <div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined">save</span> LƯU ĐIỂM XUỐNG HỆ THỐNG</div>
                     </button>
                 </div>
             </div>
 
-            <div id="emptyState" class="text-center py-5">
-                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" alt="Empty" style="width: 120px; opacity: 0.5;" class="mb-3">
-                <p class="text-muted fs-5 italic">Vui lòng chọn một lớp học để bắt đầu quản lý điểm số.</p>
+            <div id="emptyState" class="text-center py-5 bg-white shadow-sm border rounded-4 animate__animated animate__fadeIn">
+                <span class="material-symbols-outlined text-muted" style="font-size: 64px; opacity: 0.3;">checklist</span>
+                <p class="text-muted mt-3 fw-medium">Vui lòng chọn một lớp học phần ở trên để bắt đầu quản lý điểm.</p>
             </div>
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Assets/js/mock-database.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        Auth.checkAuth(['GiangVien']);
+        Auth.checkAuth(['GiangVien', 'TruongBoMon']);
         const user = Auth.getCurrentUser();
+        let myClasses = []; 
+        let currentStudentList = []; 
+        let filteredStudentList = [];
 
         function renderSidebar() {
             const sidebar = document.getElementById('dynamicSidebar');
-            if (user.Role === 'TruongBoMon') {
-                // Thêm CSS của Trưởng bộ môn nếu cần
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = '../TruongBoMon/css/truong-bo-mon.css';
-                document.head.appendChild(link);
+            const userRoleRaw = user.role ? user.role.toString().replace('role_', '').toLowerCase().trim() : '';
 
+            if (userRoleRaw === 'truongbomon') {
                 sidebar.innerHTML = `
-                    <div class="nav-brand text-start">
-                        <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                        <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Trưởng Bộ Môn</div>
-                    </div>
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Trưởng Bộ Môn</div></div>
                     <ul class="nav-menu">
-                        <li><a href="../TruongBoMon/dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
                         <li><a href="../TruongBoMon/quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
                         <li><a href="../TruongBoMon/lich-day-bo-mon.html"><span class="material-symbols-outlined menu-icon">groups</span>Lịch dạy Bộ môn</a></li>
                         <li class="active"><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
                         <li class="menu-divider" style="margin: 1rem 0; border-top: 1px solid #eee; opacity: 0.5;"></li>
                         <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy cá nhân</a></li>
-                    </ul>
-                `;
+                    </ul>`;
             } else {
                 sidebar.innerHTML = `
-                    <div class="nav-brand text-start">
-                        <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                        <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Giảng viên</div>
-                    </div>
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Giảng viên</div></div>
                     <ul class="nav-menu">
                         <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
                         <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
+                        <li><a href="diem-danh.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Điểm danh</a></li>
                         <li class="active"><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
                         <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
-                    </ul>
-                `;
+                    </ul>`;
             }
-            
-            // Chung cho footer sidebar
-            sidebar.innerHTML += `
-                <div style="padding: 1rem; margin-top: auto;">
-                    <ul class="nav-menu" style="padding: 0;">
-                        <li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
-                        <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
-                    </ul>
-                </div>
-            `;
+            sidebar.innerHTML += `<div style="padding: 1rem; margin-top: auto;"><ul class="nav-menu" style="padding: 0;"><li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li><li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li></ul></div>`;
         }
 
-        let currentPage = 1;
-        const rowsPerPage = 10;
-        let allRegs = [];
-
-        function init() {
+        async function init() {
             renderSidebar();
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.HoTen)}&background=0D8ABC&color=fff`;
             
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const hkData = JSON.parse(localStorage.getItem('HocKy') || '[]');
+            let tenGV = user.name || "GV";
+            try {
+                const profileRes = await Auth.fetchWithAuth('/GiangVien/ho-so');
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    if (profileData.HoTen) tenGV = profileData.HoTen;
+                }
+            } catch(e){}
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGV)}&background=0D8ABC&color=fff`;
+            
+            try {
+                // ĐÃ SỬA CỔNG: Đồng bộ gọi cổng /lop-phu-trach để lấy đầy đủ thông tin tên môn học
+                const res = await Auth.fetchWithAuth('/GiangVien/lop-phu-trach');
+                if (res.ok) { myClasses = await res.json(); }
+                const selectEl = document.getElementById('lhpSelect');
+                if (myClasses.length === 0) { selectEl.innerHTML = '<option value="">Chưa được phân công lớp.</option>'; return; }
 
-            const myClasses = lhpData.filter(l => l.MaGV === user.MaNguoiDung);
-
-            document.getElementById('lhpSelect').innerHTML = '<option value="">-- Chọn lớp học phần --</option>' + 
-                myClasses.map(l => {
-                    const mh = mhData.find(m => m.MaMH === l.MaMH) || {};
-                    const hk = hkData.find(h => h.MaHK === l.MaHK) || {};
-                    return `<option value="${l.MaLHP}">${l.MaLHP} - ${mh.TenMH} (${hk.TenHK})</option>`;
-                }).join('');
-
-            // Check URL params
-            const urlParams = new URLSearchParams(window.location.search);
-            const malhp = urlParams.get('malhp');
-            if (malhp) {
-                document.getElementById('lhpSelect').value = malhp;
-                loadStudentGrades();
-            }
+                selectEl.innerHTML = '<option value="">-- Chọn lớp học phần --</option>' + myClasses.map(l => `<option value="${l.MaLHP || l.malhp}">${l.MaLHP || l.malhp} - ${l.TenMH || l.tenmh}</option>`).join('');
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('malhp')) { selectEl.value = urlParams.get('malhp'); loadStudentGrades(); }
+            } catch (err) { alert(err.message); }
         }
 
-        function loadStudentGrades() {
+        async function loadStudentGrades() {
             const maLHP = document.getElementById('lhpSelect').value;
-            const panel = document.getElementById('gradePanel');
-            const empty = document.getElementById('emptyState');
+            const panel = document.getElementById('gradePanel'); const empty = document.getElementById('emptyState');
+            if (!maLHP) { panel.classList.add('d-none'); empty.classList.remove('d-none'); return; }
+            empty.classList.add('d-none'); panel.classList.remove('d-none');
+            
+            const currentClassInfo = myClasses.find(l => (l.MaLHP || l.malhp) === maLHP) || {};
+            document.getElementById('currentLHPTitle').innerText = currentClassInfo.TenMH || currentClassInfo.tenmh || 'Môn học';
+            document.getElementById('currentLHPSubtitle').innerText = `Mã LHP: ${maLHP} • Sĩ số: ${currentClassInfo.SiSoHienTai || 0} SV`;
 
-            if (!maLHP) {
-                panel.classList.add('d-none');
-                empty.classList.remove('d-none');
-                return;
-            }
+            try {
+                // ĐÃ SỬA CỔNG: Gọi cổng /diem-lop-minh và lọc theo lớp đang quản lý
+                const res = await Auth.fetchWithAuth('/GiangVien/diem-lop-minh');
+                if (res.ok) { 
+                    const rawGrades = await res.json();
+                    currentStudentList = rawGrades.filter(sv => (sv.MaLHP || sv.malhp) === maLHP);
+                    filteredStudentList = [...currentStudentList]; 
+                    renderStudentTable(); 
+                }
+            } catch (err) { alert("Lỗi nạp điểm học viên: " + err.message); }
+        }
 
-            empty.classList.add('d-none');
-            panel.classList.remove('d-none');
-
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
-
-            const currentLHP = lhpData.find(l => l.MaLHP === maLHP);
-            const currentMH = mhData.find(m => m.MaMH === currentLHP.MaMH) || {};
-
-            document.getElementById('currentLHPTitle').innerText = currentMH.TenMH;
-            document.getElementById('currentLHPSubtitle').innerText = `Mã lớp: ${currentLHP.MaLHP} • Sĩ số: ${currentLHP.SiSoHienTai} sinh viên`;
-
-            allRegs = dkData.filter(dk => dk.MaLHP === maLHP && dk.TrangThai !== 'DaHuy');
-            currentPage = 1;
+        function filterStudents(keyword) {
+            keyword = keyword.toLowerCase().trim();
+            filteredStudentList = currentStudentList.filter(sv => {
+                return (sv.HoTen || sv.hoten || '').toLowerCase().includes(keyword) || (sv.MaSV || sv.masv || '').toLowerCase().includes(keyword);
+            });
             renderStudentTable();
         }
 
         function renderStudentTable() {
-            const svData = JSON.parse(localStorage.getItem('SinhVien') || '[]');
-            const bdData = JSON.parse(localStorage.getItem('BangDiem') || '[]');
-
-            // Pagination Logic
-            const totalRows = allRegs.length;
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
-            const startIdx = (currentPage - 1) * rowsPerPage;
-            const paginatedData = allRegs.slice(startIdx, startIdx + rowsPerPage);
-
             const tbody = document.getElementById('studentGradeBody');
-            if (totalRows === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="py-5 text-muted">Chưa có sinh viên đăng ký lớp này.</td></tr>';
-                renderPagination(0, 0);
-                return;
-            }
+            if (filteredStudentList.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="py-5 text-muted">Không tìm thấy sinh viên tương thích.</td></tr>'; return; }
 
-            tbody.innerHTML = paginatedData.map(dk => {
-                const sv = svData.find(s => s.MaSV === dk.MaSV) || {};
-                const grade = bdData.find(b => b.MaDK === dk.MaDK) || {};
+            tbody.innerHTML = filteredStudentList.map(sv => {
+                const maSv = sv.MaSV || sv.masv; 
+                const tenSv = sv.HoTen || sv.hoten;
+                const maDK = sv.MaDK || sv.madk; // Lấy khóa MaDK phục vụ Stored Procedure
+                const diemGk = sv.DiemGiuaKy !== undefined ? sv.DiemGiuaKy : sv.diemgiuaky;
+                const diemCk = sv.DiemCuoiKy !== undefined ? sv.DiemCuoiKy : sv.diemcuoiky;
+                const diemTk = sv.DiemTongKet !== undefined ? sv.DiemTongKet : sv.diemtongket;
 
+                let tkText = (diemTk !== null && diemTk !== undefined) ? diemTk.toFixed(1) : '';
+                let statusHtml = (diemTk !== null && diemTk !== undefined) ? (diemTk >= 4.0 ? '<span class="badge bg-success-subtle text-success px-2 py-1">Đạt</span>' : '<span class="badge bg-danger-subtle text-danger px-2 py-1">Học lại</span>') : '<span class="badge bg-light text-muted border px-2 py-1">Chưa nhập</span>';
+
+                // ĐẮP THÊM data-ma-dk VÀO THẺ tr ĐỂ TRUY XUẤT KHI LƯU
                 return `
-                    <tr class="student-row" data-ma-dk="${dk.MaDK}">
-                        <td class="text-start ps-4">
-                            <div class="fw-bold text-main">${sv.HoTen}</div>
-                            <div class="small text-muted">${sv.MaSV}</div>
-                        </td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="grade-input gk" value="${grade.DiemGiuaKy ?? ''}" oninput="calc(this)"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="grade-input ck" value="${grade.DiemCuoiKy ?? ''}" oninput="calc(this)"></td>
-                        <td><input type="text" class="grade-input tk tk-readonly" value="${grade.DiemTongKet ?? ''}" readonly></td>
-                        <td>
-                            <span class="badge ${grade.DiemTongKet >= 5 ? 'bg-success-subtle text-success' : (grade.DiemTongKet !== undefined ? 'bg-danger-subtle text-danger' : 'bg-light text-muted')}">
-                                ${grade.DiemTongKet >= 5 ? 'Đạt' : (grade.DiemTongKet !== undefined ? 'Trượt' : 'Chưa điểm')}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-link btn-sm p-1" onclick="focusRow(this)"><span class="material-symbols-outlined text-accent">edit_note</span></button>
-                        </td>
-                    </tr>
-                `;
+                    <tr class="student-row" data-ma-sv="${maSv}" data-ma-dk="${maDK}">
+                        <td class="text-start ps-4"><div class="fw-bold text-dark">${tenSv}</div><div class="small text-muted font-monospace">${maSv}</div></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="grade-input gk text-center rounded border-light-subtle" style="width: 70px;" value="${diemGk ?? ''}" oninput="calcDynamicGrade(this)"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="grade-input ck text-center rounded border-light-subtle" style="width: 70px;" value="${diemCk ?? ''}" oninput="calcDynamicGrade(this)"></td>
+                        <td><input type="text" class="grade-input tk text-center fw-bold text-primary border-0 bg-transparent" style="width: 70px;" value="${tkText}" readonly></td>
+                        <td class="status-cell">${statusHtml}</td>
+                        <td><button class="btn btn-light btn-sm text-primary rounded-circle" onclick="focusRow(this)"><span class="material-symbols-outlined" style="font-size: 20px;">edit</span></button></td>
+                    </tr>`;
             }).join('');
-
-            renderPagination(totalRows, totalPages);
         }
 
-        function renderPagination(totalRows, totalPages) {
-            let container = document.getElementById('paginationContainer');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'paginationContainer';
-                container.className = 'pagination-container';
-                document.getElementById('gradePanel').appendChild(container);
-            }
-
-            if (totalRows === 0) {
-                container.innerHTML = '';
-                return;
-            }
-
-            const start = (currentPage - 1) * rowsPerPage + 1;
-            const end = Math.min(currentPage * rowsPerPage, totalRows);
-
-            container.innerHTML = `
-                <div class="pagination-info">
-                    Hiển thị <b>${start}-${end}</b> trong tổng số <b>${totalRows}</b> sinh viên
-                </div>
-                <div class="pagination-nav">
-                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
-                    ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
-                        <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
-                    `).join('')}
-                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
-                </div>
-            `;
-        }
-
-        function changePage(page) {
-            currentPage = page;
-            renderStudentTable();
-        }
-
-        window.calc = (inp) => {
-            const tr = inp.closest('tr');
-            const gkVal = tr.querySelector('.gk').value;
-            const ckVal = tr.querySelector('.ck').value;
-            
+        window.calcDynamicGrade = (inp) => {
+            const tr = inp.closest('tr'); const gkVal = tr.querySelector('.gk').value; const ckVal = tr.querySelector('.ck').value;
+            const tkInput = tr.querySelector('.tk'); const statusCell = tr.querySelector('.status-cell');
             if (gkVal !== '' && ckVal !== '') {
-                const gk = parseFloat(gkVal);
-                const ck = parseFloat(ckVal);
-                const tk = (gk * 0.4 + ck * 0.6).toFixed(2);
-                tr.querySelector('.tk').value = tk;
-                
-                const badge = tr.querySelector('.badge');
-                if (tk >= 5) {
-                    badge.className = 'badge bg-success-subtle text-success';
-                    badge.innerText = 'Đạt';
-                } else {
-                    badge.className = 'badge bg-danger-subtle text-danger';
-                    badge.innerText = 'Trượt';
-                }
-            } else {
-                tr.querySelector('.tk').value = '';
-                tr.querySelector('.badge').className = 'badge bg-light text-muted';
-                tr.querySelector('.badge').innerText = 'Đang nhập';
-            }
+                const tk = (parseFloat(gkVal) * 0.4 + parseFloat(ckVal) * 0.6).toFixed(1); tkInput.value = tk;
+                statusCell.innerHTML = tk >= 4.0 ? '<span class="badge bg-success-subtle text-success px-2 py-1">Đạt</span>' : '<span class="badge bg-danger-subtle text-danger px-2 py-1">Học lại sấy</span>';
+            } else { tkInput.value = ''; statusCell.innerHTML = '<span class="badge bg-light text-muted border px-2 py-1">Chưa đủ điểm</span>'; }
         };
 
-        window.focusRow = (btn) => {
-            const tr = btn.closest('tr');
-            tr.querySelector('.gk').focus();
-        };
+        window.focusRow = (btn) => { btn.closest('tr').querySelector('.gk').focus(); };
 
-        window.enableAllEditing = () => {
-            document.querySelectorAll('.grade-input').forEach(i => i.focus());
-            alert('Bạn có thể chỉnh sửa trực tiếp trên các ô điểm!');
-        };
+        // ĐÃ NÂNG CẤP ĐỈNH CAO: Bóc tách mảng bắn parallel Promises siêu tốc khớp Stored Procedure
+        window.saveAllGrades = async () => {
+            const maLHP = document.getElementById('lhpSelect').value; if (!maLHP) return;
+            const btnSave = document.getElementById('btnSave'); btnSave.disabled = true;
+            btnSave.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG TIẾN HÀNH GHI AUDIT VẾT...';
 
-        window.saveAllGrades = () => {
-            const bdData = JSON.parse(localStorage.getItem('BangDiem') || '[]');
-            let count = 0;
-
-            document.querySelectorAll('#studentGradeBody tr[data-ma-dk]').forEach(tr => {
-                const maDK = tr.dataset.maDk;
-                const gkVal = tr.querySelector('.gk').value;
+            const requests = [];
+            document.querySelectorAll('#studentGradeBody tr.student-row').forEach(tr => {
+                const gkVal = tr.querySelector('.gk').value; 
                 const ckVal = tr.querySelector('.ck').value;
-                const tkVal = tr.querySelector('.tk').value;
+                const maDK = tr.dataset.maDk; // Đọc trọn vẹn mã đăng ký học phần từ DOM
 
-                if (gkVal !== '' && ckVal !== '') {
-                    const gk = parseFloat(gkVal);
-                    const ck = parseFloat(ckVal);
-                    const tk = parseFloat(tkVal);
-                    
-                    const idx = bdData.findIndex(b => b.MaDK === maDK);
-                    if (idx !== -1) {
-                        bdData[idx].DiemGiuaKy = gk;
-                        bdData[idx].DiemCuoiKy = ck;
-                        bdData[idx].DiemTongKet = tk;
-                    } else {
-                        bdData.push({
-                            MaBD: 'BD' + Date.now() + Math.random().toString(36).substr(2, 5),
-                            MaDK: maDK,
-                            DiemGiuaKy: gk,
-                            DiemCuoiKy: ck,
-                            DiemTongKet: tk
-                        });
-                    }
-                    count++;
+                // Chỉ bắn API lên những dòng nào được giảng viên điền/sửa điểm
+                if (gkVal !== '' || ckVal !== '') {
+                    requests.push(
+                        Auth.fetchWithAuth('/GiangVien/nhap-diem', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                maDK: maDK,
+                                diemGiuaKy: gkVal !== '' ? parseFloat(gkVal) : null,
+                                diemCuoiKy: ckVal !== '' ? parseFloat(ckVal) : null
+                            })
+                        })
+                    );
                 }
             });
 
-            localStorage.setItem('BangDiem', JSON.stringify(bdData));
-            alert(`Đã lưu thành công điểm cho ${count} sinh viên!`);
-            loadStudentGrades();
-        };
+            if (requests.length === 0) {
+                alert("Không có thay đổi điểm số nào được phát hiện!");
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined">save</span> LƯU ĐIỂM XUỐNG HỆ THỐNG</div>';
+                return;
+            }
 
-        window.exportExcel = () => {
-            alert('Tính năng xuất báo cáo Excel đang được phát triển!');
-        };
+            try {
+                // Kích hoạt nổ súng đồng loạt các API
+                const responses = await Promise.all(requests);
+                const allOk = responses.every(r => r.ok);
 
+                if (allOk) {
+                    alert('Lưu điểm thành công! ');
+                    await loadStudentGrades(); // Nạp lại bảng điểm realtime
+                } else {
+                    alert('Có một số dòng điểm ghi nhận thất bại do vi phạm ràng buộc bảo mật!');
+                }
+            } catch (err) { 
+                alert('Lỗi kết nối máy chủ đường truyền!'); 
+            } finally { 
+                btnSave.disabled = false; 
+                btnSave.innerHTML = '<div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined">save</span> LƯU ĐIỂM XUỐNG HỆ THỐNG</div>'; 
+            }
+        };
         init();
     </script>
 </body>

@@ -11,48 +11,26 @@
     <link rel="stylesheet" href="css/giang-vien.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        .attendance-card {
-            border-radius: 20px;
-            overflow: hidden;
-        }
-        .status-check {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-        }
+        .attendance-card { border-radius: 20px; overflow: hidden; }
+        .status-check { width: 24px; height: 24px; cursor: pointer; }
         .present-row { border-left: 4px solid var(--success); }
-        .absent-row { border-left: 4px solid var(--danger); }
+        .absent-row { border-left: 4px solid var(--danger); background-color: #fff5f5; }
     </style>
 </head>
 <body>
     <div id="main-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="nav-brand text-start">
-                <div style="color: var(--accent); font-size: 1.5rem;">EduManage</div>
-                <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: normal;">Hệ thống Đăng ký</div>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
-                <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
-                <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
-                <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
-            </ul>
-            <div style="padding: 1rem;">
-                <ul class="nav-menu" style="padding: 0;">
-                    <li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li>
-                    <li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li>
-                </ul>
-            </div>
-        </aside>
+        <aside class="sidebar" id="dynamicSidebar"></aside>
 
-        <!-- Main Content -->
         <header class="navbar">
             <div class="search-container">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" class="search-bar" placeholder="Tìm sinh viên trong lớp...">
+                <input type="text" class="search-bar" id="searchSV" placeholder="Tìm sinh viên trong lớp..." oninput="searchStudents()">
             </div>
             <div class="nav-user">
+                <div class="top-links d-none d-md-flex me-3">
+                    <a href="dashboard.html" class="text-decoration-none text-main me-3">Trang chủ</a>
+                    <a href="#" onclick="alert('Thông báo đang được cập nhật...')" class="text-decoration-none text-main">Thông báo</a>
+                </div>
                 <img id="userAvatar" src="https://ui-avatars.com/api/?name=GV&background=0D8ABC&color=fff" alt="Avatar" class="avatar ms-2">
             </div>
         </header>
@@ -63,7 +41,7 @@
                     <span class="material-symbols-outlined text-primary" style="font-size: 32px;">how_to_reg</span>
                     Điểm danh Lớp học
                 </h2>
-                <div id="attendanceStats" class="badge bg-primary-subtle text-primary p-2 px-3 rounded-pill">
+                <div id="attendanceStats" class="badge bg-primary-subtle text-primary p-2 px-3 rounded-pill fs-6">
                     Đã điểm danh: 0/0
                 </div>
             </div>
@@ -71,25 +49,27 @@
             <div class="card border-0 mb-4 p-3 shadow-sm" style="border-radius: 16px;">
                 <div class="row align-items-center g-3">
                     <div class="col-md-5">
-                        <label class="form-label fw-bold">Chọn Lớp học phần</label>
-                        <select id="lhpSelect" class="form-select" onchange="loadStudentList()"></select>
+                        <label class="form-label fw-bold text-muted small">CHỌN LỚP HỌC PHẦN</label>
+                        <select id="lhpSelect" class="form-select border-light-subtle rounded-pill px-3 shadow-sm" onchange="loadStudentList()">
+                            <option value="">Đang tải dữ liệu lớp...</option>
+                        </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Ngày điểm danh</label>
-                        <input type="date" id="attDate" class="form-control" onchange="loadStudentList()">
+                        <label class="form-label fw-bold text-muted small">NGÀY ĐIỂM DANH</label>
+                        <input type="date" id="attDate" class="form-control border-light-subtle rounded-pill px-3 shadow-sm" onchange="loadStudentList()">
                     </div>
                 </div>
             </div>
 
             <div id="attendancePanel" class="card border-0 shadow-sm d-none animate__animated animate__fadeIn" style="border-radius: 20px;">
-                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-light" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
                     <div>
-                        <h5 class="fw-bold m-0" id="lhpName">Tên lớp</h5>
-                        <p class="text-muted mb-0 small" id="lhpTime">Thứ 2 (7-11) • Phòng A.102</p>
+                        <h5 class="fw-bold m-0 text-primary" id="lhpName">Tên lớp</h5>
+                        <p class="text-muted mb-0 mt-1 fw-medium" id="lhpTime">Thứ 2 (7-11) • Phòng A.102</p>
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-success btn-sm" onclick="markAll(true)">Có mặt tất cả</button>
-                        <button class="btn btn-outline-danger btn-sm" onclick="markAll(false)">Vắng tất cả</button>
+                    <div class="btn-group shadow-sm rounded-pill">
+                        <button class="btn btn-outline-success fw-bold" onclick="markAll(true)">CÓ MẶT TẤT CẢ</button>
+                        <button class="btn btn-outline-danger fw-bold" onclick="markAll(false)">VẮNG TẤT CẢ</button>
                     </div>
                 </div>
                 
@@ -97,103 +77,214 @@
                     <table class="table align-middle text-center table-hover m-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="text-start ps-4">Sinh viên</th>
-                                <th>Trạng thái</th>
-                                <th>Ghi chú</th>
+                                <th class="text-start ps-4 py-3">Thông tin Sinh viên</th>
+                                <th class="py-3">Trạng thái hiện diện</th>
+                                <th class="py-3 pe-4">Ghi chú của Giảng viên</th>
                             </tr>
                         </thead>
                         <tbody id="studentListBody"></tbody>
                     </table>
                 </div>
                 
-                <div class="p-4 text-end">
-                    <button class="btn btn-primary px-5 py-2 rounded-pill" onclick="saveAttendance()">LƯU KẾT QUẢ ĐIỂM DANH</button>
+                <div class="p-4 text-end border-top">
+                    <button class="btn btn-primary px-5 py-2.5 rounded-pill fw-bold shadow-sm" id="btnSave" onclick="saveAttendance()">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined">save</span> LƯU KẾT QUẢ ĐIỂM DANH
+                        </div>
+                    </button>
                 </div>
             </div>
 
-            <div id="emptyState" class="text-center py-5">
-                <span class="material-symbols-outlined text-muted" style="font-size: 64px;">person_search</span>
-                <p class="text-muted mt-2">Vui lòng chọn lớp và ngày để điểm danh.</p>
+            <div id="emptyState" class="text-center py-5 bg-white border shadow-sm rounded-4 animate__animated animate__fadeIn">
+                <span class="material-symbols-outlined text-muted" style="font-size: 64px; opacity: 0.3;">person_search</span>
+                <p class="text-muted mt-3 fs-5 fw-medium">Vui lòng chọn lớp học phần và ngày để bắt đầu điểm danh.</p>
             </div>
         </main>
     </div>
 
-    <script src="../Assets/js/mock-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        Auth.checkAuth(['GiangVien']);
+        Auth.checkAuth(['GiangVien', 'TruongBoMon']);
         const user = Auth.getCurrentUser();
         
-        // Mock Attendance Data
-        let attendanceDB = JSON.parse(localStorage.getItem('DiemDanh') || '[]');
+        let myClasses = [];
+        let classStudents = []; 
+        let filteredStudents = [];
 
-        function init() {
+        function renderSidebar() {
+            const sidebar = document.getElementById('dynamicSidebar');
+            const userRoleRaw = user.role ? user.role.toString().replace('role_', '').toLowerCase().trim() : '';
+
+            if (userRoleRaw === 'truongbomon') {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet'; link.href = '../TruongBoMon/css/truong-bo-mon.css';
+                document.head.appendChild(link);
+                sidebar.innerHTML = `
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Trưởng Bộ Môn</div></div>
+                    <ul class="nav-menu">
+                        <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="../TruongBoMon/quan-ly-siso.html"><span class="material-symbols-outlined menu-icon">settings_applications</span>Quản lý Sĩ số</a></li>
+                        <li><a href="../TruongBoMon/lich-day-bo-mon.html"><span class="material-symbols-outlined menu-icon">groups</span>Lịch dạy Bộ môn</a></li>
+                        <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                        <li class="menu-divider" style="margin: 1rem 0; border-top: 1px solid #eee; opacity: 0.5;"></li>
+                        <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy cá nhân</a></li>
+                    </ul>`;
+            } else {
+                sidebar.innerHTML = `
+                    <div class="nav-brand text-start"><div style="color: var(--accent); font-size: 1.5rem;">EduManage</div><div style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Giảng viên</div></div>
+                    <ul class="nav-menu">
+                        <li><a href="dashboard.html"><span class="material-symbols-outlined menu-icon">dashboard</span>Tổng quan</a></li>
+                        <li><a href="lich-day.html"><span class="material-symbols-outlined menu-icon">calendar_month</span>Lịch dạy</a></li>
+                        <li><a href="diem-danh.html"><span class="material-symbols-outlined menu-icon">how_to_reg</span>Điểm danh</a></li>
+                        <li><a href="nhap-diem.html"><span class="material-symbols-outlined menu-icon">edit_square</span>Quản lý Điểm</a></li>
+                        <li><a href="mon-hoc.html"><span class="material-symbols-outlined menu-icon">book</span>Danh mục Môn</a></li>
+                    </ul>`;
+            }
+            // Thêm menu chung cho cả 2 quyền (Có thể thiết lập tab active riêng nếu có menu Điểm danh ở Sidebar)
+            sidebar.innerHTML += `<div style="padding: 1rem; margin-top: auto;"><ul class="nav-menu" style="padding: 0;"><li><a href="ho-so.html"><span class="material-symbols-outlined menu-icon">account_circle</span>Hồ sơ Cá nhân</a></li><li style="margin-top: 1rem;"><a href="#" onclick="Auth.logout()" style="color: #ef4444;"><span class="material-symbols-outlined menu-icon">logout</span>Đăng xuất</a></li></ul></div>`;
+        }
+
+        async function init() {
+            renderSidebar();
+            
+            let tenGV = user.name || "GV";
+            try {
+                const profileRes = await Auth.fetchWithAuth('/GiangVien/ho-so');
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    if (profileData.HoTen) tenGV = profileData.HoTen;
+                }
+            } catch(e){}
+            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGV)}&background=0D8ABC&color=fff`;
+
+            // Đặt ngày mặc định là hôm nay
             document.getElementById('attDate').valueAsDate = new Date();
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const myClasses = lhpData.filter(l => l.MaGV === user.MaNguoiDung);
 
-            document.getElementById('lhpSelect').innerHTML = '<option value="">-- Chọn lớp --</option>' + 
-                myClasses.map(l => {
-                    const mh = mhData.find(m => m.MaMH === l.MaMH) || {};
-                    return `<option value="${l.MaLHP}">${l.MaLHP} - ${mh.TenMH}</option>`;
-                }).join('');
+            try {
+                // Lấy danh sách lớp phụ trách từ Backend
+                const res = await Auth.fetchWithAuth('/GiangVien/lop-phu-trach');
+                if (res.ok) {
+                    myClasses = await res.json();
+                    const selectEl = document.getElementById('lhpSelect');
+                    if (myClasses.length === 0) {
+                        selectEl.innerHTML = '<option value="">Chưa phụ trách lớp nào.</option>';
+                        return;
+                    }
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const malhp = urlParams.get('malhp');
-            if (malhp) {
-                document.getElementById('lhpSelect').value = malhp;
-                loadStudentList();
+                    selectEl.innerHTML = '<option value="">-- Chọn lớp học phần --</option>' + 
+                        myClasses.map(l => `<option value="${l.MaLHP || l.malhp}">${l.MaLHP || l.malhp} - ${l.TenMH || l.tenmh}</option>`).join('');
+
+                    // Nếu có URL Param (chuyển từ trang lịch dạy sang)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('malhp')) {
+                        selectEl.value = urlParams.get('malhp');
+                        loadStudentList();
+                    }
+                }
+            } catch (err) {
+                alert("Lỗi tải lớp học phần: " + err.message);
             }
         }
 
-        function loadStudentList() {
+        async function loadStudentList() {
             const maLHP = document.getElementById('lhpSelect').value;
             const date = document.getElementById('attDate').value;
+            const panel = document.getElementById('attendancePanel');
+            const empty = document.getElementById('emptyState');
+
             if (!maLHP || !date) {
-                document.getElementById('attendancePanel').classList.add('d-none');
-                document.getElementById('emptyState').classList.remove('d-none');
+                panel.classList.add('d-none');
+                empty.classList.remove('d-none');
                 return;
             }
 
-            document.getElementById('attendancePanel').classList.remove('d-none');
-            document.getElementById('emptyState').classList.add('d-none');
+            panel.classList.remove('d-none');
+            empty.classList.add('d-none');
 
-            const lhpData = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const dkData = JSON.parse(localStorage.getItem('DangKyHoc') || '[]');
-            const svData = JSON.parse(localStorage.getItem('SinhVien') || '[]');
-            const mhData = JSON.parse(localStorage.getItem('MonHoc') || '[]');
+            // Hiển thị thông tin Header lớp
+            const currentLHP = myClasses.find(l => (l.MaLHP || l.malhp) === maLHP) || {};
+            document.getElementById('lhpName').innerText = currentLHP.TenMH || currentLHP.tenmh || 'Môn học';
+            const lichHoc = currentLHP.LichHoc || currentLHP.lichhoc || 'Chưa xếp lịch';
+            const phongHoc = currentLHP.PhongHoc || currentLHP.phonghoc || '---';
+            document.getElementById('lhpTime').innerText = `${lichHoc} • Phòng ${phongHoc}`;
 
-            const currentLHP = lhpData.find(l => l.MaLHP === maLHP);
-            const mh = mhData.find(m => m.MaMH === currentLHP.MaMH) || {};
-            document.getElementById('lhpName').innerText = mh.TenMH;
-            document.getElementById('lhpTime').innerText = `${currentLHP.LichHoc} • Phòng ${currentLHP.PhongHoc}`;
+            try {
+                // Kích hoạt song song: Lấy danh sách SV của lớp + Dữ liệu điểm danh ngày hôm đó
+                const [resStudents, resAtt] = await Promise.all([
+                    Auth.fetchWithAuth('/GiangVien/diem-lop-minh'), // Lấy danh sách SV có dính tới GV
+                    Auth.fetchWithAuth(`/GiangVien/lay-diem-danh?maLHP=${maLHP}&ngay=${date}`)
+                ]);
 
-            const regs = dkData.filter(dk => dk.MaLHP === maLHP && dk.TrangThai !== 'DaHuy');
-            const currentAtt = attendanceDB.filter(a => a.MaLHP === maLHP && a.Ngay === date);
+                if (resStudents.ok && resAtt.ok) {
+                    const allStudents = await resStudents.json();
+                    // Lọc ra các SV thuộc lớp hiện tại
+                    classStudents = allStudents.filter(sv => (sv.MaLHP || sv.malhp) === maLHP);
+                    
+                    const attRecords = await resAtt.json();
+                    
+                    // Ghép dữ liệu hiện diện vào học viên
+                    classStudents.forEach(sv => {
+                        const att = attRecords.find(a => (a.MaSV || a.masv) === (sv.MaSV || sv.masv));
+                        if (att) {
+                            sv.CoMat = att.CoMat === true || att.CoMat === 1;
+                            sv.GhiChu = att.GhiChu || '';
+                        } else {
+                            // Mặc định là Có mặt nếu chưa điểm danh
+                            sv.CoMat = true; 
+                            sv.GhiChu = '';
+                        }
+                    });
 
-            document.getElementById('studentListBody').innerHTML = regs.map(dk => {
-                const sv = svData.find(s => s.MaSV === dk.MaSV) || {};
-                const att = currentAtt.find(a => a.MaSV === dk.MaSV) || { CoMat: true, GhiChu: '' };
+                    filteredStudents = [...classStudents];
+                    renderStudentTable();
+                }
+            } catch (err) {
+                alert("Lỗi tải dữ liệu sinh viên: " + err.message);
+            }
+        }
+
+        function searchStudents() {
+            const keyword = document.getElementById('searchSV').value.toLowerCase().trim();
+            filteredStudents = classStudents.filter(sv => {
+                const name = (sv.HoTen || sv.hoten || '').toLowerCase();
+                const code = (sv.MaSV || sv.masv || '').toLowerCase();
+                return name.includes(keyword) || code.includes(keyword);
+            });
+            renderStudentTable();
+        }
+
+        function renderStudentTable() {
+            const tbody = document.getElementById('studentListBody');
+            if (filteredStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-5 text-muted">Không tìm thấy sinh viên nào trong danh sách.</td></tr>';
+                updateStats();
+                return;
+            }
+
+            tbody.innerHTML = filteredStudents.map(sv => {
+                const maSv = sv.MaSV || sv.masv;
+                const tenSv = sv.HoTen || sv.hoten;
                 
                 return `
-                    <tr class="${att.CoMat ? 'present-row' : 'absent-row'}" data-ma-sv="${sv.MaSV}">
-                        <td class="text-start ps-4">
-                            <div class="fw-bold">${sv.HoTen}</div>
-                            <div class="small text-muted">${sv.MaSV}</div>
+                    <tr class="${sv.CoMat ? 'present-row' : 'absent-row'} student-row animate__animated animate__fadeIn" data-ma-sv="${maSv}">
+                        <td class="text-start ps-4 py-3">
+                            <div class="fw-bold text-dark" style="font-size: 1.05rem;">${tenSv}</div>
+                            <div class="small text-muted font-monospace">${maSv}</div>
                         </td>
                         <td>
-                            <div class="form-check form-switch d-inline-block">
-                                <input class="form-check-input status-check" type="checkbox" ${att.CoMat ? 'checked' : ''} onchange="updateRowStyle(this)">
-                                <label class="form-check-label ms-2">${att.CoMat ? 'Có mặt' : 'Vắng'}</label>
+                            <div class="form-check form-switch d-inline-block m-0">
+                                <input class="form-check-input status-check" type="checkbox" ${sv.CoMat ? 'checked' : ''} onchange="updateRowStyle(this)">
+                                <label class="form-check-label ms-2 fw-medium ${sv.CoMat ? 'text-success' : 'text-danger'}">${sv.CoMat ? 'Có mặt' : 'Vắng mặt'}</label>
                             </div>
                         </td>
-                        <td>
-                            <input type="text" class="form-control form-control-sm mx-auto w-75 note-input" value="${att.GhiChu}" placeholder="...">
+                        <td class="pe-4">
+                            <input type="text" class="form-control bg-light border-light-subtle mx-auto w-100 note-input" value="${sv.GhiChu}" placeholder="Thêm ghi chú...">
                         </td>
                     </tr>
                 `;
             }).join('');
+            
             updateStats();
         }
 
@@ -201,11 +292,13 @@
             const tr = cb.closest('tr');
             const label = cb.nextElementSibling;
             if (cb.checked) {
-                tr.className = 'present-row';
+                tr.className = 'present-row student-row';
                 label.innerText = 'Có mặt';
+                label.classList.replace('text-danger', 'text-success');
             } else {
-                tr.className = 'absent-row';
-                label.innerText = 'Vắng';
+                tr.className = 'absent-row student-row';
+                label.innerText = 'Vắng mặt';
+                label.classList.replace('text-success', 'text-danger');
             }
             updateStats();
         };
@@ -218,27 +311,56 @@
         };
 
         function updateStats() {
-            const total = document.querySelectorAll('.status-check').length;
+            const total = document.querySelectorAll('.student-row').length;
             const present = document.querySelectorAll('.status-check:checked').length;
-            document.getElementById('attendanceStats').innerText = `Đã điểm danh: ${present}/${total} hiện diện`;
+            const statsBadge = document.getElementById('attendanceStats');
+            statsBadge.innerText = `Đã điểm danh: ${present} / ${total} hiện diện`;
+            
+            if (present === total && total > 0) {
+                statsBadge.className = 'badge bg-success-subtle text-success p-2 px-3 rounded-pill fs-6';
+            } else if (present === 0 && total > 0) {
+                statsBadge.className = 'badge bg-danger-subtle text-danger p-2 px-3 rounded-pill fs-6';
+            } else {
+                statsBadge.className = 'badge bg-warning-subtle text-warning p-2 px-3 rounded-pill fs-6';
+            }
         }
 
-        window.saveAttendance = () => {
+        window.saveAttendance = async () => {
             const maLHP = document.getElementById('lhpSelect').value;
             const date = document.getElementById('attDate').value;
-            
-            // Remove existing for this day to overwrite
-            attendanceDB = attendanceDB.filter(a => !(a.MaLHP === maLHP && a.Ngay === date));
+            if (!maLHP || !date) return;
 
-            document.querySelectorAll('#studentListBody tr').forEach(tr => {
-                const maSV = tr.dataset.maSv;
-                const coMat = tr.querySelector('.status-check').checked;
-                const ghiChu = tr.querySelector('.note-input').value;
-                attendanceDB.push({ MaLHP: maLHP, Ngay: date, MaSV: maSV, CoMat: coMat, GhiChu: ghiChu });
+            const btnSave = document.getElementById('btnSave');
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG LƯU HỆ THỐNG...';
+
+            const payloadList = [];
+            document.querySelectorAll('#studentListBody tr.student-row').forEach(tr => {
+                payloadList.push({
+                    MaSV: tr.dataset.maSv,
+                    CoMat: tr.querySelector('.status-check').checked,
+                    GhiChu: tr.querySelector('.note-input').value.trim()
+                });
             });
 
-            localStorage.setItem('DiemDanh', JSON.stringify(attendanceDB));
-            alert('Lưu kết quả điểm danh thành công!');
+            try {
+                const res = await Auth.fetchWithAuth('/GiangVien/luu-diem-danh', {
+                    method: 'POST',
+                    body: JSON.stringify({ maLHP: maLHP, ngay: date, danhSach: payloadList })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Lưu kết quả điểm danh thành công!');
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ!');
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined">save</span> LƯU KẾT QUẢ ĐIỂM DANH</div>';
+            }
         };
 
         init();
