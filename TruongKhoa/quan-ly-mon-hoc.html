@@ -171,6 +171,11 @@
         const user = Auth.getCurrentUser();
         let cM, aM, myKhoaId = '';
 
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
+
         function renderSidebar() {
             const sidebar = document.getElementById('dynamicSidebar');
             const path = window.location.pathname;
@@ -338,7 +343,13 @@ window.openCourseModal = () => {
 };
 
 window.editCourse = (id) => { 
-    const m = JSON.parse(localStorage.getItem('MonHoc') || '[]').find(x => x.MaMH === id); 
+    const m = window.allCoursesData.find(x => x.MaMH === id); 
+    
+    if(!m) {
+        alert("Không tìm thấy thông tin môn học!");
+        return;
+    }
+
     document.getElementById('courseModalTitle').innerText = 'Sửa môn học: ' + id; 
     document.getElementById('editMaMH').value = id; 
     document.getElementById('editMaMH').readOnly = true; // Khóa lại, không cho sửa Khóa chính
@@ -347,46 +358,36 @@ window.editCourse = (id) => {
     cM.show(); 
 };
 
+
 window.saveCourse = async () => {
-    const id = document.getElementById('editMaMH').value.trim();
-    const ten = document.getElementById('formTenMH').value.trim();
-    const tc = parseInt(document.getElementById('formSoTC').value);
-    
-    if(!id || !ten || !tc) return alert('Vui lòng nhập đầy đủ thông tin!');
-    
-    const isEditMode = document.getElementById('editMaMH').readOnly;
-    const url = 'http://localhost:5123/api/TruongKhoa/mon-hoc'; 
-    const method = isEditMode ? 'PUT' : 'POST'; // Sửa thì PUT, Thêm thì POST
-    
-    // Lấy Token từ nơi nhóm bro đang lưu (localStorage hoặc sessionStorage)
-    const userStr = localStorage.getItem('currentUser');
-    const token = userStr ? JSON.parse(userStr).Token : null;
+    const maMH = document.getElementById('editMaMH').value.trim();
+    const tenMH = document.getElementById('formTenMH').value.trim();
+    const soTC = document.getElementById('formSoTC').value;
+    const isEdit = document.getElementById('editMaMH').readOnly; // Xác định đang Thêm hay Sửa
+
+    if (!maMH || !tenMH || !soTC) return alert('Vui lòng nhập đủ thông tin!');
+
+    const token = getToken();
+    const url = isEdit ? `http://localhost:5123/api/TruongKhoa/mon-hoc/${maMH}` : `http://localhost:5123/api/TruongKhoa/mon-hoc`;
+    const method = isEdit ? 'PUT' : 'POST';
 
     try {
-        // GỌI API THẬT
-        const response = await fetch(url, {
+        const res = await fetch(url, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Gắn thẻ ngành vào
-            },
-            body: JSON.stringify({ MaMH: id, TenMH: ten, SoTinChi: tc })
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ maMH, tenMH, soTinChi: parseInt(soTC) })
         });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            // Hiển thị lỗi từ SQL Server (ví dụ: Trùng mã môn)
-            alert('Lỗi: ' + result.message);
-            return;
+        
+        const result = await res.json();
+        if (res.ok) {
+            alert('Lưu thành công!');
+            cM.hide();
+            renderCourses(); // Load lại bảng
+        } else {
+            alert('❌ Lỗi: ' + result.message);
         }
-
-        alert(result.message); // Báo thành công
-        cM.hide(); 
-        renderCourses(); // Load lại danh sách môn học từ DB
-    } catch (error) {
-        console.error(error);
-        alert('Không thể kết nối đến Backend Node.js!');
+    } catch (err) {
+        alert('Lỗi kết nối máy chủ!');
     }
 };
 

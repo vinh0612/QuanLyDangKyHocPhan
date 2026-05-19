@@ -178,8 +178,17 @@
             // ĐÃ SỬA: Xóa bỏ chữ N'...' ra khỏi logic JavaScript
             document.getElementById('statsRow').classList.remove('d-none');
             document.getElementById('totalReg').innerText = filteredRegs.length;
-            document.getElementById('activeReg').innerText = filteredRegs.filter(x => (x.TrangThai || x.trangthai) === 'DaDangKy').length;
-            document.getElementById('cancelledReg').innerText = filteredRegs.filter(x => (x.TrangThai || x.trangthai) === 'DaHuy').length;
+            
+            // SỬA CHỖ NÀY: So sánh với chuỗi tiếng Việt có dấu y như trong Database
+            document.getElementById('activeReg').innerText = filteredRegs.filter(x => {
+                const st = (x.TrangThai || x.trangthai || '').trim();
+                return st === 'Đang học' || st === 'Thành công'; 
+            }).length;
+            
+            document.getElementById('cancelledReg').innerText = filteredRegs.filter(x => {
+                const st = (x.TrangThai || x.trangthai || '').trim();
+                return st === 'Đã hủy' || st === 'Đã hủy môn';
+            }).length;
 
             if (searchKeyword) {
                 filteredRegs = filteredRegs.filter(x => {
@@ -209,9 +218,10 @@
                 const rawDate = d.NgayDangKy || d.ngaydangky;
                 const dateStr = rawDate ? new Date(rawDate).toLocaleString('vi-VN') : '---';
                 
-                const status = d.TrangThai || d.trangthai;
-                // ĐÃ SỬA: Bỏ chữ N'...' ở đây luôn
-                const isHuy = status === 'DaHuy';
+                const status = (d.TrangThai || d.trangthai || '').trim();
+                
+                // SỬA CHỖ NÀY: Dùng .includes() để bắt các biến thể của chữ "hủy" cho chắc ăn
+                const isHuy = status === 'DaHuy'
                 
                 return `
                 <tr class="animate__animated animate__fadeIn" style="border-top: 1px solid #f1f5f9;">
@@ -220,7 +230,7 @@
                     <td class="text-muted small">${dateStr}</td>
                     <td class="text-center">
                         <span class="badge ${isHuy ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} rounded-pill px-3 py-1.5" style="font-size: 0.85rem;">
-                            ${isHuy ? 'Đã hủy môn' : 'Đang học'}
+                            ${status} 
                         </span>
                     </td>
                     <td class="text-center pe-4">

@@ -50,17 +50,37 @@ router.get('/mon-hoc', async (req, res) => {
 });
 
 // 2. API Thêm môn học
+// API Thêm môn học mới (Tự động gán đúng Khoa của Trưởng Khoa)
+// API Thêm môn học mới (Tự động gán đúng Khoa của Trưởng Khoa)
+// API Thêm môn học mới (Tự động gán đúng Khoa của Trưởng Khoa)
 router.post('/mon-hoc', async (req, res) => {
-    const { MaMH, TenMH, SoTinChi } = req.body;
+    const { maMH, tenMH, soTinChi } = req.body;
+
     try {
-        await executeQuery(
-            "EXEC sp_TruongKhoa_ThemMonHoc @MaMH, @TenMH, @SoTinChi", 
-            { MaMH, TenMH, SoTinChi: parseInt(SoTinChi) }, 
-            req.user.name
-        );
-        res.json({ message: "Thêm môn học thành công!" });
+        // 🔥 Đã fix: Dùng cú pháp INSERT ... SELECT để né lỗi "Not prepared" của Node.js
+        const sql = `
+            INSERT INTO MonHoc (MaMH, TenMH, SoTinChi, MaKhoa)
+            SELECT @MaMH, @TenMH, @SoTinChi, MaKhoa 
+            FROM Khoa 
+            WHERE MaTruongKhoa = (SELECT MaGV FROM GiaoVien WHERE TenLogin = SUSER_SNAME());
+        `;
+
+        await executeQuery(sql, { 
+            MaMH: maMH,
+            TenMH: tenMH, 
+            SoTinChi: soTinChi 
+        }, req.user.name);
+        
+        res.status(201).json({ message: "Thêm môn học thành công!" });
     } catch (err) {
-        res.status(400).json({ message: err.message.replace(/\[.*?\]/g, '').trim() });
+        console.error("Lỗi thêm môn học:", err);
+        let errMsg = err.message;
+        if(errMsg.includes('PRIMARY KEY') || errMsg.includes('Violation of PRIMARY KEY')) {
+            errMsg = 'Mã môn học này đã tồn tại trong hệ thống!';
+        } else {
+            errMsg = errMsg.replace(/\[.*?\]/g, '').trim();
+        }
+        res.status(400).json({ message: errMsg });
     }
 });
 
@@ -276,6 +296,31 @@ router.put('/ho-so', async (req, res) => {
         res.json({ message: "Cập nhật hồ sơ thành công!" });
     } catch (err) {
         res.status(500).json({ message: "Lỗi cập nhật hồ sơ: " + err.message });
+    }
+});
+
+// API Cập nhật thông tin môn học (Sửa môn)
+router.put('/mon-hoc/:maMH', async (req, res) => {
+    const { maMH } = req.params;
+    const { tenMH, soTinChi } = req.body;
+    
+    try {
+        const sql = `
+            UPDATE MonHoc 
+            SET TenMH = @TenMH, SoTinChi = @SoTinChi 
+            WHERE MaMH = @MaMH
+        `;
+        
+        await executeQuery(sql, { 
+            MaMH: maMH, 
+            TenMH: tenMH, 
+            SoTinChi: soTinChi 
+        }, req.user.name);
+        
+        res.json({ message: "Cập nhật môn học thành công!" });
+    } catch (err) {
+        console.error("Lỗi cập nhật môn học:", err);
+        res.status(500).json({ message: "Lỗi khi cập nhật: " + err.message });
     }
 });
 
