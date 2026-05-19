@@ -111,18 +111,18 @@ router.get('/danh-sach-lop-hoc-phan', async (req, res) => {
 // ============================================================
 router.get('/tra-cuu-diem', async (req, res) => {
     try {
-        // Lược bỏ cột MaBD (để tránh lỗi nếu bảng BangDiem của nhóm không có cột này)
         const sql = `
             SELECT dk.MaDK, dk.MaSV, sv.HoTen AS TenSV, dk.MaLHP, 
                    bd.DiemGiuaKy, bd.DiemCuoiKy, bd.DiemTongKet
             FROM DangKyHoc dk
             JOIN SinhVien sv ON dk.MaSV = sv.MaSV
             LEFT JOIN BangDiem bd ON dk.MaDK = bd.MaDK
+            -- Dùng NOT LIKE để chém đẹp mọi thể loại có chữ "Huy" (DaHuy, Đã hủy, Huy mon...)
+            WHERE dk.TrangThai NOT LIKE '%Huy%'
         `;
         const result = await executeQuery(sql, {}, req.user.name);
         res.json(result || []);
     } catch (err) {
-        // IN LỖI CHI TIẾT RA MÀN HÌNH ĐEN VS CODE ĐỂ DEBUG
         console.error("❌ LỖI SQL TẠI API TRA CỨU ĐIỂM:", err.message); 
         res.status(500).json({ message: "Lỗi tải dữ liệu điểm: " + err.message });
     }

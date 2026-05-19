@@ -195,7 +195,9 @@
         async function fetchRegisteredCourses() {
             const res = await Auth.fetchWithAuth('/SinhVien/lhp-da-dang-ky');
             if (res.ok) {
-                registeredLHPs = await res.json();
+                const allRegs = await res.json();
+                // CHỈ GIỮ LẠI CÁC MÔN CHƯA BỊ HỦY (Trạng thái 'DaDangKy')
+                registeredLHPs = allRegs.filter(r => (r.TrangThai || r.trangthai) === 'DaDangKy');
             } else {
                 registeredLHPs = [];
             }
@@ -278,6 +280,7 @@
                     const lhpSiSoToiDa = lhp.SiSoToiDa !== undefined ? lhp.SiSoToiDa : (lhp.siso_toida || 50);
                     const lhpGvName = lhp.HoTen || lhp.hoten || lhp.TenGV || lhp.tengv || '---';
 
+                    // Lọc 100% chuẩn xác nhờ registeredLHPs đã sạch sẽ
                     const isRegistered = registeredLHPs.some(r => (r.MaLHP || r.malhp) === lhpMaLHP);
                     const hasCourseInOtherShift = registeredLHPs.some(r => (r.MaMH || r.mamh) === sb.MaMH && (r.MaLHP || r.malhp) !== lhpMaLHP);
                     const isFull = lhpSiSoHienTai >= lhpSiSoToiDa;
@@ -322,7 +325,6 @@
             }).join('');
         }
 
-        // ĐÃ FIX: Loại bỏ hoàn toàn việc gán innerText cho phần tử đếm dòng chữ chỉ định
         function renderPagination(totalPages) {
             const list = document.getElementById('paginationList');
 
@@ -341,7 +343,6 @@
             document.getElementById('emptyReg').classList.toggle('d-none', registeredLHPs.length > 0);
 
             document.getElementById('registeredCourses').innerHTML = registeredLHPs.map(dk => {
-                // API mới đã trả sẵn TenMH, SoTinChi, TenGV, LichHoc nên không cần dò chéo nữa
                 const maLHP = dk.MaLHP || dk.malhp;
                 const tenMH = dk.TenMH || dk.tenmh || 'Môn học';
                 const soTinChi = dk.SoTinChi !== undefined ? dk.SoTinChi : (dk.sotinchi || 0);
