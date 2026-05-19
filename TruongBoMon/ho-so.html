@@ -132,47 +132,81 @@
             `;
         }
 
-        function loadProfile() {
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const bmD = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            const kD = JSON.parse(localStorage.getItem('Khoa') || '[]');
-            
-            const data = gvD.find(g => g.MaGV === user.MaNguoiDung);
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
 
-            if (data) {
-                document.getElementById('hoTen').value = data.HoTen;
-                document.getElementById('ngaySinh').value = data.NgaySinh || '';
-                document.getElementById('sdt').value = data.SDT;
-                document.getElementById('email').value = data.Email;
-                document.getElementById('diaChi').value = data.DiaChi;
-                document.getElementById('monDay').value = data.MonDay || '';
+        // Tải hồ sơ từ SQL (Show full data)
+        async function loadProfile() {
+            const token = getToken();
+            if (!token) return;
+
+            try {
+                const res = await fetch('http://localhost:5123/api/TruongBoMon/ho-so', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 
-                const bm = bmD.find(b => b.MaBoMon === data.MaBoMon) || {};
-                const khoa = kD.find(k => k.MaKhoa === data.MaKhoa) || {};
-                document.getElementById('donVi').value = `${bm.TenBoMon || ''} - ${khoa.TenKhoa || ''}`;
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    document.getElementById('hoTen').value = data.HoTen || '';
+                    if (data.NgaySinh) {
+                        document.getElementById('ngaySinh').value = data.NgaySinh.split('T')[0];
+                    }
+                    
+                    // Đổ dữ liệu thật 100% không che đậy
+                    document.getElementById('sdt').value = data.SoDT || '';
+                    document.getElementById('email').value = data.Email || '';
+                    document.getElementById('diaChi').value = data.DiaChi || '';
+                    document.getElementById('donVi').value = `${data.TenBoMon || 'Chưa rõ'} - ${data.TenKhoa || 'Chưa rõ'}`;
 
-                document.getElementById('headerName').innerText = data.HoTen;
-                document.getElementById('headerID').innerText = data.MaGV;
-                document.getElementById('displayRole').innerText = "Trưởng Bộ Môn";
-                document.getElementById('avatarLarge').innerText = "TB";
-                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TB&background=0D8ABC&color=fff`;
+                    // Cập nhật phần Header sinh động
+                    document.getElementById('headerName').innerText = data.HoTen;
+                    document.getElementById('headerID').innerText = data.MaGV;
+                    
+                    const initial = data.HoTen ? data.HoTen.charAt(0).toUpperCase() : 'TB';
+                    document.getElementById('avatarLarge').innerText = initial;
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${initial}&background=0D8ABC&color=fff`;
+                }
+            } catch (err) {
+                console.error("Lỗi tải hồ sơ:", err);
             }
         }
 
-        document.getElementById('profileForm').onsubmit = (e) => {
+        // Xử lý Cập nhật thông tin
+        document.getElementById('profileForm').onsubmit = async (e) => {
             e.preventDefault();
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const idx = gvD.findIndex(g => g.MaGV === user.MaNguoiDung);
+            const token = getToken();
+            if (!token) return;
             
-            if (idx !== -1) {
-                gvD[idx].SDT = document.getElementById('sdt').value;
-                gvD[idx].Email = document.getElementById('email').value;
-                gvD[idx].DiaChi = document.getElementById('diaChi').value;
-                gvD[idx].MonDay = document.getElementById('monDay').value;
+            // Bốc thẳng data từ input gửi lên Backend
+            const payload = {
+                soDT: document.getElementById('sdt').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                diaChi: document.getElementById('diaChi').value.trim()
+            };
+            
+            try {
+                const res = await fetch('http://localhost:5123/api/TruongBoMon/ho-so', {
+                    method: 'PUT',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
                 
-                localStorage.setItem('GiaoVien', JSON.stringify(gvD));
-                alert('Đã cập nhật hồ sơ cá nhân thành công!');
-                loadProfile();
+                const result = await res.json();
+                if (res.ok) {
+                    alert(result.message);
+                    loadProfile(); // Tải lại để cập nhật giao diện
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (err) {
+                console.error("Lỗi cập nhật:", err);
+                alert("Không thể kết nối đến máy chủ!");
             }
         };
 

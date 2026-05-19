@@ -115,4 +115,50 @@ router.get('/danh-sach-mon-hoc/:maHK', async (req, res) => {
     }
 });
 
+// =====================================================================
+// 9. API Lấy thông tin cá nhân (Hồ sơ)
+// =====================================================================
+router.get('/ho-so', async (req, res) => {
+    try {
+        // Lấy đúng người đang đăng nhập bằng SUSER_SNAME() thần thánh
+        const sql = `
+            SELECT gv.MaGV, gv.HoTen, gv.NgaySinh, gv.DiaChi, gv.SoDT, gv.Email,
+                   bm.TenBoMon, k.TenKhoa
+            FROM GiaoVien gv
+            LEFT JOIN BoMon bm ON gv.MaBoMon = bm.MaBoMon
+            LEFT JOIN Khoa k ON gv.MaKhoa = k.MaKhoa
+            WHERE gv.TenLogin = SUSER_SNAME()
+        `;
+        const result = await executeQuery(sql, {}, req.user.name);
+        
+        if (result && result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: "Không tìm thấy thông tin hồ sơ" });
+        }
+    } catch (err) {
+        console.error("Lỗi get hồ sơ:", err);
+        res.status(500).json({ message: "Lỗi tải hồ sơ: " + err.message });
+    }
+});
+
+// =====================================================================
+// 10. API Cập nhật thông tin cá nhân
+// =====================================================================
+router.put('/ho-so', async (req, res) => {
+    const { soDT, email, diaChi } = req.body;
+    try {
+        const sql = `
+            UPDATE GiaoVien 
+            SET SoDT = @SoDT, Email = @Email, DiaChi = @DiaChi 
+            WHERE TenLogin = SUSER_SNAME()
+        `;
+        await executeQuery(sql, { SoDT: soDT, Email: email, DiaChi: diaChi }, req.user.name);
+        res.json({ message: "Cập nhật hồ sơ cá nhân thành công!" });
+    } catch (err) {
+        console.error("Lỗi update hồ sơ:", err);
+        res.status(500).json({ message: "Lỗi cập nhật: " + err.message });
+    }
+});
+
 module.exports = router;

@@ -364,14 +364,20 @@
                 const lhp = detailRes.ok ? await detailRes.json() : null;
                 if(!lhp) return alert('Lỗi tải thông tin chi tiết lớp!');
 
+                const formatDate = (dateString) => {
+                if (!dateString) return '---';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('vi-VN');
+                };
+
                 // Đổ dữ liệu vào Modal
                 document.getElementById('modalTitle').innerText = lhp.TenMH || '---';
                 document.getElementById('modalSub').innerText = `Mã lớp: ${lhp.MaLHP} • Giảng viên: ${lhp.TenGV}`;
                 document.getElementById('modalLich').innerText = lhp.LichHoc || '---';
                 document.getElementById('modalPhong').innerText = lhp.PhongHoc || '---';
                 document.getElementById('modalSiSo').innerText = `${lhp.SiSoHienTai || 0} / ${lhp.SiSoToiDa || 0}`;
-                document.getElementById('modalStart').innerText = '---'; 
-                document.getElementById('modalEnd').innerText = '---';
+                document.getElementById('modalStart').innerText = formatDate(lhp.NgayBatDau || lhp.ngaybatdau); 
+                document.getElementById('modalEnd').innerText = formatDate(lhp.NgayKetThuc || lhp.ngayketthuc);
 
                 const tbody = document.getElementById('modalStudentBody');
                 const studentSection = document.getElementById('studentSection');
