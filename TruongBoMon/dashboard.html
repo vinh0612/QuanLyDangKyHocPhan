@@ -172,92 +172,81 @@
             `;
         }
 
-        function init() {
+        const getToken = () => {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr).Token : null;
+        };
+
+        async function init() {
             renderSidebar();
-            document.getElementById('welcomeText').innerText = `Chào bạn, ${user.HoTen}!`;
-            // User Avatar
-            document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=TB&background=0D8ABC&color=fff`;
             
-            // Set Department Name
-            const boMonData = JSON.parse(localStorage.getItem('BoMon') || '[]');
-            const gvData = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const myGV = gvData.find(g => g.MaGV === user.MaNguoiDung);
-            if (myGV) {
-                const myBM = boMonData.find(b => b.MaBoMon === myGV.MaBoMon);
-                if (myBM) document.getElementById('deptName').innerText = `Bộ môn: ${myBM.TenBoMon}`;
-                
-                loadStats(myGV.MaBoMon);
-                renderDeptSchedule(myGV.MaBoMon);
-                renderMembers(myGV.MaBoMon);
-            }
-        }
+            const token = getToken();
+            if (!token) return;
 
-        function loadStats(maBoMon) {
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            const currentHK = hkD.find(h => h.DangMo);
+            try {
+                // Gọi 1 API húp trọn vẹn data
+                const res = await fetch('http://localhost:5123/api/TruongBoMon/dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-            const myGV = gvD.filter(g => g.MaBoMon === maBoMon);
-            document.getElementById('gvCount').innerText = myGV.length;
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // 1. Render Header & Stats
+                    const stats = data.stats;
+                    document.getElementById('welcomeText').innerText = `Chào bạn, ${stats.HoTen || 'Trưởng Bộ Môn'}!`;
+                    document.getElementById('deptName').innerText = `Bộ môn: ${stats.TenBoMon || 'Chưa cập nhật'}`;
+                    
+                    const initial = stats.HoTen ? stats.HoTen.charAt(0).toUpperCase() : 'TB';
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${initial}&background=0D8ABC&color=fff`;
 
-            const myLHP = lhpD.filter(l => myGV.some(g => g.MaGV === l.MaGV) && l.MaHK === currentHK.MaHK);
-            document.getElementById('lhpCount').innerText = myLHP.length;
+                    document.getElementById('gvCount').innerText = stats.SoGV || 0;
+                    document.getElementById('lhpCount').innerText = stats.SoLop || 0;
+                    document.getElementById('regCount').innerText = stats.SoDangKy || 0;
 
-            const totalSV = myLHP.reduce((sum, l) => sum + (l.SiSoHienTai || 0), 0);
-            document.getElementById('regCount').innerText = totalSV;
-        }
+                    // 2. Render Lịch Dạy (Top 5)
+                    const scheduleContainer = document.getElementById('deptSchedule');
+                    if (data.lich.length === 0) {
+                        scheduleContainer.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Chưa có lịch dạy tuần này</td></tr>';
+                    } else {
+                        scheduleContainer.innerHTML = data.lich.map(s => {
+                            const percent = s.SiSoToiDa > 0 ? (s.SiSoHienTai / s.SiSoToiDa) * 100 : 0;
+                            return `
+                                <tr>
+                                    <td class="fw-bold">${s.HoTen}</td>
+                                    <td>${s.TenMH}</td>
+                                    <td class="small">${s.LichHoc || '---'}</td>
+                                    <td><span class="badge bg-light text-dark border">${s.PhongHoc || '---'}</span></td>
+                                    <td>
+                                        <div class="progress mb-1" style="height: 6px; width: 60px;">
+                                            <div class="progress-bar ${percent >= 100 ? 'bg-danger' : 'bg-primary'}" style="width: ${percent}%"></div>
+                                        </div>
+                                        <small class="text-muted fw-bold">${s.SiSoHienTai}/${s.SiSoToiDa}</small>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
 
-        function renderDeptSchedule(maBoMon) {
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const lhpD = JSON.parse(localStorage.getItem('LopHocPhan') || '[]');
-            const mhD = JSON.parse(localStorage.getItem('MonHoc') || '[]');
-            const hkD = JSON.parse(localStorage.getItem('HocKy') || '[]');
-            const currentHK = hkD.find(h => h.DangMo);
-
-            const myGV = gvD.filter(g => g.MaBoMon === maBoMon);
-            const mySchedule = lhpD.filter(l => myGV.some(g => g.MaGV === l.MaGV) && l.MaHK === currentHK.MaHK).slice(0, 5);
-
-            const container = document.getElementById('deptSchedule');
-            if (mySchedule.length === 0) {
-                container.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Chưa có lịch dạy tuần này</td></tr>';
-                return;
-            }
-
-            container.innerHTML = mySchedule.map(s => {
-                const gv = gvD.find(g => g.MaGV === s.MaGV);
-                const mh = mhD.find(m => m.MaMH === s.MaMH);
-                return `
-                    <tr>
-                        <td class="fw-bold">${gv.HoTen}</td>
-                        <td>${mh.TenMH}</td>
-                        <td class="small">${s.LichHoc}</td>
-                        <td><span class="badge bg-light text-dark">${s.PhongHoc}</span></td>
-                        <td>
-                            <div class="progress" style="height: 6px; width: 60px;">
-                                <div class="progress-bar bg-primary" style="width: ${(s.SiSoHienTai/s.SiSoToiDa)*100}%"></div>
+                    // 3. Render Danh sách Nhân Sự
+                    const memberContainer = document.getElementById('memberList');
+                    if (data.nhanSu.length === 0) {
+                        memberContainer.innerHTML = '<div class="text-muted small">Chưa có thành viên nào.</div>';
+                    } else {
+                        memberContainer.innerHTML = data.nhanSu.map(g => `
+                            <div class="d-flex align-items-center gap-3 mb-3 p-2 hover-light rounded border-bottom" style="transition: 0.3s;">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(g.HoTen)}&background=random" class="rounded-circle shadow-sm" width="40" height="40">
+                                <div>
+                                    <div class="fw-bold small">${g.HoTen}</div>
+                                    <div class="text-muted" style="font-size: 11px;">${g.Email || 'Chưa có email'}</div>
+                                </div>
                             </div>
-                            <small class="text-muted">${s.SiSoHienTai}/${s.SiSoToiDa}</small>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderMembers(maBoMon) {
-            const gvD = JSON.parse(localStorage.getItem('GiaoVien') || '[]');
-            const myGV = gvD.filter(g => g.MaBoMon === maBoMon);
-            const container = document.getElementById('memberList');
-
-            container.innerHTML = myGV.map(g => `
-                <div class="d-flex align-items-center gap-3 mb-3 p-2 hover-light rounded" style="transition: 0.3s;">
-                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(g.HoTen)}&background=random" class="rounded-circle" width="40" height="40">
-                    <div>
-                        <div class="fw-bold small">${g.HoTen}</div>
-                        <div class="text-muted" style="font-size: 11px;">${g.Email}</div>
-                    </div>
-                </div>
-            `).join('');
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi tải dashboard:", err);
+            }
         }
 
         init();

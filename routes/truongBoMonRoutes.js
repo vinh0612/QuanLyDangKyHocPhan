@@ -161,4 +161,60 @@ router.put('/ho-so', async (req, res) => {
     }
 });
 
+// =====================================================================
+// 11. API Dashboard - Tổng hợp dữ liệu Tổng quan
+// =====================================================================
+router.get('/dashboard', async (req, res) => {
+    try {
+        // 1. Lấy Thống kê tổng quan
+        const sqlStats = `
+            DECLARE @MaBoMon VARCHAR(10), @HoTen NVARCHAR(100), @TenBoMon NVARCHAR(100);
+            SELECT @MaBoMon = gv.MaBoMon, @HoTen = gv.HoTen, @TenBoMon = bm.TenBoMon 
+            FROM GiaoVien gv LEFT JOIN BoMon bm ON gv.MaBoMon = bm.MaBoMon 
+            WHERE gv.TenLogin = SUSER_SNAME();
+
+            DECLARE @MaHK VARCHAR(10) = (SELECT TOP 1 MaHK FROM HocKy WHERE LaHKHienTai = 1);
+
+            SELECT 
+                @HoTen AS HoTen, @TenBoMon AS TenBoMon,
+                (SELECT COUNT(*) FROM GiaoVien WHERE MaBoMon = @MaBoMon) AS SoGV,
+                (SELECT COUNT(*) FROM LopHocPhan lhp JOIN GiaoVien gv ON lhp.MaGV = gv.MaGV WHERE gv.MaBoMon = @MaBoMon AND lhp.MaHK = @MaHK) AS SoLop,
+                (SELECT COUNT(dk.MaDK) FROM DangKyHoc dk JOIN LopHocPhan lhp ON dk.MaLHP = lhp.MaLHP JOIN GiaoVien gv ON lhp.MaGV = gv.MaGV WHERE gv.MaBoMon = @MaBoMon AND lhp.MaHK = @MaHK AND dk.TrangThai NOT LIKE N'%Huy%') AS SoDangKy;
+        `;
+        const stats = await executeQuery(sqlStats, {}, req.user.name);
+
+        // 2. Lấy Top 5 Lịch dạy của bộ môn
+        const sqlLich = `
+            DECLARE @MaBoMon VARCHAR(10) = (SELECT MaBoMon FROM GiaoVien WHERE TenLogin = SUSER_SNAME());
+            DECLARE @MaHK VARCHAR(10) = (SELECT TOP 1 MaHK FROM HocKy WHERE LaHKHienTai = 1);
+            
+            SELECT TOP 5 
+                gv.HoTen, mh.TenMH, lhp.LichHoc, lhp.PhongHoc, lhp.SiSoToiDa,
+                (SELECT COUNT(*) FROM DangKyHoc WHERE MaLHP = lhp.MaLHP AND TrangThai NOT LIKE N'%Huy%') AS SiSoHienTai
+            FROM LopHocPhan lhp 
+            JOIN GiaoVien gv ON lhp.MaGV = gv.MaGV 
+            JOIN MonHoc mh ON lhp.MaMH = mh.MaMH
+            WHERE gv.MaBoMon = @MaBoMon AND lhp.MaHK = @MaHK;
+        `;
+        const lich = await executeQuery(sqlLich, {}, req.user.name);
+
+        // 3. Lấy Danh sách nhân sự
+        const sqlNhanSu = `
+            DECLARE @MaBoMon VARCHAR(10) = (SELECT MaBoMon FROM GiaoVien WHERE TenLogin = SUSER_SNAME());
+            SELECT HoTen, Email FROM GiaoVien WHERE MaBoMon = @MaBoMon;
+        `;
+        const nhanSu = await executeQuery(sqlNhanSu, {}, req.user.name);
+
+        // Gửi trả toàn bộ 3 cục data về Frontend trong 1 nhịp
+        res.json({
+            stats: stats[0] || {},
+            lich: lich || [],
+            nhanSu: nhanSu || []
+        });
+    } catch (err) {
+        console.error("Lỗi get dashboard:", err);
+        res.status(500).json({ message: "Lỗi tải dashboard: " + err.message });
+    }
+});
+
 module.exports = router;
