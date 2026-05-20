@@ -152,7 +152,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../Assets/js/auth.js"></script>
     <script>
-        // 1. CHỐT CHẶN BẢO MẬT: Kiểm tra Token xem đúng quyền SinhVien không trước khi hiển thị dữ liệu
+        // 1. Lấy token
         Auth.checkAuth(['SinhVien']);
         const user = Auth.getCurrentUser();
 
@@ -286,3 +286,5 @@
         // Thực thi kích hoạt luồng nạp dữ liệu khi trang web được tải xong
         init();
     </script>
+</body>
+</html>

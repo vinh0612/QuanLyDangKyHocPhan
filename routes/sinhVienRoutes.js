@@ -7,7 +7,7 @@ const { verifyToken, checkRole } = require('../middlewares/authMiddleware');
 router.use(verifyToken);
 router.use(checkRole(['SinhVien']));
 
-// 1. API Lấy hồ sơ (Có Fallback chống sập)
+// 1. API Lấy hồ sơ 
 router.get('/ho-so', async (req, res) => {
     try {
         const result = await executeQuery("SELECT * FROM vw_SV_ThongTinCaNhan", {}, req.user.name);
@@ -18,6 +18,17 @@ router.get('/ho-so', async (req, res) => {
             const fallbackResult = await executeQuery("SELECT * FROM SinhVien WHERE MaSV = @MaSV", { MaSV: req.user.name }, req.user.name);
             res.json(fallbackResult[0] || {});
         } catch (e) { res.status(500).json({ message: "Lỗi hệ thống" }); }
+    }
+});
+
+// 1.1 API: Lấy danh sách Học kỳ (Dùng cho dropdown Dashboard)
+router.get('/hoc-ky', async (req, res) => {
+    try {
+        const sql = `SELECT MaHK, TenHK, NamHoc, LaHKHienTai FROM HocKy ORDER BY NamHoc DESC, MaHK DESC`;
+        const result = await executeQuery(sql, {}, req.user.name);
+        res.json(result || []);
+    } catch (err) {
+        res.status(500).json({ message: "Lỗi tải học kỳ" });
     }
 });
 
