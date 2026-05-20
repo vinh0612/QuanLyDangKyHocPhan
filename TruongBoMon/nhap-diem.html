@@ -301,20 +301,37 @@
         function changePage(page) { currentPage = page; renderStudentTable(); }
 
         window.calc = (inp) => {
+            // 🌟 BỘ LỌC CHẶN NGƯỜI DÙNG GÕ BẬY (Chữ, số âm, số lố 10)
+            if (inp.value !== '') {
+                let val = parseFloat(inp.value);
+                if (isNaN(val) || val < 0) {
+                    inp.value = 0; // Gõ '-5', chữ 'e'... ép thẳng về 0
+                } else if (val > 10) {
+                    inp.value = 10; // Gõ '100' ép thẳng về 10
+                }
+            }
+
             const tr = inp.closest('tr');
             const gkVal = tr.querySelector('.gk').value;
             const ckVal = tr.querySelector('.ck').value;
             
             if (gkVal !== '' && ckVal !== '') {
-                const tk = (parseFloat(gkVal) * 0.4 + parseFloat(ckVal) * 0.6).toFixed(2);
+                // Tính toán an toàn
+                const qt = parseFloat(gkVal) || 0;
+                const ck = parseFloat(ckVal) || 0;
+                const tk = (qt * 0.4 + ck * 0.6).toFixed(2);
+                
                 tr.querySelector('.tk').value = tk;
                 const badge = tr.querySelector('.badge');
+                
+                // Cập nhật giao diện Trạng thái
                 badge.className = tk >= 5 ? 'badge bg-success-subtle text-success px-3 py-2 rounded-pill' : 'badge bg-danger-subtle text-danger px-3 py-2 rounded-pill';
                 badge.innerText = tk >= 5 ? 'Đạt' : 'Trượt';
             } else {
                 tr.querySelector('.tk').value = '';
-                tr.querySelector('.badge').className = 'badge bg-light text-muted px-3 py-2 rounded-pill';
-                tr.querySelector('.badge').innerText = 'Đang nhập';
+                const badge = tr.querySelector('.badge');
+                badge.className = 'badge bg-light text-muted px-3 py-2 rounded-pill';
+                badge.innerText = 'Đang nhập';
             }
         };
 

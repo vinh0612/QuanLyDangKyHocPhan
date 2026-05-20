@@ -191,8 +191,14 @@
                     <td class="text-center">
                         <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">${l.SiSoHienTai} sinh viên</span>
                     </td>
-                    <td class="text-center">
-                        <input type="number" class="grade-input border rounded text-center px-2 py-1 bg-light" style="width: 80px;" id="input-${l.MaLHP}" value="${l.SiSoToiDa}" min="${l.SiSoHienTai}">
+                   <td class="text-center">
+                        <input type="number" 
+                               class="grade-input border rounded text-center px-2 py-1 bg-light" 
+                               style="width: 80px;" 
+                               id="input-${l.MaLHP}" 
+                               value="${l.SiSoToiDa}" 
+                               min="${l.SiSoHienTai}"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57"> 
                     </td>
                     <td class="text-end pe-4">
                         <button class="btn btn-tbm btn-primary px-3 py-1 shadow-sm rounded-pill" style="font-size: 0.8rem;" onclick="updateCapacity('${l.MaLHP}', ${l.SiSoHienTai})">
@@ -232,14 +238,21 @@
 
         window.changePage = (page) => { currentPage = page; renderClasses(); }
 
-        // Bắn API Cập nhật
+        // Bản API Cập nhật
         window.updateCapacity = async (maLHP, siSoHienTai) => {
             const input = document.getElementById(`input-${maLHP}`);
             const newVal = parseInt(input.value);
             
+            if (isNaN(newVal) || newVal <= 0) {
+                alert('Vui lòng nhập sĩ số là một số nguyên dương!');
+
+                const oldData = allClasses.find(l => l.MaLHP === maLHP);
+                if (oldData) input.value = oldData.SiSoToiDa;
+                return;
+            }
+
             if (newVal < siSoHienTai) {
-                alert('⚠️ Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký!');
-                // Khôi phục lại giá trị cũ nếu nhập bậy
+                alert('Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký!');
                 const oldData = allClasses.find(l => l.MaLHP === maLHP);
                 if (oldData) input.value = oldData.SiSoToiDa;
                 return;

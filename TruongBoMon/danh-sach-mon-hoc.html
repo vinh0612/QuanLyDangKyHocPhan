@@ -40,6 +40,7 @@
                     <select class="form-select" id="typeFilter">
                         <option value="all">Tất cả môn học</option>
                         <option value="open">Đang mở đăng ký</option>
+                        <option value="closed">Chưa mở lớp</option> 
                     </select>
                 </div>
             </div>
@@ -173,6 +174,8 @@
 
             if (type === 'open') {
                 filtered = filtered.filter(m => m.SoLopMo > 0);
+            } else if (type === 'closed') {
+                filtered = filtered.filter(m => !m.SoLopMo || m.SoLopMo === 0);
             }
 
             // Phân trang

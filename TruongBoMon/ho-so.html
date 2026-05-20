@@ -180,11 +180,27 @@
             const token = getToken();
             if (!token) return;
             
-            // Bốc thẳng data từ input gửi lên Backend
+            // Lấy dữ liệu từ input
+            const sdtVal = document.getElementById('sdt').value.trim();
+            const emailVal = document.getElementById('email').value.trim();
+            const diaChiVal = document.getElementById('diaChi').value.trim();
+         
+            // Kiểm tra Số điện thoại
+            const phoneRegex = /^0\d{9}$/;
+            if (!phoneRegex.test(sdtVal)) {
+                return alert("Lỗi: Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!");
+            }
+
+            // Kiểm tra Email
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@teacher\.edu\.vn$/;
+            if (!emailRegex.test(emailVal)) {
+                return alert("Lỗi: Email giảng viên phải có đuôi @teacher.edu.vn!");
+            }
+
             const payload = {
-                soDT: document.getElementById('sdt').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                diaChi: document.getElementById('diaChi').value.trim()
+                soDT: sdtVal,
+                email: emailVal,
+                diaChi: diaChiVal
             };
             
             try {
@@ -199,8 +215,8 @@
                 
                 const result = await res.json();
                 if (res.ok) {
-                    alert(result.message);
-                    loadProfile(); // Tải lại để cập nhật giao diện
+                    alert('' + result.message);
+                    loadProfile();
                 } else {
                     alert("Lỗi: " + result.message);
                 }
