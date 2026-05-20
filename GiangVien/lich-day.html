@@ -80,6 +80,7 @@
 
         let allMyClasses = [];
         let filteredClasses = [];
+        let allHocKy = [];
         let currentPage = 1;
         const rowsPerPage = 6;
 
@@ -129,10 +130,14 @@
                 } catch (e) {}
                 document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenHienThi)}&background=0D8ABC&color=fff`;
 
-                const res = await Auth.fetchWithAuth('/GiangVien/lop-phu-trach');
-                if (res.ok) { 
-                    allMyClasses = await res.json(); 
-                }
+                // 🌟 FIX LỖI HỌC KỲ: Tải song song cả danh sách Lớp và danh sách Học Kỳ
+                const [classRes, hkRes] = await Promise.all([
+                    Auth.fetchWithAuth('/GiangVien/lop-phu-trach'),
+                    Auth.fetchWithAuth('/GiangVien/hoc-ky') // API lấy full học kỳ
+                ]);
+
+                if (classRes.ok) allMyClasses = await classRes.json();
+                if (hkRes.ok) allHocKy = await hkRes.json();
                 
                 populateSemesterFilter();
                 renderSchedule();
@@ -144,28 +149,26 @@
         function populateSemesterFilter() {
             const select = document.getElementById('hkSelect');
             select.disabled = false;
-            if (!allMyClasses || allMyClasses.length === 0) {
-                select.innerHTML = '<option value="">-- Tất cả học kỳ --</option><option value="none" disabled>🚫 Chưa có dữ liệu phân công</option>';
+            
+            if (!allHocKy || allHocKy.length === 0) {
+                select.innerHTML = '<option value="">-- Tất cả học kỳ --</option><option value="none" disabled>🚫 Lỗi tải Học kỳ</option>';
                 return;
             }
-            const semesterMap = {};
-            allMyClasses.forEach(item => {
-                const hk = item.TenHK || item.tenhk || 'Học kỳ';
-                const nam = item.NamHoc || item.namhoc || '';
-                semesterMap[`${hk}|${nam}`] = `${hk} ${nam ? '- Năm học ' + nam : ''}`;
-            });
-            const sortedKeys = Object.keys(semesterMap).sort((a, b) => b.localeCompare(a));
-            select.innerHTML = '<option value="">-- Tất cả học kỳ --</option>';
-            sortedKeys.forEach(key => { select.innerHTML += `<option value="${key}">${semesterMap[key]}</option>`; });
+
+            // 🌟 Đổ data thật từ bảng HocKy và tự động trỏ vào Học Kỳ Hiện Tại (LaHKHienTai = 1)
+            select.innerHTML = '<option value="">-- Tất cả học kỳ --</option>' + 
+                allHocKy.map(hk => {
+                    const isCurrent = hk.LaHKHienTai || hk.lahkhientai ? 'selected' : '';
+                    return `<option value="${hk.MaHK || hk.mahk}" ${isCurrent}>${hk.TenHK || hk.tenhk} - Năm học ${hk.NamHoc || hk.namhoc}</option>`;
+                }).join('');
         }
 
         function renderSchedule() {
-            const val = document.getElementById('hkSelect').value;
-            if (val !== "") {
-                const [hk, nam] = val.split('|');
-                filteredClasses = allMyClasses.filter(item => {
-                    return (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam;
-                });
+            const selectedHK = document.getElementById('hkSelect').value;
+            
+            // Lọc theo Mã Học Kỳ chuẩn xác thay vì cắt chuỗi
+            if (selectedHK !== "") {
+                filteredClasses = allMyClasses.filter(item => (item.MaHK || item.mahk) === selectedHK);
             } else { 
                 filteredClasses = [...allMyClasses]; 
             }
@@ -175,12 +178,11 @@
 
         function searchTable() {
             const keyword = (document.getElementById('tableSearchInput').value || '').toLowerCase().trim();
-            const val = document.getElementById('hkSelect').value;
+            const selectedHK = document.getElementById('hkSelect').value;
             
             let baseData = [...allMyClasses];
-            if (val !== "") {
-                const [hk, nam] = val.split('|');
-                baseData = allMyClasses.filter(item => (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam);
+            if (selectedHK !== "") {
+                baseData = allMyClasses.filter(item => (item.MaHK || item.mahk) === selectedHK);
             }
 
             if (keyword) {

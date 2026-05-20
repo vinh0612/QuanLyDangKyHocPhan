@@ -111,6 +111,7 @@
         Auth.checkAuth(['GiangVien', 'TruongBoMon']);
         const user = Auth.getCurrentUser();
         let myTeachingSchedule = [];
+        let allHocKy = [];
 
         function renderSidebar() {
             const sidebar = document.getElementById('dynamicSidebar');
@@ -153,20 +154,23 @@
             document.getElementById('currentDate').innerText = `${days[now.getDay()]} ${now.getDate()}/${now.getMonth() + 1}`;
 
             try {
-                // 1. Đồng bộ thông tin cá nhân Giảng viên từ View bảo mật
+                let tenHienThi = user.name || "GV";
                 const profileRes = await Auth.fetchWithAuth('/GiangVien/ho-so');
                 if (profileRes.ok) {
                     const profileData = await profileRes.json();
-                    const tenGV = profileData.HoTen || user.name;
-                    document.getElementById('welcomeText').innerText = `Chào ngày mới, Thầy ${tenGV}!`;
-                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenGV)}&background=0D8ABC&color=fff`;
+                    if (profileData.HoTen) tenHienThi = profileData.HoTen;
+                    document.getElementById('welcomeText').innerText = `Chào ngày mới, Thầy ${tenHienThi}!`;
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tenHienThi)}&background=0D8ABC&color=fff`;
                 }
 
-                // 2. ĐÃ ĐỔI DÂY: Trỏ thẳng vào cổng /lop-phu-trach (vw_GV_LopPhuTrach) để lấy đầy đủ Sĩ số và Lịch học chuỗi
-                const scheduleRes = await Auth.fetchWithAuth('/GiangVien/lop-phu-trach');
-                if (scheduleRes.ok) { 
-                    myTeachingSchedule = await scheduleRes.json(); 
-                }
+                const [scheduleRes, hkRes] = await Promise.all([
+                    Auth.fetchWithAuth('/GiangVien/lop-phu-trach'),
+                    Auth.fetchWithAuth('/GiangVien/hoc-ky')
+                ]);
+
+                if (scheduleRes.ok) myTeachingSchedule = await scheduleRes.json(); 
+                if (hkRes.ok) allHocKy = await hkRes.json();
+
             } catch (err) {
                 console.error("Lỗi đồng bộ dữ liệu Dashboard:", err);
             } finally {
@@ -179,39 +183,25 @@
             const filterSelect = document.getElementById('hkFilter');
             filterSelect.disabled = false;
 
-            if (!myTeachingSchedule || myTeachingSchedule.length === 0) {
-                filterSelect.innerHTML = `
-                    <option value="">-- Không có dữ liệu --</option>
-                    <option value="none" disabled>Chưa phụ trách lớp nào</option>
-                `;
+            if (!allHocKy || allHocKy.length === 0) {
+                filterSelect.innerHTML = '<option value="">-- Lỗi tải học kỳ --</option>';
                 return;
             }
 
-            const semesterMap = {};
-            myTeachingSchedule.forEach(item => {
-                const hk = item.TenHK || item.tenhk;
-                const nam = item.NamHoc || item.namhoc;
-                if (hk && nam) {
-                    semesterMap[`${hk}|${nam}`] = `${hk} - Năm học ${nam}`;
-                }
-            });
-
-            const sortedKeys = Object.keys(semesterMap).sort((a, b) => b.localeCompare(a));
-            filterSelect.innerHTML = '';
-            sortedKeys.forEach(key => { 
-                filterSelect.innerHTML += `<option value="${key}">${semesterMap[key]}</option>`; 
-            });
+            filterSelect.innerHTML = '<option value="">-- Tất cả học kỳ --</option>' + 
+                allHocKy.map(hk => {
+                    const isCurrent = (hk.LaHKHienTai || hk.lahkhientai) ? 'selected' : '';
+                    return `<option value="${hk.MaHK || hk.mahk}" ${isCurrent}>${hk.TenHK || hk.tenhk} - Năm học ${hk.NamHoc || hk.namhoc}</option>`;
+                }).join('');
         }
 
-        // Gom nhóm hàm render phụ thuộc vào bộ lọc học kỳ để chạy realtime
         function filterAndRenderUI() {
             const filterSelect = document.getElementById('hkFilter');
-            const filterValue = filterSelect ? filterSelect.value : '';
+            const selectedHK = filterSelect ? filterSelect.value : '';
 
             let filteredClasses = [];
-            if (filterValue) {
-                const [hk, nam] = filterValue.split('|');
-                filteredClasses = myTeachingSchedule.filter(item => (item.TenHK || item.tenhk) === hk && (item.NamHoc || item.namhoc) === nam);
+            if (selectedHK) {
+                filteredClasses = myTeachingSchedule.filter(item => (item.MaHK || item.mahk) === selectedHK);
             } else {
                 filteredClasses = [...myTeachingSchedule];
             }

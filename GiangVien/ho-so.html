@@ -176,19 +176,35 @@
             }
         }
 
-        // ==========================================
-        // 2. ĐẨY DỮ LIỆU GHI QUA STORED PROCEDURE
-        // ==========================================
+        // 2. Đưa dữ liệu qua SQL 
         document.getElementById('profileForm').onsubmit = async (e) => {
             e.preventDefault();
+            
+            // Lấy giá trị từ input
+            const sdtVal = document.getElementById('sdt').value.trim();
+            const emailVal = document.getElementById('email').value.trim();
+            const diaChiVal = document.getElementById('diaChi').value.trim();
+
+            const phoneRegex = /^0\d{9}$/;
+            if (!phoneRegex.test(sdtVal)) {
+                return alert("Lỗi: Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!");
+            }
+
+            // 2. Kiểm tra Email: Phải có đuôi @teacher.edu.vn
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@teacher\.edu\.vn$/;
+            if (!emailVal || !emailRegex.test(emailVal)) {
+                return alert("Lỗi: Email giảng viên phải đúng định dạng @teacher.edu.vn!");
+            }
+
+            // Nếu qua trạm kiểm duyệt, tiến hành xử lý Lưu
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG CẬP NHẬT...';
 
             const payload = {
-                diaChi: document.getElementById('diaChi').value,
-                soDT: document.getElementById('sdt').value,
-                email: document.getElementById('email').value
+                diaChi: diaChiVal,
+                soDT: sdtVal,
+                email: emailVal
             };
 
             try {
@@ -200,7 +216,7 @@
                 const data = await res.json();
                 if (res.ok) {
                     alert('Đã cập nhật hồ sơ cá nhân thành công!');
-                    loadProfile(); // Tải lại ngay lập tức để đồng bộ Avatar
+                    loadProfile();
                 } else {
                     alert('Lỗi cập nhật: ' + (data.message || 'Thất bại từ hệ thống.'));
                 }

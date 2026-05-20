@@ -168,4 +168,15 @@ router.post('/luu-diem-danh', async (req, res) => {
     }
 });
 
+// API: Lấy danh sách Học kỳ cho Giảng Viên
+router.get('/hoc-ky', async (req, res) => {
+    try {
+        const sql = `SELECT MaHK, TenHK, NamHoc, LaHKHienTai FROM HocKy ORDER BY NamHoc DESC, MaHK DESC`;
+        const result = await executeQuery(sql, {}, req.user.name);
+        res.json(result || []);
+    } catch (err) {
+        res.status(500).json({ message: "Lỗi tải học kỳ: " + err.message });
+    }
+});
+
 module.exports = router;
