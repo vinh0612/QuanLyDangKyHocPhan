@@ -178,18 +178,37 @@
                 if (resDiem.ok) allScoreData = await resDiem.json();
                 if (resSupport.ok) {
                     const supportData = await resSupport.json();
-                    allGiangVien = supportData.giangVien || [];
                     allHocKy = supportData.hocKy || [];
                 }
 
-                // Render Dropdown Bộ Lọc Lịch Dạy
+                const gvMap = new Map();
+                allLHPData.forEach(l => {
+                    const ma = l.MaGV || l.magv;
+                    const ten = l.TenGV || l.tengv;
+                    if (ma && ten && !gvMap.has(ma)) {
+                        gvMap.set(ma, ten);
+                    }
+                });
+                
+                allGiangVien = Array.from(gvMap, ([MaGV, HoTen]) => ({ MaGV, HoTen }));
                 document.getElementById('gvSelect').innerHTML = '<option value="">-- Chọn Giảng viên --</option>' + 
                     allGiangVien.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join('');
                 
                 document.getElementById('hkSelectLich').innerHTML = '<option value="">-- Tất cả Học kỳ --</option>' + 
                     allHocKy.map(h => `<option value="${h.MaHK}">${h.TenHK} - Năm học ${h.NamHoc}</option>`).join('');
                 
-                // Render Dropdown Lớp học phần bên Tab Điểm
+                document.getElementById('lhpSelectDiem').innerHTML = '<option value="">-- Chọn Lớp học phần cần tra cứu --</option>' + 
+                    allLHPData.map(l => `<option value="${l.MaLHP || l.malhp}">${l.MaLHP || l.malhp} - ${l.TenMH || l.tenmh} (${l.TenHK || l.tenhk})</option>`).join('');
+
+                renderLich(1);
+                renderDiem(1);
+
+                document.getElementById('gvSelect').innerHTML = '<option value="">-- Chọn Giảng viên --</option>' + 
+                    allGiangVien.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join('');
+                
+                document.getElementById('hkSelectLich').innerHTML = '<option value="">-- Tất cả Học kỳ --</option>' + 
+                    allHocKy.map(h => `<option value="${h.MaHK}">${h.TenHK} - Năm học ${h.NamHoc}</option>`).join('');
+                
                 document.getElementById('lhpSelectDiem').innerHTML = '<option value="">-- Chọn Lớp học phần cần tra cứu --</option>' + 
                     allLHPData.map(l => `<option value="${l.MaLHP || l.malhp}">${l.MaLHP || l.malhp} - ${l.TenMH || l.tenmh} (${l.TenHK || l.tenhk})</option>`).join('');
 

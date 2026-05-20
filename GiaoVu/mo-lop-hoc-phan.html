@@ -321,27 +321,69 @@
                 return;
             }
 
+            // 🌟 TRẠM KIỂM DUYỆT THỜI GIAN (VALIDATION XUYÊN KHÔNG)
+            const maHK = document.getElementById('formMaHK').value;
+            const ngayBDVal = document.getElementById('formNgayBD').value;
+            const ngayKTVal = document.getElementById('formNgayKT').value;
+
+            if (ngayBDVal && ngayKTVal) {
+                const classStart = new Date(ngayBDVal);
+                const classEnd = new Date(ngayKTVal);
+
+                // Kiểm tra logic cơ bản: Kết thúc phải sau bắt đầu
+                if (classEnd <= classStart) {
+                    alert('⚠️ Lỗi: Ngày kết thúc lớp học phải diễn ra sau ngày bắt đầu!');
+                    return;
+                }
+
+                // Tìm thông tin Học kỳ đang chọn trong mảng supportData (load lúc đầu)
+                const selectedHK = supportData.hocKy.find(h => h.MaHK === maHK);
+                
+                // Nếu Backend có trả về ngày tháng của Học kỳ thì đem ra so sánh
+                if (selectedHK && selectedHK.NgayBatDau && selectedHK.NgayKetThuc) {
+                    const hkStart = new Date(selectedHK.NgayBatDau);
+                    const hkEnd = new Date(selectedHK.NgayKetThuc);
+
+                    // Nếu lớp bắt đầu sớm hơn học kỳ HOẶC kết thúc trễ hơn học kỳ -> CHẶN
+                    if (classStart < hkStart || classEnd > hkEnd) {
+                        // Định dạng lại ngày theo chuẩn VN (dd/mm/yyyy) để báo lỗi cho đẹp
+                        const strStart = hkStart.toLocaleDateString('vi-VN');
+                        const strEnd = hkEnd.toLocaleDateString('vi-VN');
+                        
+                        alert(`⚠️ Lỗi thời gian: Lớp học phần phải nằm trong khung thời gian của học kỳ!\n\n📌 Thông tin học kỳ đã chọn:\n- Bắt đầu từ: ${strStart}\n- Kết thúc vào: ${strEnd}\n\nVui lòng điều chỉnh lại lịch học.`);
+                        return;
+                    }
+                }
+            }
+
             const btn = document.getElementById('btnSaveSubmit');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG XỬ LÝ...';
 
-            // Tạo mã LHP tự động nếu Giáo vụ không nhập
+           // Tạo mã LHP tự động nếu Giáo vụ không nhập
             let inputMaLHP = document.getElementById('formMaLHP').value.trim();
             const maMH = document.getElementById('formMaMH').value;
+            
             if (!inputMaLHP) {
-                inputMaLHP = `LHP_${maMH}_${Math.floor(Math.random() * 10000)}`;
+                const shortMH = maMH.slice(-4); 
+                inputMaLHP = `L${shortMH}_${Math.floor(100 + Math.random() * 900)}`;
+            } else if (inputMaLHP.length > 10) {
+                alert('⚠️ Lỗi: Mã Lớp Học Phần không được vượt quá 10 ký tự theo quy định của CSDL!');
+                btn.disabled = false;
+                btn.innerHTML = '<div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined" style="font-size: 18px;">cloud_upload</span> XÁC NHẬN MỞ LỚP</div>';
+                return;
             }
 
             const payload = {
                 maLHP: inputMaLHP,
-                maHK: document.getElementById('formMaHK').value,
+                maHK: maHK,
                 maMH: maMH,
                 maGV: document.getElementById('formMaGV').value,
                 lichHoc: document.getElementById('formLich').value,
                 phongHoc: document.getElementById('formPhong').value,
                 siSoToiDa: document.getElementById('formSiSo').value,
-                ngayBatDau: document.getElementById('formNgayBD').value || null,
-                ngayKetThuc: document.getElementById('formNgayKT').value || null
+                ngayBatDau: ngayBDVal || null,
+                ngayKetThuc: ngayKTVal || null
             };
 
             try {
@@ -365,7 +407,6 @@
                 btn.innerHTML = '<div class="d-flex align-items-center gap-2"><span class="material-symbols-outlined" style="font-size: 18px;">cloud_upload</span> XÁC NHẬN MỞ LỚP</div>';
             }
         };
-
         init();
 
         // Bắt sự kiện khi Giáo vụ chọn / đổi Môn học trong form

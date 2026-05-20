@@ -157,17 +157,17 @@ router.get('/tat-ca-mon-hoc', async (req, res) => {
 router.post('/cap-nhat-ho-so', async (req, res) => {
     const { soDT, email, diaChi } = req.body;
     try {
-        // Cập nhật trực tiếp vào bảng GiaoVu (Giả định cột khóa chính là MaGV_GV)
+        // 🌟 FIX LỖI Ở ĐÂY: Đổi MaGV_GV thành MaGiaoVu
         const sql = `
             UPDATE GiaoVu 
             SET SoDT = @SoDT, Email = @Email, DiaChi = @DiaChi 
-            WHERE MaGV_GV = @MaGV_GV
+            WHERE MaGiaoVu = @MaGiaoVu
         `;
         await executeQuery(sql, { 
             SoDT: soDT || null, 
             Email: email || null, 
             DiaChi: diaChi || null,
-            MaGV_GV: req.user.name 
+            MaGiaoVu: req.user.name  // 🌟 Chỗ này cũng đổi tên param luôn
         }, req.user.name);
         
         res.json({ message: "Cập nhật hồ sơ Giáo vụ thành công!" });
@@ -184,20 +184,16 @@ router.post('/cap-nhat-ho-so', async (req, res) => {
 router.get('/danh-muc-ho-tro', async (req, res) => {
     try {
         const monHoc = await executeQuery("SELECT MaMH, TenMH FROM MonHoc", {}, req.user.name);
-        const hocKy = await executeQuery("SELECT MaHK, TenHK, NamHoc FROM HocKy ORDER BY NamHoc DESC", {}, req.user.name);
-        // 🔥 Đã xóa cái lệnh lấy full Giảng Viên ở đây đi rồi!
-        
+        const hocKy = await executeQuery("SELECT MaHK, TenHK, NamHoc, NgayBatDau, NgayKetThuc FROM HocKy ORDER BY NamHoc DESC", {}, req.user.name);
         res.json({ monHoc, hocKy });
     } catch (err) {
         res.status(500).json({ message: "Lỗi tải danh mục hỗ trợ: " + err.message });
     }
 });
-
 // 2. Lấy Giảng Viên CÓ GIẤY PHÉP theo từng môn học
 router.get('/giang-vien-theo-mon/:maMH', async (req, res) => {
     const { maMH } = req.params;
     try {
-        // 🔥 Gọi thẳng vào View đã được cấp quyền cho Giáo Vụ
         const sql = `SELECT MaGV, HoTen FROM vw_GiaoVu_GiangVienDayMon WHERE MaMH = @MaMH`;
         
         const result = await executeQuery(sql, { MaMH: maMH }, req.user.name);

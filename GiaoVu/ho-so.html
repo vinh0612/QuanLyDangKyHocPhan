@@ -172,14 +172,29 @@
 
         document.getElementById('profileForm').onsubmit = async (e) => {
             e.preventDefault();
+            
+            const sdtVal = document.getElementById('sdt').value.trim();
+            const emailVal = document.getElementById('email').value.trim();
+            const diaChiVal = document.getElementById('diaChi').value.trim();
+
+            const phoneRegex = /^0\d{9}$/;
+            if (!phoneRegex.test(sdtVal)) {
+                return alert("Lỗi: Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!");
+            }
+
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@school\.edu\.vn$/;
+            if (!emailRegex.test(emailVal)) {
+                return alert("Lỗi: Email công vụ phải có đuôi @school.edu.vn!");
+            }
+
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG LƯU...';
 
             const payload = {
-                diaChi: document.getElementById('diaChi').value,
-                soDT: document.getElementById('sdt').value,
-                email: document.getElementById('email').value
+                diaChi: diaChiVal,
+                soDT: sdtVal,
+                email: emailVal
             };
 
             try {
