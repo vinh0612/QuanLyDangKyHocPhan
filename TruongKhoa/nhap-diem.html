@@ -216,8 +216,17 @@
             renderPagination(totalRows, totalPages);
         }
 
-        // Tự động nhảy số Tổng kết khi gõ
+        // Ràng buộc kiểm soát dữ liệu nhập
         window.updateRow = (input) => {
+            if (input.value !== '') {
+                let val = parseFloat(input.value);
+                if (isNaN(val) || val < 0) {
+                    input.value = 0; 
+                } else if (val > 10) {
+                    input.value = 10;
+                }
+            }
+
             const tr = input.closest('tr');
             const qtVal = tr.querySelector('.qt').value;
             const ckVal = tr.querySelector('.ck').value;

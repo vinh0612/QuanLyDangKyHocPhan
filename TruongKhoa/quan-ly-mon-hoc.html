@@ -170,6 +170,7 @@
         Auth.checkAuth(['TruongKhoa']);
         const user = Auth.getCurrentUser();
         let cM, aM, myKhoaId = '';
+        let allTeachersData = [];
 
         const getToken = () => {
             const userStr = localStorage.getItem('currentUser');
@@ -363,9 +364,14 @@ window.saveCourse = async () => {
     const maMH = document.getElementById('editMaMH').value.trim();
     const tenMH = document.getElementById('formTenMH').value.trim();
     const soTC = document.getElementById('formSoTC').value;
-    const isEdit = document.getElementById('editMaMH').readOnly; // Xác định đang Thêm hay Sửa
+    const isEdit = document.getElementById('editMaMH').readOnly;
 
     if (!maMH || !tenMH || !soTC) return alert('Vui lòng nhập đủ thông tin!');
+
+    const parsedTC = parseInt(soTC);
+    if (parsedTC < 1 || parsedTC > 10) {
+        return alert('Lỗi: Số tín chỉ không hợp lệ! Vui lòng nhập từ 1 đến 10.');
+    }
 
     const token = getToken();
     const url = isEdit ? `http://localhost:5123/api/TruongKhoa/mon-hoc/${maMH}` : `http://localhost:5123/api/TruongKhoa/mon-hoc`;
@@ -416,35 +422,50 @@ window.saveCourse = async () => {
 
         // 2. GỌI API LẤY DANH SÁCH GIẢNG VIÊN VÀO THẺ SELECT
         window.initAssignTab = async () => { 
-            const userStr = localStorage.getItem('currentUser');
-            const token = userStr ? JSON.parse(userStr).Token : null;
-            
+            const token = getToken();
+            if (!token) return;
             try {
                 const res = await fetch('http://localhost:5123/api/TruongKhoa/giang-vien-khoa', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const gv = await res.json();
-                document.getElementById('formMaGV').innerHTML = gv.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join(''); 
+                allTeachersData = await res.json(); // 🌟 Cất vào kho, từ từ xài
             } catch(err) {
                 console.error("Lỗi tải DS Giảng viên", err);
             }
         }
 
-        // 3. HIỂN THỊ GIẢNG VIÊN ĐÃ PHÂN CÔNG (Lấy từ dữ liệu của renderCourses)
+        // 3. HIỂN THỊ GIẢNG VIÊN ĐÃ PHÂN CÔNG & CẬP NHẬT DROPDOWN THÔNG MINH
         window.renderAssignments = () => {
             const id = document.getElementById('assignCourseSelect').value;
             const btn = document.getElementById('btnAddAssign');
+            const gvSelect = document.getElementById('formMaGV'); // 🌟 Thẻ select giảng viên
+
             if (!id) { 
                 btn.disabled = true; 
                 document.getElementById('assignTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Vui lòng chọn môn học ở trên</td></tr>'; 
+                gvSelect.innerHTML = '<option value="">-- Vui lòng chọn môn học trước --</option>'; 
                 return; 
             }
-            btn.disabled = false;
             
             const m = (window.allCoursesData || []).find(x => x.MaMH === id);
-            
-            if (m && m.DanhSachGV && m.DanhSachGV.length > 0) {
-                document.getElementById('assignTableBody').innerHTML = m.DanhSachGV.map(gv => `
+            const assignedTeachers = (m && m.DanhSachGV) ? m.DanhSachGV : [];
+
+            // Lấy tất cả GV trong khoa, loại bỏ những người ĐÃ NẰM TRONG danh sách assignedTeachers
+            const availableTeachers = allTeachersData.filter(gv => 
+                !assignedTeachers.some(assigned => assigned.MaGV === gv.MaGV)
+            );
+
+            // Cập nhật lại Dropdown
+            if (availableTeachers.length > 0) {
+                gvSelect.innerHTML = availableTeachers.map(g => `<option value="${g.MaGV}">${g.HoTen} (${g.MaGV})</option>`).join('');
+                btn.disabled = false;
+            } else {
+                gvSelect.innerHTML = '<option value="">-- Đã phân công hết GV trong khoa --</option>';
+                btn.disabled = true;
+            }
+
+            if (assignedTeachers.length > 0) {
+                document.getElementById('assignTableBody').innerHTML = assignedTeachers.map(gv => `
                     <tr>
                         <td class="ps-4"><strong>${gv.MaGV}</strong></td>
                         <td>${gv.TenGV}</td>
