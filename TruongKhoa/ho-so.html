@@ -158,9 +158,20 @@
             e.preventDefault();
             const token = getToken();
             const btn = e.target.querySelector('button[type="submit"]');
-            
-            const email = document.getElementById('email').value;
-            const soDT = document.getElementById('sdt').value;
+            const email = document.getElementById('email').value.trim();
+            const soDT = document.getElementById('sdt').value.trim();
+           
+            // Kiểm tra Số điện thoại
+            const phoneRegex = /^0\d{9}$/;
+            if (!phoneRegex.test(soDT)) {
+                return alert("Lỗi: Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số!");
+            }
+
+            // Kiểm tra Email
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@teacher\.edu\.vn$/;
+            if (!emailRegex.test(email)) {
+                return alert("Lỗi: Email phải có đuôi @teacher.edu.vn!");
+            }
 
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> ĐANG LƯU...';
@@ -178,9 +189,9 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert("✅ " + result.message);
+                    alert("" + result.message);
                 } else {
-                    alert("❌ Lỗi: " + result.message);
+                    alert("Lỗi: " + result.message);
                 }
             } catch (err) {
                 alert("Lỗi kết nối máy chủ!");
